@@ -1,11 +1,11 @@
-import { useGetNotesQuery } from "./notesApiSlice"
+import { useGetNotesQuery } from "./schedulesApiSlice"
 import Note from "./Note"
 import useAuth from "../../hooks/useAuth"
 import useTitle from "../../hooks/useTitle"
 import PulseLoader from 'react-spinners/PulseLoader'
 
 const NotesList = () => {
-    useTitle('techNotes: Notes List')
+    useTitle('Deemed VAT: Schedule List')
 
     const { username, isManager, isAdmin } = useAuth()
 
