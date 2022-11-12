@@ -66,6 +66,7 @@ function App() {
             </Route>
           </Route>
         </Route>
+        
         {/* End Protected Routes */}
       </Route>
     </Routes>

@@ -1,4 +1,4 @@
-import { useGetNotesQuery } from "./schedulesApiSlice"
+import { useGetSchedulesQuery } from "./schedulesApiSlice"
 import Note from "./Note"
 import useAuth from "../../hooks/useAuth"
 import useTitle from "../../hooks/useTitle"
@@ -15,7 +15,7 @@ const NotesList = () => {
         isSuccess,
         isError,
         error
-    } = useGetNotesQuery('notesList', {
+    } = useGetSchedulesQuery('notesList', {
         pollingInterval: 15000,
         refetchOnFocus: true,
         refetchOnMountOrArgChange: true

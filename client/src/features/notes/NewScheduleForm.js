@@ -114,9 +114,8 @@ const NewScheduleForm = ({ users }) => {
         >
           {options}
         </select>
-      </form>
       <div>
-        <Stack sx={{ width: 300, margin: "auto" }}>
+        <Stack sx={{ width: 300, margin: "auto", className:"form__input"}}>
           <Autocomplete
             id="nba_player-demo"
             getOptionLabel={(jsonResults) =>
@@ -139,6 +138,7 @@ const NewScheduleForm = ({ users }) => {
           />
         </Stack>
       </div>
+      </form>
     </>
   );
 

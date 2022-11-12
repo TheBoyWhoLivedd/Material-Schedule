@@ -1,43 +1,41 @@
 const mongoose = require("mongoose");
 const AutoIncrement = require("mongoose-sequence")(mongoose);
 
-const noteSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
-    ScheduleTitle: {
-      type: String,
-      required: true,
-      materials: [
-        {
-          materialName: {
-            type: String,
+const scheduleSchema = new mongoose.Schema(
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
             required: true,
-          },
-          materialDescription: {
-            type: String,
-            required: true,
-          },
-          computedValue: {
-            type: Number,
-          },
-          parameters: [],
+            ref: "User",
         },
-      ],
+        ScheduleTitle: {
+            type: String,
+            required: true,
+            materials: [
+                {
+                    materialName: {
+                        type: String,
+                    },
+                    materialDescription: {
+                        type: String,
+                    },
+                    computedValue: {
+                        type: Number,
+                    },
+                    parameters: [],
+                },
+            ],
+        },
     },
-  },
-  {
-    timestamps: true,
-  }
+    {
+        timestamps: true,
+    }
 );
 
-noteSchema.plugin(AutoIncrement, {
-  inc_field: "ticket",
-  id: "ticketNums",
-  start_seq: 500,
+scheduleSchema.plugin(AutoIncrement, {
+    inc_field: "ticket",
+    id: "scheduleNums",
+    start_seq: 100,
 });
 
-module.exports = mongoose.model("Note", noteSchema);
+module.exports = mongoose.model("Schedule", scheduleSchema);

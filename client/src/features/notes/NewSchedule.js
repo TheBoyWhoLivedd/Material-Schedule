@@ -3,8 +3,8 @@ import { useGetUsersQuery } from '../users/usersApiSlice'
 import PulseLoader from 'react-spinners/PulseLoader'
 import useTitle from '../../hooks/useTitle'
 
-const NewNote = () => {
-    useTitle('techNotes: New Note')
+const NewSchedule = () => {
+    useTitle('techNotes: New Schedule')
 
     const { users } = useGetUsersQuery("usersList", {
         selectFromResult: ({ data }) => ({
@@ -18,4 +18,4 @@ const NewNote = () => {
 
     return content
 }
-export default NewNote
+export default NewSchedule
