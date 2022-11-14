@@ -11,7 +11,7 @@ const scheduleSchema = new mongoose.Schema(
         ScheduleTitle: {
             type: String,
             required: true,
-            materials: [
+            children: [
                 {
                     materialName: {
                         type: String,
