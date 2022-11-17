@@ -1,41 +1,44 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-import { useGetSchedulesQuery } from "./schedulesApiSlice";
+import { Link, useNavigate } from "react-router-dom";
+import { selectScheduleById, useGetSchedulesQuery } from "./schedulesApiSlice";
 import { memo } from "react";
+import { useSelector } from "react-redux";
 
-const Note = ({ noteId }) => {
-    const { note } = useGetSchedulesQuery("schedulesList", {
+const Schedule = ({ scheduleId }) => {
+    const { schedule } = useGetSchedulesQuery("schedulesList", {
         selectFromResult: ({ data }) => ({
-            note: data?.entities[noteId],
+            schedule: data?.entities[scheduleId],
         }),
     });
+    console.log(schedule);
+
 
     const navigate = useNavigate();
 
-    if (note) {
-        const created = new Date(note.createdAt).toLocaleString("en-US", {
+    if (schedule) {
+        const created = new Date(schedule.createdAt).toLocaleString("en-US", {
             day: "numeric",
             month: "long",
         });
-        console.log(note);
         // const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
 
-        const handleEdit = () => navigate(`/dash/notes/${noteId}`);
+        const handleEdit = () => navigate(`/dash/notes/${scheduleId}`);
 
         return (
             <article>
-                <h2>{note.title}</h2>
-                
-                <h3>{note.description}</h3>
-                
-                <p className="postCredit">{note.username}</p>
+                <h2>{schedule.title}</h2>
 
+                <h3>{schedule.description}</h3>
+
+                <p className="postCredit">{schedule.username}</p>
+
+                <Link to={`/dash/schedules/${schedule.id}`}>View</Link>
             </article>
         );
     } else return null;
 };
- 
-const memoizedNote = memo(Note);
+
+const memoizedNote = memo(Schedule);
 
 export default memoizedNote;

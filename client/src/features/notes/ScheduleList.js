@@ -5,19 +5,19 @@ import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
 import Schedule from "./Schedule";
 
-const NotesList = () => {
+const ScheduleList = () => {
     useTitle("Deemed VAT: Schedule List");
 
     const { username, isManager, isAdmin } = useAuth();
 
     const {
-        data: notes,
+        data: schedules,
         isLoading,
         isSuccess,
         isError,
         error,
     } = useGetSchedulesQuery("notesList", {
-        pollingInterval: 15000,
+        pollingInterval: 150000000,
         refetchOnFocus: true,
         refetchOnMountOrArgChange: true,
     });
@@ -31,24 +31,27 @@ const NotesList = () => {
     }
 
     if (isSuccess) {
-        const { ids, entities } = notes;
+        const { ids, entities } = schedules;
+        // console.log(schedules);
 
         let filteredIds;
         if (isManager || isAdmin) {
             filteredIds = [...ids];
+            // console.log(filteredIds)
         } else {
             filteredIds = ids.filter(
-                (noteId) => entities[noteId].username === username
+                (scheduleId) => entities[scheduleId].username === username
             );
         }
 
         const ScheduleContent =
             ids?.length &&
-            filteredIds.map((noteId) => (
-                <Schedule key={noteId} noteId={noteId} />
+            filteredIds.map((scheduleId) => (
+                
+                <Schedule key={scheduleId} scheduleId={scheduleId} />
             ));
 
         return ScheduleContent;
     }
 };
-export default NotesList;
+export default ScheduleList;

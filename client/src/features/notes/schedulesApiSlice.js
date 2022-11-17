@@ -1,12 +1,12 @@
 import { createSelector, createEntityAdapter } from "@reduxjs/toolkit";
 import { apiSlice } from "../../app/api/apiSlice";
 
-const notesAdapter = createEntityAdapter({
+const schedulesAdapter = createEntityAdapter({
   sortComparer: (a, b) =>
     a.completed === b.completed ? 0 : a.completed ? 1 : -1,
 });
 
-const initialState = notesAdapter.getInitialState();
+const initialState = schedulesAdapter.getInitialState();
 
 export const schedulesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,19 +18,19 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         },
       }),
       transformResponse: (responseData) => {
-        const loadedNotes = responseData.map((note) => {
-          note.id = note._id;
-          return note;
+        const loadedSchedules = responseData.map((schedule) => {
+          schedule.id = schedule._id;
+          return schedule;
         });
-        return notesAdapter.setAll(initialState, loadedNotes);
+        return schedulesAdapter.setAll(initialState, loadedSchedules);//This normalises our state
       },
       providesTags: (result, error, arg) => {
         if (result?.ids) {
           return [
-            { type: "Note", id: "LIST" },
-            ...result.ids.map((id) => ({ type: "Note", id })),
+            { type: "Schedule", id: "LIST" },
+            ...result.ids.map((id) => ({ type: "Schedule", id })),
           ];
-        } else return [{ type: "Note", id: "LIST" }];
+        } else return [{ type: "Schedule", id: "LIST" }];
       },
     }),
     addNewNote: builder.mutation({
@@ -41,7 +41,7 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
           ...initialNote,
         },
       }),
-      invalidatesTags: [{ type: "Note", id: "LIST" }],
+      invalidatesTags: [{ type: "Schedule", id: "LIST" }],
     }),
     updateNote: builder.mutation({
       query: (initialNote) => ({
@@ -72,20 +72,20 @@ export const {
 } = schedulesApiSlice;
 
 // returns the query result object
-export const selectNotesResult = schedulesApiSlice.endpoints.getNotes.select();
+export const selectSchedulesResult = schedulesApiSlice.endpoints.getSchedules.select();
 
 // creates memoized selector
-const selectNotesData = createSelector(
-  selectNotesResult,
-  (notesResult) => notesResult.data // normalized state object with ids & entities
+const selectSchedulesData = createSelector(
+  selectSchedulesResult,
+  (schedulesResult) => schedulesResult.data // normalized state object with ids & entities
 );
 
 //getSelectors creates these selectors and we rename them with aliases using destructuring
 export const {
   selectAll: selectAllNotes,
-  selectById: selectNoteById,
+  selectById: selectScheduleById,
   selectIds: selectNoteIds,
   // Pass in a selector that returns the notes slice of state
-} = notesAdapter.getSelectors(
-  (state) => selectNotesData(state) ?? initialState
+} = schedulesAdapter.getSelectors(
+  (state) => selectSchedulesData(state) ?? initialState
 );

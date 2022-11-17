@@ -18,6 +18,7 @@ import PersistLogin from "./features/auth/PersistLogin";
 import RequireAuth from "./features/auth/RequireAuth";
 import { ROLES } from "./config/roles";
 import useTitle from "./hooks/useTitle";
+import SingleSchedulePage from "./features/notes/SingleSchedulePage";
 
 function App() {
   useTitle("Demmed VAT");
@@ -58,7 +59,7 @@ function App() {
 
                 <Route path="schedules">
                   <Route index element={<ScheduleList />} />
-                  <Route path=":id" element={<EditSchedule />} />
+                  <Route path=":id" element={<SingleSchedulePage />} />
                   <Route path="new" element={<NewSchedule />} />
                 </Route>
               </Route>

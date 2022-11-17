@@ -22,9 +22,9 @@ const Welcome = () => {
       <p>
         <Link to="/dash/schedules">View Schedules</Link>
       </p>
-      <p>
+      {/* <p>
         <Link to="/dash/notes">View Notes</Link>
-      </p>
+      </p> */}
 
       {/* <p>
         <Link to="/dash/notes/new">Add New Note</Link>
