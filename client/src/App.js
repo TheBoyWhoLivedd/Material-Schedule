@@ -1,23 +1,27 @@
-import { Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import Public from './components/Public'
-import Login from './features/auth/Login';
-import DashLayout from './components/DashLayout'
-import Welcome from './features/auth/Welcome'
-import NotesList from './features/notes/NotesList'
-import UsersList from './features/users/UsersList'
-import EditUser from './features/users/EditUser'
-import NewUserForm from './features/users/NewUserForm'
-import EditNote from './features/notes/EditNote'
-import NewNote from './features/notes/NewNote'
-import Prefetch from './features/auth/Prefetch'
-import PersistLogin from './features/auth/PersistLogin'
-import RequireAuth from './features/auth/RequireAuth'
-import { ROLES } from './config/roles'
-import useTitle from './hooks/useTitle';
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Public from "./components/Public";
+import Login from "./features/auth/Login";
+import DashLayout from "./components/DashLayout";
+import Welcome from "./features/auth/Welcome";
+import NotesList from "./features/notes/NotesList";
+import ScheduleList from "./features/notes/ScheduleList";
+import UsersList from "./features/users/UsersList";
+import EditUser from "./features/users/EditUser";
+import NewUserForm from "./features/users/NewUserForm";
+import EditNote from "./features/notes/EditNote";
+import EditSchedule from "./features/notes/EditSchedule";
+import NewNote from "./features/notes/NewNote";
+import NewSchedule from "./features/notes/NewSchedule";
+import Prefetch from "./features/auth/Prefetch";
+import PersistLogin from "./features/auth/PersistLogin";
+import RequireAuth from "./features/auth/RequireAuth";
+import { ROLES } from "./config/roles";
+import useTitle from "./hooks/useTitle";
+import SingleSchedulePage from "./features/notes/SingleSchedulePage";
 
 function App() {
-  useTitle('Dan D. Repairs')
+  useTitle("Demmed VAT");
 
   return (
     <Routes>
@@ -28,13 +32,18 @@ function App() {
 
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
-          <Route element={<RequireAuth allowedRoles={[...Object.values(ROLES)]} />}>
+          <Route
+            element={<RequireAuth allowedRoles={[...Object.values(ROLES)]} />}
+          >
             <Route element={<Prefetch />}>
               <Route path="dash" element={<DashLayout />}>
-
                 <Route index element={<Welcome />} />
 
-                <Route element={<RequireAuth allowedRoles={[ROLES.Manager, ROLES.Admin]} />}>
+                <Route
+                  element={
+                    <RequireAuth allowedRoles={[ROLES.Manager, ROLES.Admin]} />
+                  }
+                >
                   <Route path="users">
                     <Route index element={<UsersList />} />
                     <Route path=":id" element={<EditUser />} />
@@ -48,13 +57,20 @@ function App() {
                   <Route path="new" element={<NewNote />} />
                 </Route>
 
-              </Route>{/* End Dash */}
+                <Route path="schedules">
+                  <Route index element={<ScheduleList />} />
+                  <Route path=":id" element={<SingleSchedulePage />} />
+                  <Route path="new" element={<NewSchedule />} />
+                </Route>
+              </Route>
+              {/* End Dash */}
             </Route>
           </Route>
-        </Route>{/* End Protected Routes */}
-
+        </Route>
+        
+        {/* End Protected Routes */}
       </Route>
-    </Routes >
+    </Routes>
   );
 }
 

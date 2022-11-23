@@ -376,3 +376,25 @@ tr {
     position: static;
   }
 }
+
+article {
+  margin: 0.5em;
+  border: 1px solid rgb(29, 128, 40);
+  border-radius: 10px;
+  padding: 1em;
+}
+
+.postCredit {
+  font-size: 1rem;
+}
+
+.postCredit a,
+.postCredit a:visited {
+  margin-right: 0.5rem;
+  color: black;
+}
+
+.postCredit a:hover,
+.postCredit a:focus {
+  color: hsla(0, 0%, 0%, 0.75);
+}
