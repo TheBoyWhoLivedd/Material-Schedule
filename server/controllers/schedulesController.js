@@ -12,6 +12,7 @@ const getAllSchedules = async (req, res) => {
     if (!schedules?.length) {
         return res.status(400).json({ message: "No schedules found" });
     }
+    
 
     // Add username to each schedule before sending the response
     // See Promise.all with map() here: https://youtu.be/4lqJBBEpjRE
