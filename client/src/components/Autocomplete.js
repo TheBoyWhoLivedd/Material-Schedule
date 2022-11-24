@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from "react";
 
-const Autocomplete = ({ suggestions }) => {
+const Autocomplete = ({ suggestions, placeholder }) => {
     const [activeSuggestion, setActiveSuggestion] = useState(0);
     const [filteredSuggestions, setFilteredSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -86,7 +86,7 @@ const Autocomplete = ({ suggestions }) => {
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 value={userInput}
-                placeholder="Select Material..."
+                placeholder={placeholder}
             />
             {suggestionsListComponent}
         </Fragment>

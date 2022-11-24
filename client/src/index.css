@@ -471,3 +471,14 @@ input {
 .suggestions li:not(:last-of-type) {
     border-bottom: 1px solid #999;
 }
+
+.button {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin-top: 1.5rem;
+    color: #100458;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    width: 350px;
+    border-radius: 0.5rem;
+}
