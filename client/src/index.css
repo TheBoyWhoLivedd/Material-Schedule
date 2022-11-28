@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
-@import 'bootstrap/dist/css/bootstrap.min.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -68,29 +68,13 @@
 body {
   font-family: "Nunito", sans-serif;
   min-height: 100vh;
-  /* background: #f5f5f5; */
-  display: grid;
   background-color: var(--BGCOLOR);
   color: var(--COLOR);
-  background-image: url('./img/background.jpg');
+  background-image: url("./img/background.jpg");
   background-size: cover;
   background-position: top right;
-  background-blend-mode: multiply; */
+  background-blend-mode: multiply;
 }
-
-/* sign up form style */
-  @media (min-width: 768px) {
-  .gradient-form {
-  height: 100vh !important;
-  }
-  }
-  @media (min-width: 769px) {
-  .gradient-custom-2 {
-  border-top-right-radius: .3rem;
-  border-bottom-right-radius: .3rem;
-  }
-  }
-/* sign up form style */
 
 input,
 button,
