@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
-// import Autocomplete from "./Autocomplete";
-import Autocomplete from "@mui/material/Autocomplete";
+import { Autocomplete } from "@mui/material";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
 import {
@@ -11,6 +10,7 @@ import {
 } from "../../assets/data";
 const MaterialAddForm = ({ formData = {} }) => {
   const [options, setOptions] = useState(formData);
+  console.log(options);
 
   const handleOnSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
