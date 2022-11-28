@@ -8,9 +8,8 @@ router.use(verifyJWT);
 router
   .route("/")
   .get(schedulesController.getAllSchedules)
-  .post(schedulesController.createNewSchedule);
-router
-  .route("/:scheduleId")
+  .post(schedulesController.createNewSchedule)
+
   .patch(schedulesController.updateSchedule)
   .delete(schedulesController.deleteSchedule);
 

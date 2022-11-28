@@ -8,11 +8,11 @@ const scheduleSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
-    scheduleTitle: {
+    title: {
       type: String,
       // required: true,
     },
-    scheduleDescription: {
+    description: {
       type: String,
       // required: true,
     },

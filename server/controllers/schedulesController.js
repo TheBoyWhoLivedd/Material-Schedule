@@ -5,10 +5,10 @@ const User = require("../models/User");
 // @route GET /schedules
 // @access Private
 const getAllSchedules = async (req, res) => {
-  // Get all schedules from MongoDB
+  // Get all notes from MongoDB
   const schedules = await Schedule.find().lean();
 
-  // If no schedules
+  // If no notes
   if (!schedules?.length) {
     return res.status(400).json({ message: "No schedules found" });
   }
@@ -30,8 +30,8 @@ const getAllSchedules = async (req, res) => {
 // @route POST /schedules
 // @access Private
 const createNewSchedule = async (req, res) => {
-  const { user, title } = req.body;
-
+  const { user, title, description } = req.body;
+  console.log(title);
   // Confirm data
   if (!user || !title) {
     return res.status(400).json({ message: "All fields are required" });
@@ -48,7 +48,7 @@ const createNewSchedule = async (req, res) => {
   }
 
   // Create and store the new user
-  const Schedule = await Schedule.create({ user, title });
+  const schedule = await Schedule.create({ user, title });
 
   if (schedule) {
     // Created
@@ -62,56 +62,37 @@ const createNewSchedule = async (req, res) => {
 // @route PATCH /schedules
 // @access Private
 const updateSchedule = async (req, res) => {
-  const { title, description } = req.body;
-  if (!req.params.scheduleId) {
-    res.status(401).send({
-      statusType: "Conflict",
-      message: `Please provide an id`,
-    });
-    return;
-  }
-  const scheduleId = req.params.scheduleId;
+  const { id, user, title } = req.body;
 
   // Confirm data
-  if (!title && !description) {
-    return res
-      .status(400)
-      .json({ message: "Please send either title or description" });
+  if (!id || !user || !title) {
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   // Confirm schedule exists to update
-  const schedule = await Schedule.findById(scheduleId).catch((err) => {
-    return res
-      .status(400)
-      .json({ message: `Schedule with id ${scheduleId} is not found` });
-  });
+  const schedule = await Schedule.findById(id).exec();
+
+  if (!schedule) {
+    return res.status(400).json({ message: "Schedule not found" });
+  }
 
   // Check for duplicate title
-  if (title) {
-    const duplicate = await Schedule.findOne({ title })
-      .collation({ locale: "en", strength: 2 })
-      .lean()
-      .exec();
+  const duplicate = await Schedule.findOne({ title })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
 
-    // Allow renaming of the original note
-    if (duplicate && duplicate?._id.toString() !== scheduleId) {
-      return res.status(409).json({ message: "Duplicate Schedule title" });
-    }
+  // Allow renaming of the original note
+  if (duplicate && duplicate?._id.toString() !== id) {
+    return res.status(409).json({ message: "Duplicate Schedule title" });
   }
-  // if (title) {
-  //   schedule.title = title;
-  // }
-  // if (description) {
-  //   schedule.description = description;
-  // }
-  // const updatedSchedule = await schedule.save();
-  await Schedule.updateOne(
-    { _id: schedule.id },
-    { description: "Dfsafads ffas fsad " }
-  );
 
-  res.json(`'her' updated`);
-  // res.json(`'${updatedSchedule.title}' updated`);
+  schedule.user = user;
+  schedule.title = title;
+
+  const updatedSchedule = await schedule.save();
+
+  res.json(`'${updatedSchedule.title}' updated`);
 };
 
 // @desc Delete a note
@@ -125,7 +106,7 @@ const deleteSchedule = async (req, res) => {
     return res.status(400).json({ message: "Schedule ID required" });
   }
 
-  // Confirm schedule exists to delete
+  // Confirm note exists to delete
   const schedule = await Note.findById(id).exec();
 
   if (!schedule) {
