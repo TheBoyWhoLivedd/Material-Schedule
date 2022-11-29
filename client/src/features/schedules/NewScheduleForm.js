@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Box } from "@mui/system";
+import MenuItem from '@mui/material/MenuItem';
 
 const NewScheduleForm = ({ users }) => {
   const [addNewSchedule, { isLoading, isSuccess, isError, error }] =
@@ -15,6 +16,8 @@ const NewScheduleForm = ({ users }) => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
+  const [funder, setFunder] = useState("");
+  const [contractor, setContractor] = useState("");
   const [projectID, setProjectID] = useState("");
 
   const [description, setDescription] = useState("");
@@ -30,10 +33,12 @@ const NewScheduleForm = ({ users }) => {
   }, [isSuccess, navigate]);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
+  const onFunderChanged = (e) => setFunder(e.target.value);
+  const onContractorChanged = (e) => setContractor(e.target.value);
   const onTextChanged = (e) => setDescription(e.target.value);
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
-  const canSave = [title, description, userId].every(Boolean) && !isLoading;
+  const canSave = [title, userId].every(Boolean) && !isLoading;
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
@@ -44,10 +49,10 @@ const NewScheduleForm = ({ users }) => {
 
   const options = users.map((user) => {
     return (
-      <option key={user.id} value={user.id}>
+      <MenuItem key={user.id} value={user.id}>
         {" "}
         {user.username}
-      </option>
+      </MenuItem>
     );
   });
 
@@ -68,20 +73,58 @@ const NewScheduleForm = ({ users }) => {
             </button>
           </div>
         </div>
-        <label className="form__label" htmlFor="title">
-          Title:
-        </label>
-        <input
-          className={`form__input ${validTitleClass}`}
-          id="title"
-          name="title"
-          type="text"
-          autoComplete="off"
-          value={title}
-          onChange={onTitleChanged}
-        />
 
-        <label className="form__label" htmlFor="text">
+        <Box
+          sx={{
+            width: 800,
+            maxWidth: "100%",
+          }}
+        >
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="title"
+            name="title"
+            type="text"
+            autoComplete="off"
+            value={title}
+            size="normal"
+            variant="outlined"
+            label="Project Title"
+            onChange={onTitleChanged}
+            margin="normal"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="funder"
+            name="funder"
+            type="text"
+            autoComplete="off"
+            value={funder}
+            size="normal"
+            variant="outlined"
+            label="Project Funder"
+            onChange={onFunderChanged}
+            margin="normal"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="contractor"
+            name="contractor"
+            type="text"
+            autoComplete="off"
+            value={contractor}
+            size="normal"
+            variant="outlined"
+            label="Contractor's Name"
+            onChange={onContractorChanged}
+            margin="normal"
+          />
+
+          
+          
+        </Box>
+
+        {/* <label className="form__label" htmlFor="text">
           Description
         </label>
         <input
@@ -90,23 +133,29 @@ const NewScheduleForm = ({ users }) => {
           name="text"
           value={description}
           onChange={onTextChanged}
-        />
+        /> */}
 
         <label
-          className="form__label form__checkbox-container"
+          // className="form__label form__checkbox-container"
           htmlFor="username"
         >
           ASSIGNED TO:
         </label>
-        <select
+        <div >
+
+        <TextField
+          className="select"
+          select
+          variant="standard"
           id="username"
           name="username"
-          className="form__select"
+          
           value={userId}
           onChange={onUserIdChanged}
         >
           {options}
-        </select>
+        </TextField>
+        </div>
       </form>
     </>
   );

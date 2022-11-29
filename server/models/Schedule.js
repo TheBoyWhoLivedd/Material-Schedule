@@ -16,6 +16,7 @@ const scheduleSchema = new mongoose.Schema(
       type: String,
       // required: true,
     },
+     
     children: [
       {
         materialName: {
@@ -27,7 +28,7 @@ const scheduleSchema = new mongoose.Schema(
         computedValue: {
           type: Number,
         },
-        parameters: [],
+        parameters: {},
       },
     ],
   },
