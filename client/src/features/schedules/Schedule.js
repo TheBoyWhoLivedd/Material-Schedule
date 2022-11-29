@@ -1,42 +1,63 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { selectScheduleById, useGetSchedulesQuery } from "./schedulesApiSlice";
 import { memo } from "react";
 import { useSelector } from "react-redux";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
 
 const Schedule = ({ scheduleId }) => {
-    const { schedule } = useGetSchedulesQuery("schedulesList", {
-        selectFromResult: ({ data }) => ({
-            schedule: data?.entities[scheduleId],
-        }),
+  const { schedule } = useGetSchedulesQuery("schedulesList", {
+    selectFromResult: ({ data }) => ({
+      schedule: data?.entities[scheduleId],
+    }),
+  });
+  console.log(schedule);
+
+  const navigate = useNavigate();
+
+  if (schedule) {
+    const created = new Date(schedule.createdAt).toLocaleString("en-US", {
+      day: "numeric",
+      month: "long",
     });
-    console.log(schedule);
+    // const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
 
+    const handleEdit = () => navigate(`/dash/notes/${scheduleId}`);
 
-    const navigate = useNavigate();
+    return (
+      <>
+        <Grid item key={schedule.id} xs={12} sm={6} md={4}>
+          <Card
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1 }}>
+              <Typography gutterBottom variant="h5" component="h2">
+                {schedule.title}
+              </Typography>
+              <Typography>{schedule.description}</Typography>
+              <Typography>By {schedule.username}</Typography>
+              <Typography>{created}</Typography>
+            </CardContent>
+            <CardActions>
+              <Link to={`/dash/schedules/${schedule.id}`}>
+                <Button size="small">View</Button>
+              </Link>
 
-    if (schedule) {
-        const created = new Date(schedule.createdAt).toLocaleString("en-US", {
-            day: "numeric",
-            month: "long",
-        });
-        // const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
-
-        const handleEdit = () => navigate(`/dash/notes/${scheduleId}`);
-
-        return (
-            <article>
-                <h2>{schedule.title}</h2>
-
-                <h3>{schedule.description}</h3>
-
-                <p className="postCredit">{schedule.username}</p>
-
-                <Link to={`/dash/schedules/${schedule.id}`}>View</Link>
-            </article>
-        );
-    } else return null;
+              <Button size="small">Edit</Button>
+            </CardActions>
+          </Card>
+        </Grid>
+      </>
+    );
+  } else return null;
 };
 
 const memoizedNote = memo(Schedule);

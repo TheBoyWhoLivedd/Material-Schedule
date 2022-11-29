@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "./authSlice";
 import { useLoginMutation } from "./authApiSlice";
@@ -12,8 +12,8 @@ import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
+import { Link as MaterialLink } from "@mui/material";
+
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
@@ -69,14 +69,14 @@ const Login = () => {
     return (
       <Typography
         variant="body2"
-        color="text.secondary"
+        color="text.primary"
         align="center"
         {...props}
       >
         {"Copyright © "}
-        <Link color="inherit" href="https://ura.go.ug/">
+        <MaterialLink color="inherit" href="https://ura.go.ug/">
           Uganda Revenue Authority
-        </Link>{" "}
+        </MaterialLink>{" "}
         {new Date().getFullYear()}
         {"."}
       </Typography>
@@ -93,6 +93,7 @@ const Login = () => {
 
   const content = (
     <>
+      <CssBaseline />
       <section className="public">
         <header>
           <h1>DEEMED VAT UNIT</h1>
@@ -104,7 +105,6 @@ const Login = () => {
 
           <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
-              <CssBaseline />
               <Box
                 sx={{
                   marginTop: 8,
