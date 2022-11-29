@@ -107,7 +107,7 @@ const deleteSchedule = async (req, res) => {
   }
 
   // Confirm note exists to delete
-  const schedule = await Note.findById(id).exec();
+  const schedule = await Schedule.findById(id).exec();
 
   if (!schedule) {
     return res.status(400).json({ message: "Schedule not found" });
