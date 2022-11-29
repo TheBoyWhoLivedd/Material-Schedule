@@ -45,7 +45,7 @@ const MaterialAddForm = ({ formData = {} }) => {
           )}
         />
 
-        {options?.materials === "Cement" && (
+        {options?.materials === "Concrete" && (
           <>
             <Autocomplete
               id="concreteClassOptions_id"

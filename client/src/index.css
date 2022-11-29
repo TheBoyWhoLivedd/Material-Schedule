@@ -260,8 +260,7 @@ tr {
   display: flex;
   flex-flow: column nowrap;
   gap: 0.75em;
-  /* max-width: 800px; */
-  
+  max-width: 800px;
 }
 
 .form__checkbox-container {
@@ -288,13 +287,6 @@ tr {
 .form__submit-button {
   padding: 0.5em;
   border-radius: 15px;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 10px;
-  width: 40rem;
 }
 
 .form__input--text {
@@ -490,18 +482,4 @@ input {
   line-height: 1.25rem;
   width: 350px;
   border-radius: 0.5rem;
-}
-
-.select{
-  min-width: '200px';
-  background-color: 'white';
-  color: rgb(223, 217, 217);
-  border-color: 'grey';
-  border-style:'solid';
-  border-width: '2px';
-  border-radius: '4px';
-  padding-left : '24px';
-  padding-top: '14px';
-  padding-bottom: '15px';
-
 }
