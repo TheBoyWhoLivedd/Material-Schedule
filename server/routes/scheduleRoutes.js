@@ -25,3 +25,5 @@ router
   .delete(schedulesController.deleteScheduleMaterial)
   .patch(schedulesController.updateScheduleMaterial);
 module.exports = router;
+
+//Deduction routes

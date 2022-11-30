@@ -30,10 +30,10 @@ const getAllSchedules = async (req, res) => {
 // @route POST /schedules
 // @access Private
 const createNewSchedule = async (req, res) => {
-  const { user, title, description } = req.body;
-  console.log(title);
+  const { user, title, contractor, funder, program } = req.body;
+
   // Confirm data
-  if (!user || !title || !description) {
+  if (!user || !title || !contractor || !funder || !program) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -50,7 +50,7 @@ const createNewSchedule = async (req, res) => {
   }
 
   // Create and store the new user
-  const schedule = await Schedule.create({ user, title, description });
+  const schedule = await Schedule.create({ user, title, contractor, funder, program });
 
   if (schedule) {
     // Created

@@ -12,7 +12,15 @@ const scheduleSchema = new mongoose.Schema(
       type: String,
       // required: true,
     },
-    description: {
+    contractor: {
+      type: String,
+      // required: true,
+    },
+    funder: {
+      type: String,
+      // required: true,
+    },
+    program: {
       type: String,
       // required: true,
     },

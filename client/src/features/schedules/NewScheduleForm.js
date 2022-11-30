@@ -7,7 +7,8 @@ import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Box } from "@mui/system";
-import MenuItem from '@mui/material/MenuItem';
+import MenuItem from "@mui/material/MenuItem";
+import { FormLabel } from "@mui/material";
 
 const NewScheduleForm = ({ users }) => {
   const [addNewSchedule, { isLoading, isSuccess, isError, error }] =
@@ -16,34 +17,43 @@ const NewScheduleForm = ({ users }) => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
+  const [program, setProgram] = useState("");
   const [funder, setFunder] = useState("");
   const [contractor, setContractor] = useState("");
-  const [projectID, setProjectID] = useState("");
 
-  const [description, setDescription] = useState("");
   const [userId, setUserId] = useState(users[0].id);
 
   useEffect(() => {
     if (isSuccess) {
       setTitle("");
-      setDescription("");
+      setProgram("");
+      setFunder("");
+      setContractor("");
+
       setUserId("");
       navigate("/dash/schedules");
     }
   }, [isSuccess, navigate]);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
+  const onProgramChanged = (e) => setProgram(e.target.value);
   const onFunderChanged = (e) => setFunder(e.target.value);
   const onContractorChanged = (e) => setContractor(e.target.value);
-  const onTextChanged = (e) => setDescription(e.target.value);
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
-  const canSave = [title, userId].every(Boolean) && !isLoading;
+  const canSave =
+    [title, userId, program, funder, contractor].every(Boolean) && !isLoading;
 
   const onSaveNoteClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
-      await addNewSchedule({ user: userId, title, description });
+      await addNewSchedule({
+        user: userId,
+        title,
+        program,
+        funder,
+        contractor,
+      });
     }
   };
 
@@ -58,7 +68,6 @@ const NewScheduleForm = ({ users }) => {
 
   const errClass = isError ? "errmsg" : "offscreen";
   const validTitleClass = !title ? "form__input--incomplete" : "";
-  const validTextClass = !description ? "form__input--incomplete" : "";
 
   const content = (
     <>
@@ -80,6 +89,19 @@ const NewScheduleForm = ({ users }) => {
             maxWidth: "100%",
           }}
         >
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="program"
+            name="program"
+            type="text"
+            autoComplete="off"
+            value={program}
+            size="normal"
+            variant="outlined"
+            label="Program Title"
+            onChange={onProgramChanged}
+            margin="normal"
+          />
           <TextField
             className={`form__input ${validTitleClass}`}
             id="title"
@@ -107,7 +129,14 @@ const NewScheduleForm = ({ users }) => {
             margin="normal"
           />
           <TextField
-            className={`form__input ${validTitleClass}`}
+            sx={{
+              width: { sm: 200, md: 640 },
+              "& .MuiInputBase-root": {
+                height: 60,
+              },
+            }}
+            inputProps={{ style: { fontFamily: "Arial", color: "white" } }}
+            style={{ color: "white" }}
             id="contractor"
             name="contractor"
             type="text"
@@ -120,8 +149,29 @@ const NewScheduleForm = ({ users }) => {
             margin="normal"
           />
 
-          
-          
+          <FormLabel
+            // className="form__label form__checkbox-container"
+            htmlFor="username"
+          >
+            <TextField
+              sx={{
+                width: { sm: 200, md: 300 },
+                "& .MuiInputBase-root": {
+                  height: 60,
+                },
+              }}
+              className="select"
+              select
+              variant="outlined"
+              id="username"
+              name="username"
+              label="ASSIGNED TO"
+              value={userId}
+              onChange={onUserIdChanged}
+            >
+              {options}
+            </TextField>
+          </FormLabel>
         </Box>
 
         {/* <label className="form__label" htmlFor="text">
@@ -134,28 +184,6 @@ const NewScheduleForm = ({ users }) => {
           value={description}
           onChange={onTextChanged}
         /> */}
-
-        <label
-          // className="form__label form__checkbox-container"
-          htmlFor="username"
-        >
-          ASSIGNED TO:
-        </label>
-        <div >
-
-        <TextField
-          className="select"
-          select
-          variant="standard"
-          id="username"
-          name="username"
-          
-          value={userId}
-          onChange={onUserIdChanged}
-        >
-          {options}
-        </TextField>
-        </div>
       </form>
     </>
   );
