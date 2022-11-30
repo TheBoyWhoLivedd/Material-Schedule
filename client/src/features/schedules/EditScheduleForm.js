@@ -109,7 +109,7 @@ const EditScheduleForm = ({ schedule, users }) => {
 
       <form className="form" onSubmit={(e) => e.preventDefault()}>
         <div className="form__title-row">
-          <h2>Edit Note #{schedule.ticket}</h2>
+          <h2>Edit Schedule #{schedule.ticket}</h2>
           <div className="form__action-buttons">
             <button
               className="icon-button"

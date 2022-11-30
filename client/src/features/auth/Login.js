@@ -13,11 +13,12 @@ import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import { Link as MaterialLink } from "@mui/material";
-
+import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import Paper from "@mui/material/Paper";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const Login = () => {
@@ -92,96 +93,122 @@ const Login = () => {
   if (isLoading) return <PulseLoader color={"#FFF"} />;
 
   const content = (
-    <>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <section className="public">
-        <header>
+      <section className="">
+        {/* <header>
           <h1>DEEMED VAT UNIT</h1>
-        </header>
-        <main className="login">
+        </header> */}
+        <main className="">
           <p ref={errRef} className={errClass} aria-live="assertive">
             {errMsg}
           </p>
 
-          <ThemeProvider theme={theme}>
-            <Container component="main" maxWidth="xs">
-              <Box
+          <>
+            <Grid container component="main" sx={{ height: "100vh" }}>
+              <Grid
+                item
+                xs={false}
+                sm={4}
+                md={7}
                 sx={{
-                  marginTop: 8,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
+                  backgroundImage: "url(./img/ura.jpg)",
+                  backgroundRepeat: "no-repeat",
+                  backgroundColor: (t) =>
+                    t.palette.mode === "light"
+                      ? t.palette.grey[50]
+                      : t.palette.grey[900],
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
                 }}
+              />
+              <Grid
+                item
+                xs={12}
+                sm={8}
+                md={5}
+                component={Paper}
+                elevation={6}
+                square
               >
-                <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-                  <LockOutlinedIcon />
-                </Avatar>
-                <Typography component="h1" variant="h5">
-                  Employee Login
-                </Typography>
                 <Box
-                  component="form"
-                  onSubmit={handleSubmit}
-                  noValidate
-                  sx={{ mt: 1 }}
+                  sx={{
+                    marginTop: 8,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
                 >
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="username"
-                    label="Username"
-                    name="username"
-                    autoComplete="off"
-                    autoFocus
-                    inputRef={userRef}
-                    value={username}
-                    onChange={handleUserInput}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    onChange={handlePwdInput}
-                    value={password}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        value="remember"
-                        color="primary"
-                        id="persist"
-                        onChange={handleToggle}
-                        checked={persist}
-                      />
-                    }
-                    label="Trust This Device"
-                  />
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
+                  <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+                    <LockOutlinedIcon />
+                  </Avatar>
+                  <Typography component="h1" variant="h5">
+                    Employee Login
+                  </Typography>
+                  <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    noValidate
+                    sx={{ mt: 1 }}
                   >
-                    Sign In
-                  </Button>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="username"
+                      label="Username"
+                      name="username"
+                      autoComplete="off"
+                      autoFocus
+                      inputRef={userRef}
+                      value={username}
+                      onChange={handleUserInput}
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      id="password"
+                      autoComplete="current-password"
+                      onChange={handlePwdInput}
+                      value={password}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          value="remember"
+                          color="primary"
+                          id="persist"
+                          onChange={handleToggle}
+                          checked={persist}
+                        />
+                      }
+                      label="Trust This Device"
+                    />
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2 }}
+                    >
+                      Sign In
+                    </Button>
+                    <Copyright sx={{ mt: 8, mb: 4 }} />
+                  </Box>
                 </Box>
-              </Box>
-              <Copyright sx={{ mt: 8, mb: 4 }} />
-            </Container>
-          </ThemeProvider>
+              </Grid>
+            </Grid>
+          </>
         </main>
 
-        <footer>
+        {/* <footer>
           <Link to="/">Back to Home</Link>
-        </footer>
+        </footer> */}
       </section>
-    </>
+    </ThemeProvider>
   );
 
   return content;

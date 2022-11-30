@@ -22,6 +22,7 @@ const MaterialAddForm = ({ formData = {} }) => {
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
+
     console.log(options);
     if (Object.keys(formData).length === 0) {
       // Edit Material
@@ -32,6 +33,15 @@ const MaterialAddForm = ({ formData = {} }) => {
   return (
     <div>
       <form onSubmit={handleOnSubmit} className="inputsForm">
+        <TextField
+          type="text"
+          name="description"
+          label="Description"
+          placeholder="Enter Description"
+          onChange={handleOnChange}
+          value={options?.description}
+          required
+        />
         <Autocomplete
           id="materials_id"
           options={materialsData.map((option) => option)}
@@ -60,7 +70,7 @@ const MaterialAddForm = ({ formData = {} }) => {
               )}
             />
             <TextField
-              type="text"
+              type="number"
               name="cum"
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"

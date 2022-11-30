@@ -33,7 +33,7 @@ const createNewSchedule = async (req, res) => {
   const { user, title, description } = req.body;
   console.log(title);
   // Confirm data
-  if (!user || !title) {
+  if (!user || !title || !description) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -44,11 +44,13 @@ const createNewSchedule = async (req, res) => {
     .exec();
 
   if (duplicate) {
-    return res.status(409).json({ message: "Duplicate Schedule title" });
+    return res
+      .status(409)
+      .json({ message: `Schedule with title ${title} exists` });
   }
 
   // Create and store the new user
-  const schedule = await Schedule.create({ user, title });
+  const schedule = await Schedule.create({ user, title, description });
 
   if (schedule) {
     // Created
@@ -62,15 +64,15 @@ const createNewSchedule = async (req, res) => {
 // @route PATCH /schedules
 // @access Private
 const updateSchedule = async (req, res) => {
-  const { id, user, title } = req.body;
-
+  const { title, description } = req.body;
+  const scheduleId = req.params.scheduleId;
   // Confirm data
-  if (!id || !user || !title) {
-    return res.status(400).json({ message: "All fields are required" });
+  if (!title && !description) {
+    return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
   // Confirm schedule exists to update
-  const schedule = await Schedule.findById(id).exec();
+  const schedule = await Schedule.findById(scheduleId).exec();
 
   if (!schedule) {
     return res.status(400).json({ message: "Schedule not found" });
@@ -83,16 +85,23 @@ const updateSchedule = async (req, res) => {
     .exec();
 
   // Allow renaming of the original note
-  if (duplicate && duplicate?._id.toString() !== id) {
+  if (duplicate && duplicate?._id.toString() !== scheduleId) {
     return res.status(409).json({ message: "Duplicate Schedule title" });
   }
+  if (title) {
+    schedule.title = title;
+  }
 
-  schedule.user = user;
-  schedule.title = title;
+  if (description) {
+    schedule.description = description;
+  }
 
   const updatedSchedule = await schedule.save();
 
-  res.json(`'${updatedSchedule.title}' updated`);
+  res.json({
+    "message ": "Schedule updated successfully",
+    schedule: updatedSchedule,
+  });
 };
 
 // @desc Delete a note
@@ -120,9 +129,148 @@ const deleteSchedule = async (req, res) => {
   res.json(reply);
 };
 
+const addScheduleMaterial = async (req, res) => {
+  const { name, description, parameters } = req.body;
+  const scheduleId = req.params.scheduleId;
+  // Confirm data
+  if (!name || !description || !parameters) {
+    return res.status(400).json({ message: "Please provide a relevant field" });
+  }
+
+  // Confirm schedule exists to update
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  // Calculate here
+  // Edit these
+  schedule.materials.push({
+    materialName: name,
+    materialDescription: description,
+    parameters: parameters,
+  });
+
+  const updatedSchedule = await schedule.save();
+
+  res.json({
+    "message ": "Material added successfully",
+    schedule: updatedSchedule,
+  });
+};
+
+const deleteScheduleMaterial = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const materialId = req.params.materialId;
+
+  // Confirm schedule exists to update
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  // Find material with id
+  const material = schedule.materials.id(materialId);
+
+  if (!material) {
+    return res.status(404).json({
+      status: "fail",
+      message: `Material with id ${materialId} not found`,
+    });
+  }
+
+  // delete material
+  schedule.materials.remove(material);
+
+  await schedule.save();
+
+  res.json({
+    "message ": "Material deleted successfully",
+  });
+};
+
+const getScheduleDetails = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+
+  // Confirm schedule exists
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  res.status(200).json({
+    "status ": "Success",
+    schedule: schedule,
+  });
+};
+
+const updateScheduleMaterial = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const materialId = req.params.materialId;
+  // Validate update data
+  const { name, description, parameters } = req.body;
+
+  // Confirm data
+  if (!name && !description && !parameters) {
+    return res.status(400).json({ message: "Please provide a relevant field" });
+  }
+
+  // Confirm schedule exists to update
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  // Find material with id
+  const material = schedule.materials.id(materialId);
+
+  if (!material) {
+    return res.status(404).json({
+      status: "fail",
+      message: `Material with id ${materialId} not found`,
+    });
+  }
+
+  schedule.materials.remove(material);
+
+  // update material
+  if (name) {
+    material.name = name;
+  }
+  if (description) {
+    material.description = description;
+  }
+  if (parameters) {
+    material.parameters = parameters;
+  }
+  schedule.materials.push(material);
+
+  await schedule.save();
+
+  res.json({
+    "message ": "Material updated successfully",
+  });
+};
+
 module.exports = {
   getAllSchedules,
   createNewSchedule,
   updateSchedule,
   deleteSchedule,
+  addScheduleMaterial,
+  deleteScheduleMaterial,
+  getScheduleDetails,
+  updateScheduleMaterial,
 };

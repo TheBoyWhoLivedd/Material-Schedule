@@ -50,8 +50,11 @@ const Schedule = ({ scheduleId }) => {
               <Link to={`/dash/schedules/${schedule.id}`}>
                 <Button size="small">View</Button>
               </Link>
-
+              <Link to={`/dash/schedules/edit/${schedule.id}`}>
+                
               <Button size="small">Edit</Button>
+              </Link>
+
             </CardActions>
           </Card>
         </Grid>
