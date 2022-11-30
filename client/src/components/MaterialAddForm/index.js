@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-// import Autocomplete from "./Autocomplete";
+import { useAddNewMaterialMutation } from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
@@ -9,7 +9,10 @@ import {
   concreteClassOptions,
   beamSizeOptions,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {} }) => {
+const MaterialAddForm = ({ formData = {}, id }) => {
+  const [addNewMaterial, { isLoading, isSuccess, isError, error }] =
+    useAddNewMaterialMutation();
+
   const [options, setOptions] = useState(formData);
 
   const handleOnSelect = (e, name) => {
@@ -20,19 +23,24 @@ const MaterialAddForm = ({ formData = {} }) => {
     console.log(e.target.value);
   };
 
-  const handleOnSubmit = (e) => {
+  // Add Material
+  const onSaveMaterialClicked = async (e) => {
     e.preventDefault();
-
     console.log(options);
-    if (Object.keys(formData).length === 0) {
-      // Edit Material
-    } else {
-      // Add material
-    }
+    await addNewMaterial({
+      id:id,
+      description: options.description,
+      material: options.material,
+      parameters: {
+        concreteClass: options.concreteClass,
+        cum: options.cum
+      },
+    });
   };
+
   return (
     <div>
-      <form onSubmit={handleOnSubmit} className="inputsForm">
+      <form onSubmit={onSaveMaterialClicked} className="inputsForm">
         <TextField
           type="text"
           name="description"
@@ -45,17 +53,17 @@ const MaterialAddForm = ({ formData = {} }) => {
         <Autocomplete
           id="materials_id"
           options={materialsData.map((option) => option)}
-          name="materials"
+          name="material"
           placeholder="Enter Material"
-          onSelect={(e) => handleOnSelect(e, "materials")}
-          value={options?.materials}
+          onSelect={(e) => handleOnSelect(e, "material")}
+          value={options?.material}
           required={true}
           renderInput={(params) => (
             <TextField {...params} label="Materials" required />
           )}
         />
 
-        {options?.materials === "Cement" && (
+        {options?.material === "Cement" && (
           <>
             <Autocomplete
               id="concreteClassOptions_id"

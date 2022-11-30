@@ -47,7 +47,7 @@ const SingleSchedulePage = () => {
             </Button>
           }
         >
-          <MaterialAddForm />
+          <MaterialAddForm id={id} />
         </ModalComponent>
       </div>
       <TableContainer component={Paper}>
@@ -81,7 +81,7 @@ const SingleSchedulePage = () => {
                       </Button>
                     }
                   >
-                    <MaterialAddForm formData={child.parameters} />
+                    <MaterialAddForm formData={child.parameters} id={id} />
                   </ModalComponent>
                 </TableCell>
               </TableRow>

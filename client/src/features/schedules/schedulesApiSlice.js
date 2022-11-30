@@ -65,6 +65,16 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         { type: "Schedule", id: arg.id },
       ],
     }),
+    addNewMaterial: builder.mutation({
+      query: (initialSchedule) => ({
+        url: `schedules/${initialSchedule.id}/materials`,
+        method: "POST",
+        body: {
+          ...initialSchedule,
+        },
+      }),
+      invalidatesTags: [{ type: "Schedule", id: "LIST" }],
+    }),
   }),
 });
 
@@ -73,6 +83,7 @@ export const {
   useAddNewScheduleMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
+  useAddNewMaterialMutation,
 } = schedulesApiSlice;
 
 // returns the query result object

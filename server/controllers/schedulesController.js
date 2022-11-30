@@ -130,10 +130,11 @@ const deleteSchedule = async (req, res) => {
 };
 
 const addScheduleMaterial = async (req, res) => {
-  const { name, description, parameters } = req.body;
+  const { material, description, parameters } = req.body;
   const scheduleId = req.params.scheduleId;
+  console.log(req.params)
   // Confirm data
-  if (!name || !description || !parameters) {
+  if (!material || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
@@ -149,7 +150,7 @@ const addScheduleMaterial = async (req, res) => {
   // Calculate here
   // Edit these
   schedule.materials.push({
-    materialName: name,
+    materialName: material,
     materialDescription: description,
     parameters: parameters,
   });
