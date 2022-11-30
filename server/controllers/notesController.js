@@ -78,7 +78,7 @@ const updateNote = async (req, res) => {
     if (duplicate && duplicate?._id.toString() !== id) {
         return res.status(409).json({ message: 'Duplicate note title' })
     }
-
+    console.log(`the title sent in request is ${title}`)
     note.user = user
     note.title = title
     note.text = text

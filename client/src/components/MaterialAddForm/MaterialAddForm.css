@@ -1,0 +1,14 @@
+.inputsForm {
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 40rem;
+}
+
+.inputsForm input,
+.inputsForm button {
+  width: 100%;
+}
