@@ -1,9 +1,54 @@
+// const { calculateConcreteGivenClass } = require("./Calculations.js");
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
-
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
+
+function calculateConcreteGivenClass(concreteClass, cum) {
+  if (concreteClass === "C25") {
+    let cementKgs = Number(cum) * 6.25;
+    let numCementBags = Number(cum) * 8.3;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
+  } else if (concreteClass === "C20") {
+    let cementKgs = Number(cum) * 6.25;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
+  } else if (concreteClass === "C30") {
+    let cementKgs = Number(cum) * 10.25;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
+  } else if (concreteClass === "C40") {
+    let cementKgs = Number(cum) * 12.43;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
+  }
+}
+
 const getAllSchedules = async (req, res) => {
   // Get all notes from MongoDB
   const schedules = await Schedule.find().lean();
@@ -50,7 +95,13 @@ const createNewSchedule = async (req, res) => {
   }
 
   // Create and store the new user
-  const schedule = await Schedule.create({ user, title, contractor, funder, program });
+  const schedule = await Schedule.create({
+    user,
+    title,
+    contractor,
+    funder,
+    program,
+  });
 
   if (schedule) {
     // Created
@@ -130,10 +181,11 @@ const deleteSchedule = async (req, res) => {
 };
 
 const addScheduleMaterial = async (req, res) => {
-  const { name, description, parameters } = req.body;
+  const { material, description, parameters } = req.body;
   const scheduleId = req.params.scheduleId;
+  console.log(req.params);
   // Confirm data
-  if (!name || !description || !parameters) {
+  if (!material || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
@@ -145,14 +197,36 @@ const addScheduleMaterial = async (req, res) => {
       .status(400)
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
-
-  // Calculate here
+  if (material === "Cement") {
+    // Calculate here
+    const results = calculateConcreteGivenClass(
+      parameters.concreteClass,
+      parameters.cum
+    );
+    console.log(results);
+    schedule.materials.push({
+      materialName: "Cement",
+      materialDescription: description,
+      computedValue: results.cementBags,
+      unit: "Bags",
+      parameters: parameters,
+    });
+    schedule.materials.push({
+      materialName: "Sand",
+      materialDescription: description,
+      computedValue: results.amountofSand,
+      unit: "Kgs",
+      parameters: parameters,
+    });
+    schedule.materials.push({
+      materialName: "Aggregates",
+      materialDescription: description,
+      computedValue: results.amountofAggregates,
+      unit: "Kgs",
+      parameters: parameters,
+    });
+  }
   // Edit these
-  schedule.materials.push({
-    materialName: name,
-    materialDescription: description,
-    parameters: parameters,
-  });
 
   const updatedSchedule = await schedule.save();
 

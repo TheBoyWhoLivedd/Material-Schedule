@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-// import Autocomplete from "./Autocomplete";
+import { useAddNewMaterialMutation } from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
@@ -9,9 +9,12 @@ import {
   concreteClassOptions,
   beamSizeOptions,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {} }) => {
-  const [options, setOptions] = useState(formData);
+const MaterialAddForm = ({ formData = {}, id }) => {
+  const [addNewMaterial, { isLoading, isSuccess, isError, error }] =
+    useAddNewMaterialMutation();
 
+  const [options, setOptions] = useState(formData);
+  console.log(options);
   const handleOnSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
   };
@@ -20,48 +23,53 @@ const MaterialAddForm = ({ formData = {} }) => {
     console.log(e.target.value);
   };
 
-  const handleOnSubmit = (e) => {
+  // Add Material
+  const onSaveMaterialClicked = async (e) => {
     e.preventDefault();
-
     console.log(options);
-    if (Object.keys(formData).length === 0) {
-      // Edit Material
-    } else {
-      // Add material
-    }
+    await addNewMaterial({
+      id: id,
+      description: options.description,
+      material: options.materialName,
+      parameters: {
+        concreteClass: options.concreteClass,
+        cum: options.cum,
+      },
+    });
   };
+
   return (
     <div>
-      <form onSubmit={handleOnSubmit} className="inputsForm">
+      <form onSubmit={onSaveMaterialClicked} className="inputsForm">
         <TextField
           type="text"
           name="description"
           label="Description"
           placeholder="Enter Description"
           onChange={handleOnChange}
-          value={options?.description}
+          value={options?.materialDescription}
           required
         />
         <Autocomplete
           id="materials_id"
           options={materialsData.map((option) => option)}
-          name="materials"
+          name="materialName"
           placeholder="Enter Material"
-          onSelect={(e) => handleOnSelect(e, "materials")}
-          value={options?.materials}
+          onSelect={(e) => handleOnSelect(e, "materialName")}
+          value={options?.materialName}
           required={true}
           renderInput={(params) => (
             <TextField {...params} label="Materials" required />
           )}
         />
 
-        {options?.materials === "Cement" && (
+        {options?.materialName === "Cement" && (
           <>
             <Autocomplete
               id="concreteClassOptions_id"
               options={concreteClassOptions.map((option) => option.class)}
               name="concreteClass"
-              value={options?.concreteClass}
+              value={options?.parameters?.concreteClass}
               placeholder="Choose Concrete Class"
               onSelect={(e) => handleOnSelect(e, "concreteClass")}
               required={true}
@@ -75,11 +83,11 @@ const MaterialAddForm = ({ formData = {} }) => {
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"
               onChange={handleOnChange}
-              value={options?.cum}
+              value={options?.parameters?.cum}
             />
           </>
         )}
-        {options?.materials === "Beams" && (
+        {options?.materialName === "Beams" && (
           <>
             <Autocomplete
               id="beamSizeOptions_id"

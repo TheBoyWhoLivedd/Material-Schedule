@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useGetNotesQuery } from "../notes/notesApiSlice";
+
 import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
@@ -6,7 +8,7 @@ import PulseLoader from "react-spinners/PulseLoader";
 import { selectScheduleById, useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -19,7 +21,9 @@ import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@mui/material";
 import ModalComponent from "../../components/ModalComponent";
 import MaterialAddForm from "../../components/MaterialAddForm";
-import { Plus, Edit } from "feather-icons-react";
+import { Plus, Edit, Trash } from "feather-icons-react";
+import { useDeleteMaterialMutation } from "./schedulesApiSlice";
+
 const SingleSchedulePage = () => {
   useTitle("techNotes: Single Schedule Page");
 
@@ -33,6 +37,18 @@ const SingleSchedulePage = () => {
     }),
   });
   console.log(schedule);
+  const [
+    deleteMaterial,
+    {
+      isSuccess: isDelMaterialSuccess,
+      isError: isDelMaterialError,
+      error: delMaterialerror,
+    },
+  ] = useDeleteMaterialMutation();
+
+  const onDeleteMaterialClicked = async (materialId) => {
+    // await deleteMaterial({ id: schedule.id, _id: materialId });
+  };
 
   let content;
 
@@ -47,7 +63,7 @@ const SingleSchedulePage = () => {
             </Button>
           }
         >
-          <MaterialAddForm />
+          <MaterialAddForm id={id} />
         </ModalComponent>
       </div>
       <TableContainer component={Paper}>
@@ -59,19 +75,20 @@ const SingleSchedulePage = () => {
               <TableCell align="right">UNIT</TableCell>
               <TableCell align="right">QUANTITy</TableCell>
               <TableCell align="right">Edit</TableCell>
+              <TableCell align="right">Delete</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {schedule?.children?.map((child) => (
+            {schedule?.materials?.map((child) => (
               <TableRow
-                key={child.materialName}
+                key={child._id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
                   {child.materialName}
                 </TableCell>
-                <TableCell align="right">{child.itemDescription}</TableCell>
-                <TableCell align="right">Kgs</TableCell>
+                <TableCell align="right">{child.materialDescription}</TableCell>
+                <TableCell align="right">{child.unit}</TableCell>
                 <TableCell align="right">{child.computedValue}</TableCell>
                 <TableCell align="right">
                   <ModalComponent
@@ -81,8 +98,13 @@ const SingleSchedulePage = () => {
                       </Button>
                     }
                   >
-                    <MaterialAddForm formData={child.parameters} />
+                    <MaterialAddForm formData={child} id={id} />
                   </ModalComponent>
+                </TableCell>
+                <TableCell align="right">
+                  <Button onClick={onDeleteMaterialClicked(child._id)}>
+                    <Trash size={20} />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
