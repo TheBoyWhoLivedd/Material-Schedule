@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-
-import { useAddNewMaterialMutation } from "../../features/schedules/schedulesApiSlice";
+import React, { useState, useEffect } from "react";
+import {
+  useAddNewMaterialMutation,
+  useUpdateMaterialMutation,
+} from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
@@ -9,10 +11,17 @@ import {
   concreteClassOptions,
   beamSizeOptions,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {}, id }) => {
-  const [addNewMaterial, { isLoading, isSuccess, isError, error }] =
+const MaterialAddForm = ({ formData = {}, id, schedule }) => {
+  const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
+  const [updateMaterial, { isSuccess }] = useUpdateMaterialMutation();
+
+  useEffect(() => {
+    if (isSuccess || isAddSuccess) {
+      //Set the state that closes the modals
+    }
+  }, [isSuccess, isAddSuccess]);
   const [options, setOptions] = useState(formData);
   console.log(options);
   const handleOnSelect = (e, name) => {
@@ -20,6 +29,7 @@ const MaterialAddForm = ({ formData = {}, id }) => {
   };
   const handleOnChange = (e) => {
     setOptions({ ...options, [e.target.name]: e.target.value });
+    
     console.log(e.target.value);
   };
 
@@ -28,9 +38,10 @@ const MaterialAddForm = ({ formData = {}, id }) => {
     e.preventDefault();
     console.log(options);
     await addNewMaterial({
+      
       id: id,
       description: options.description,
-      material: options.materialName,
+      materialName: options.materialName,
       parameters: {
         concreteClass: options.concreteClass,
         cum: options.cum,
@@ -38,9 +49,26 @@ const MaterialAddForm = ({ formData = {}, id }) => {
     });
   };
 
+  const onUpdateMaterialClicked = async (e) => {
+    e.preventDefault();
+    await updateMaterial({
+
+      id: id,
+      _id: options._id,
+      description: options.description,
+      materialName: options.materialName,
+      parameters: {
+        concreteClass: options.concreteClass,
+        cum: options.cum,
+      },
+    });
+  };
+
+  // Update Material
+
   return (
     <div>
-      <form onSubmit={onSaveMaterialClicked} className="inputsForm">
+      <form className="inputsForm">
         <TextField
           type="text"
           name="description"
@@ -112,9 +140,25 @@ const MaterialAddForm = ({ formData = {}, id }) => {
           </>
         )}
 
-        <Button variant="outlined" type="submit" className="button">
-          {Object.keys(formData).length === 0 ? "Gererate" : "Update"}
-        </Button>
+        {Object.keys(formData).length === 0 ? (
+          <Button
+            onClick={onSaveMaterialClicked}
+            variant="outlined"
+            type="submit"
+            className="button"
+          >
+            Generate
+          </Button>
+        ) : (
+          <Button
+            onClick={onUpdateMaterialClicked}
+            variant="outlined"
+            type="submit"
+            className="button"
+          >
+            Update
+          </Button>
+        )}
       </form>
     </div>
   );

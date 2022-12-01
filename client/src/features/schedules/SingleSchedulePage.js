@@ -39,16 +39,13 @@ const SingleSchedulePage = () => {
   console.log(schedule);
   const [
     deleteMaterial,
-    {
-      isSuccess: isDelMaterialSuccess,
-      isError: isDelMaterialError,
-      error: delMaterialerror,
-    },
   ] = useDeleteMaterialMutation();
 
+
   const onDeleteMaterialClicked = async (materialId) => {
-    // await deleteMaterial({ id: schedule.id, _id: materialId });
+    await deleteMaterial({ id: schedule.id, _id: materialId });
   };
+
 
   let content;
 
@@ -98,11 +95,11 @@ const SingleSchedulePage = () => {
                       </Button>
                     }
                   >
-                    <MaterialAddForm formData={child} id={id} />
+                    <MaterialAddForm formData={child} id={id} schedule={schedule} />
                   </ModalComponent>
                 </TableCell>
                 <TableCell align="right">
-                  <Button onClick={onDeleteMaterialClicked(child._id)}>
+                  <Button onClick={()=>onDeleteMaterialClicked(child._id)}>
                     <Trash size={20} />
                   </Button>
                 </TableCell>
