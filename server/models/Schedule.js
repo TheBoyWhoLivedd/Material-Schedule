@@ -36,6 +36,9 @@ const scheduleSchema = new mongoose.Schema(
         computedValue: {
           type: Number,
         },
+        unit: {
+          type: String,
+        },
         parameters: {},
       },
     ],

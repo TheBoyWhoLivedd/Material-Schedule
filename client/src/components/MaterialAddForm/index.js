@@ -14,7 +14,7 @@ const MaterialAddForm = ({ formData = {}, id }) => {
     useAddNewMaterialMutation();
 
   const [options, setOptions] = useState(formData);
-
+  console.log(options);
   const handleOnSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
   };
@@ -28,12 +28,12 @@ const MaterialAddForm = ({ formData = {}, id }) => {
     e.preventDefault();
     console.log(options);
     await addNewMaterial({
-      id:id,
+      id: id,
       description: options.description,
-      material: options.material,
+      material: options.materialName,
       parameters: {
         concreteClass: options.concreteClass,
-        cum: options.cum
+        cum: options.cum,
       },
     });
   };
@@ -47,29 +47,29 @@ const MaterialAddForm = ({ formData = {}, id }) => {
           label="Description"
           placeholder="Enter Description"
           onChange={handleOnChange}
-          value={options?.description}
+          value={options?.materialDescription}
           required
         />
         <Autocomplete
           id="materials_id"
           options={materialsData.map((option) => option)}
-          name="material"
+          name="materialName"
           placeholder="Enter Material"
-          onSelect={(e) => handleOnSelect(e, "material")}
-          value={options?.material}
+          onSelect={(e) => handleOnSelect(e, "materialName")}
+          value={options?.materialName}
           required={true}
           renderInput={(params) => (
             <TextField {...params} label="Materials" required />
           )}
         />
 
-        {options?.material === "Cement" && (
+        {options?.materialName === "Cement" && (
           <>
             <Autocomplete
               id="concreteClassOptions_id"
               options={concreteClassOptions.map((option) => option.class)}
               name="concreteClass"
-              value={options?.concreteClass}
+              value={options?.parameters?.concreteClass}
               placeholder="Choose Concrete Class"
               onSelect={(e) => handleOnSelect(e, "concreteClass")}
               required={true}
@@ -83,11 +83,11 @@ const MaterialAddForm = ({ formData = {}, id }) => {
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"
               onChange={handleOnChange}
-              value={options?.cum}
+              value={options?.parameters?.cum}
             />
           </>
         )}
-        {options?.materials === "Beams" && (
+        {options?.materialName === "Beams" && (
           <>
             <Autocomplete
               id="beamSizeOptions_id"
