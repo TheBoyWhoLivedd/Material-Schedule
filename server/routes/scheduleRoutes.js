@@ -15,7 +15,7 @@ router
   .patch(schedulesController.updateSchedule)
   .get(schedulesController.getScheduleDetails)
   .delete(schedulesController.deleteSchedule);
-  
+   
 // Materials routes
 router
   .route("/:scheduleId/materials")

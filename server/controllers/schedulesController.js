@@ -181,11 +181,11 @@ const deleteSchedule = async (req, res) => {
 };
 
 const addScheduleMaterial = async (req, res) => {
-  const { material, description, parameters } = req.body;
+  const { materialName, description, parameters } = req.body;
   const scheduleId = req.params.scheduleId;
   console.log(req.params);
   // Confirm data
-  if (!material || !description || !parameters) {
+  if (!materialName || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
@@ -197,7 +197,7 @@ const addScheduleMaterial = async (req, res) => {
       .status(400)
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
-  if (material === "Cement") {
+  if (materialName === "Cement") {
     // Calculate here
     const results = calculateConcreteGivenClass(
       parameters.concreteClass,
@@ -260,12 +260,12 @@ const deleteScheduleMaterial = async (req, res) => {
   }
 
   // delete material
-  schedule.materials.remove(material);
+  await schedule.materials.remove(material);
 
   await schedule.save();
 
   res.json({
-    "message ": "Material deleted successfully",
+    "message ": `Material ${material.materialName} deleted successfully`,
   });
 };
 
@@ -291,10 +291,10 @@ const updateScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const materialId = req.params.materialId;
   // Validate update data
-  const { name, description, parameters } = req.body;
+  const { materialName, description, parameters } = req.body;
 
   // Confirm data
-  if (!name && !description && !parameters) {
+  if (!materialName && !description && !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
@@ -320,8 +320,8 @@ const updateScheduleMaterial = async (req, res) => {
   schedule.materials.remove(material);
 
   // update material
-  if (name) {
-    material.name = name;
+  if (material) {
+    material.name = materialName;
   }
   if (description) {
     material.description = description;

@@ -67,7 +67,7 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
     }),
     addNewMaterial: builder.mutation({
       query: (initialSchedule) => ({
-        url: `schedules/${initialSchedule.id}/materials`,
+        url: `/schedules/${initialSchedule.id}/materials`,
         method: "POST",
         body: {
           ...initialSchedule,
@@ -75,11 +75,22 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Schedule", id: "LIST" }],
     }),
+    updateMaterial: builder.mutation({
+      query: (initialSchedule) => ({
+        url: `/schedules/${initialSchedule.id}/materials/${initialSchedule._id}`,
+        method: "PATCH",
+        body: {
+          ...initialSchedule,
+        },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Schedule", id: arg.id },
+      ],
+    }),
     deleteMaterial: builder.mutation({
       query: ({ _id, id }) => ({
-        url: `/${id}/materials/${_id}`,
+        url: `/schedules/${id}/materials/${_id}`,
         method: "DELETE",
-        body: { id },
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Schedule", id: arg.id, _id: arg._id },
@@ -95,6 +106,7 @@ export const {
   useDeleteScheduleMutation,
   useAddNewMaterialMutation,
   useDeleteMaterialMutation,
+  useUpdateMaterialMutation
 } = schedulesApiSlice;
 
 // returns the query result object
