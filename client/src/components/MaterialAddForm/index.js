@@ -9,7 +9,14 @@ import "./MaterialAddForm.css";
 import {
   materialsData,
   concreteClassOptions,
-  beamSizeOptions,
+  elementsData,
+  concreteMaterialsData,
+  wallingMaterialsData,
+  mortarOptions,
+  reinforcementMaterialsData,
+  brcSizeOptions,
+  rebarSizeOptions,
+  bondData,
 } from "../../assets/data";
 const MaterialAddForm = ({ formData = {}, id, schedule }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
@@ -29,7 +36,7 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
   };
   const handleOnChange = (e) => {
     setOptions({ ...options, [e.target.name]: e.target.value });
-    
+
     console.log(e.target.value);
   };
 
@@ -38,7 +45,6 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
     e.preventDefault();
     console.log(options);
     await addNewMaterial({
-      
       id: id,
       description: options.description,
       materialName: options.materialName,
@@ -52,7 +58,6 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
   const onUpdateMaterialClicked = async (e) => {
     e.preventDefault();
     await updateMaterial({
-
       id: id,
       _id: options._id,
       description: options.description,
@@ -69,30 +74,33 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
   return (
     <div>
       <form className="inputsForm">
-        <TextField
-          type="text"
-          name="description"
-          label="Description"
-          placeholder="Enter Description"
-          onChange={handleOnChange}
-          value={options?.materialDescription}
-          required
-        />
         <Autocomplete
-          id="materials_id"
-          options={materialsData.map((option) => option)}
-          name="materialName"
-          placeholder="Enter Material"
-          onSelect={(e) => handleOnSelect(e, "materialName")}
-          value={options?.materialName}
+          id="elements_id"
+          options={elementsData.map((option) => option)}
+          name="elementName"
+          placeholder="Choose Element"
+          onSelect={(e) => handleOnSelect(e, "elementName")}
+          value={options?.elementName}
           required={true}
           renderInput={(params) => (
-            <TextField {...params} label="Materials" required />
+            <TextField {...params} label="Choose Element" required />
           )}
         />
 
-        {options?.materialName === "Cement" && (
+        {options?.elementName === "Concrete" && (
           <>
+            {/* <Autocomplete
+              id="concreteMaterials_id"
+              options={concreteMaterialsData.map((option) => option)}
+              name="materialName"
+              placeholder="Enter Material"
+              onSelect={(e) => handleOnSelect(e, "materialName")}
+              value={options?.materialName}
+              required={true}
+              renderInput={(params) => (
+                <TextField {...params} label="Materials" required />
+              )}
+            /> */}
             <Autocomplete
               id="concreteClassOptions_id"
               options={concreteClassOptions.map((option) => option.class)}
@@ -115,31 +123,130 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
             />
           </>
         )}
-        {options?.materialName === "Beams" && (
+        {options?.elementName === "Walling" && (
           <>
             <Autocomplete
-              id="beamSizeOptions_id"
-              options={beamSizeOptions.map((option) => option.size)}
-              name="beamSize"
-              value={options?.beamSize}
-              placeholder="Choose Beam Size"
-              onSelect={(e) => handleOnSelect(e, "beamSize")}
+              id="wallingMaterials_id"
+              options={wallingMaterialsData.map((option) => option)}
+              name="materialName"
+              placeholder="Enter Material"
+              onSelect={(e) => handleOnSelect(e, "materialName")}
+              value={options?.materialName}
               required={true}
               renderInput={(params) => (
-                <TextField {...params} label="Beam Size" required />
+                <TextField {...params} label="Materials" required />
+              )}
+            />
+            <Autocomplete
+              id="bond_id"
+              options={bondData.map((option) => option)}
+              name="bondName"
+              placeholder="Choose Bond Type"
+              onSelect={(e) => handleOnSelect(e, "bondName")}
+              value={options?.bondName}
+              required={true}
+              renderInput={(params) => (
+                <TextField {...params} label="Bond Type" required />
+              )}
+            />
+            <Autocomplete
+              id="mortarOptions_id"
+              options={mortarOptions.map((option) => option.ratio)}
+              name="mortarRatio"
+              value={options?.parameters?.ratio}
+              placeholder="Choose Mortar Ratio"
+              onSelect={(e) => handleOnSelect(e, "mortarRatio")}
+              required={true}
+              renderInput={(params) => (
+                <TextField {...params} label="Mortar Ratio" required />
               )}
             />
             <TextField
               type="text"
-              name="kgs"
-              value={options?.kgs}
-              label="Total weight (kgs)"
-              placeholder="Enter Weight"
+              name="wallArea"
+              value={options?.area}
+              label="Wall Area (sqm)"
+              placeholder="Enter Wall Area"
               onChange={handleOnChange}
             />
           </>
         )}
-
+        {options?.elementName === "Reinforcement" && (
+          <>
+            <Autocomplete
+              id="reinforcementMaterials_id"
+              options={reinforcementMaterialsData.map((option) => option)}
+              name="materialName"
+              placeholder="Enter Material"
+              onSelect={(e) => handleOnSelect(e, "materialName")}
+              value={options?.materialName}
+              required={true}
+              renderInput={(params) => (
+                <TextField {...params} label="Materials" required />
+              )}
+            />
+            {options?.materialName === "BRC" && (
+              <>
+                <Autocomplete
+                  id="brcSizeOptions_id"
+                  options={brcSizeOptions.map((option) => option.size)}
+                  name="brcSize"
+                  value={options?.parameters?.size}
+                  placeholder="Choose BRC Size"
+                  onSelect={(e) => handleOnSelect(e, "brcSize")}
+                  required={true}
+                  renderInput={(params) => (
+                    <TextField {...params} label="BRC Size" required />
+                  )}
+                />
+                <TextField
+                  type="text"
+                  name="Area"
+                  value={options?.area}
+                  label="Area (sqm)"
+                  placeholder="Area"
+                  onChange={handleOnChange}
+                />
+              </>
+            )}
+            {options?.materialName === "Rebar" && (
+              <>
+                <Autocomplete
+                  id="rebarSizeOptions_id"
+                  options={rebarSizeOptions.map((option) => option.size)}
+                  name="rebarSize"
+                  value={options?.parameters?.size}
+                  placeholder="Choose Rebar Diameter (mm)"
+                  onSelect={(e) => handleOnSelect(e, "rebarSize")}
+                  required={true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Rebar Diameter (mm)"
+                      required
+                    />
+                  )}
+                />
+                <TextField
+                  type="text"
+                  name="Kgs"
+                  value={options?.kgs}
+                  label="Kilograms"
+                  placeholder="Total Kilograms"
+                  onChange={handleOnChange}
+                />
+              </>
+            )}
+          </>
+        )}
+        <TextField
+          type="text"
+          name="description"
+          label="Description"
+          placeholder="Enter Description"
+          onChange={handleOnChange}
+          value={options?.materialDescription}
+        />
         {Object.keys(formData).length === 0 ? (
           <Button
             onClick={onSaveMaterialClicked}
