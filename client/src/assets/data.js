@@ -1,3 +1,10 @@
+export const elementsData = [
+  "Concrete",
+  "Walling",
+  "Reinforcement",
+  "Steel Work",
+];
+
 export const materialsData = [
   "Cement",
   "Sand",
@@ -11,6 +18,10 @@ export const materialsData = [
   "Granite",
   "Concrete",
 ];
+export const concreteMaterialsData = ["Cement"];
+export const wallingMaterialsData = ["Brick Work", "Block Work"];
+export const reinforcementMaterialsData = ["BRC", "Rebar"];
+export const bondData = ["Header", "Stretcher"];
 
 export const concreteClassOptions = [
   { class: "C25", ratio: "1:1.5:3" },
@@ -27,3 +38,19 @@ export const beamSizeOptions = [
   { size: "203x133x25" },
   { size: "254x102x28" },
 ];
+
+export const brcSizeOptions = [
+  { size: "A142" },
+  { size: "A98" },
+  { size: "A200" },
+];
+export const rebarSizeOptions = [
+  { size: "8" },
+  { size: "12" },
+  { size: "16" },
+  { size: "24" },
+  { size: "32" },
+];
+export const mortarOptions = [{ ratio: "1:3" }, { ratio: "1:4" }];
+
+
