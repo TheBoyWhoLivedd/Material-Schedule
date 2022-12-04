@@ -68,6 +68,7 @@ const SingleSchedulePage = () => {
           <TableHead>
             <TableRow>
               <TableCell>ITEM</TableCell>
+              <TableCell align="right">Element</TableCell>
               <TableCell align="right">Description</TableCell>
               <TableCell align="right">UNIT</TableCell>
               <TableCell align="right">QUANTITy</TableCell>
@@ -84,6 +85,9 @@ const SingleSchedulePage = () => {
                 <TableCell component="th" scope="row">
                   {child.materialName}
                 </TableCell>
+                <TableCell component="th" scope="row" align="right">
+                  {child.elementName}
+                </TableCell>
                 <TableCell align="right">{child.materialDescription}</TableCell>
                 <TableCell align="right">{child.unit}</TableCell>
                 <TableCell align="right">{child.computedValue}</TableCell>
@@ -95,7 +99,7 @@ const SingleSchedulePage = () => {
                       </Button>
                     }
                   >
-                    <MaterialAddForm formData={child} id={id} schedule={schedule} />
+                    <MaterialAddForm formData={child} id={id}  />
                   </ModalComponent>
                 </TableCell>
                 <TableCell align="right">

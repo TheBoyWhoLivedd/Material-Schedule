@@ -7,10 +7,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
 import {
-  materialsData,
   concreteClassOptions,
   elementsData,
-  concreteMaterialsData,
   wallingMaterialsData,
   mortarOptions,
   reinforcementMaterialsData,
@@ -18,7 +16,7 @@ import {
   rebarSizeOptions,
   bondData,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {}, id, schedule }) => {
+const MaterialAddForm = ({ formData = {}, id }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
@@ -39,6 +37,20 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
 
     console.log(e.target.value);
   };
+  const handleOnParamSelect = (e, name) => {
+    setOptions({
+      ...options,
+      parameters: { ...options.parameters, [name]: e.target.value },
+    });
+  };
+  const handleOnParamChange = (e) => {
+    setOptions({
+      ...options,
+      parameters: { ...options.parameters, [e.target.name]: e.target.value },
+    });
+
+    console.log(e.target.value);
+  };
 
   // Add Material
   const onSaveMaterialClicked = async (e) => {
@@ -46,12 +58,10 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
     console.log(options);
     await addNewMaterial({
       id: id,
-      description: options.description,
+      elementName: options.elementName,
+      description: options.materialDescription,
       materialName: options.materialName,
-      parameters: {
-        concreteClass: options.concreteClass,
-        cum: options.cum,
-      },
+      parameters: options.parameters,
     });
   };
 
@@ -60,12 +70,10 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
     await updateMaterial({
       id: id,
       _id: options._id,
-      description: options.description,
+      elementName: options.elementName,
+      description: options.materialDescription,
       materialName: options.materialName,
-      parameters: {
-        concreteClass: options.concreteClass,
-        cum: options.cum,
-      },
+      parameters: options.parameters,
     });
   };
 
@@ -81,7 +89,7 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
           placeholder="Choose Element"
           onSelect={(e) => handleOnSelect(e, "elementName")}
           value={options?.elementName}
-          required={true}
+          required
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
           )}
@@ -107,8 +115,8 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
               name="concreteClass"
               value={options?.parameters?.concreteClass}
               placeholder="Choose Concrete Class"
-              onSelect={(e) => handleOnSelect(e, "concreteClass")}
-              required={true}
+              onSelect={(e) => handleOnParamSelect(e, "concreteClass")}
+              required
               renderInput={(params) => (
                 <TextField {...params} label="Concrete Class" required />
               )}
@@ -118,8 +126,9 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
               name="cum"
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"
-              onChange={handleOnChange}
+              onChange={handleOnParamChange}
               value={options?.parameters?.cum}
+              required
             />
           </>
         )}
@@ -241,7 +250,7 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
         )}
         <TextField
           type="text"
-          name="description"
+          name="materialDescription"
           label="Description"
           placeholder="Enter Description"
           onChange={handleOnChange}

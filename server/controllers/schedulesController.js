@@ -1,4 +1,4 @@
-// const { calculateConcreteGivenClass } = require("./Calculations.js");
+// const { calculateConcreteGivenClass } = require("./Calculations");
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 // @desc Get all schedules
@@ -135,7 +135,7 @@ const updateSchedule = async (req, res) => {
     .lean()
     .exec();
 
-  // Allow renaming of the original note
+  // Allow renaming of the original schedule
   if (duplicate && duplicate?._id.toString() !== scheduleId) {
     return res.status(409).json({ message: "Duplicate Schedule title" });
   }
@@ -181,11 +181,11 @@ const deleteSchedule = async (req, res) => {
 };
 
 const addScheduleMaterial = async (req, res) => {
-  const { materialName, description, parameters } = req.body;
+  const { materialName, elementName, description, parameters } = req.body;
   const scheduleId = req.params.scheduleId;
   console.log(req.params);
   // Confirm data
-  if (!materialName || !description || !parameters) {
+  if (!elementName || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
@@ -197,7 +197,7 @@ const addScheduleMaterial = async (req, res) => {
       .status(400)
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
-  if (materialName === "Cement") {
+  if (elementName === "Concrete") {
     // Calculate here
     const results = calculateConcreteGivenClass(
       parameters.concreteClass,
@@ -205,6 +205,7 @@ const addScheduleMaterial = async (req, res) => {
     );
     console.log(results);
     schedule.materials.push({
+      elementName: "Concrete",
       materialName: "Cement",
       materialDescription: description,
       computedValue: results.cementBags,
@@ -212,6 +213,7 @@ const addScheduleMaterial = async (req, res) => {
       parameters: parameters,
     });
     schedule.materials.push({
+      elementName: "Concrete",
       materialName: "Sand",
       materialDescription: description,
       computedValue: results.amountofSand,
@@ -219,6 +221,7 @@ const addScheduleMaterial = async (req, res) => {
       parameters: parameters,
     });
     schedule.materials.push({
+      elementName: "Concrete",
       materialName: "Aggregates",
       materialDescription: description,
       computedValue: results.amountofAggregates,
@@ -289,17 +292,48 @@ const getScheduleDetails = async (req, res) => {
 
 const updateScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
+  console.log(scheduleId);
   const materialId = req.params.materialId;
   // Validate update data
-  const { materialName, description, parameters } = req.body;
+  const { elementName, materialName, description, parameters } = req.body;
 
   // Confirm data
-  if (!materialName && !description && !parameters) {
+  if (!materialName && !description && !parameters && !elementName) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
+  //Run New Parameters through function
+  let results = {};
+  if (elementName === "Concrete") {
+    results = calculateConcreteGivenClass(
+      parameters.concreteClass,
+      parameters.cum
+    );
+  }
+
+  //Find out which of the three concrete constituent materials to update
+  let updatedValue = 1;
+  if (elementName === "Concrete" && materialName == "Cement") {
+    updatedValue = results.cementBags;
+  } else if (elementName === "Concrete" && materialName == "Sand") {
+    updatedValue = results.amountofSand;
+  } else if (elementName === "Concrete" && materialName == "Aggregates") {
+    updatedValue = results.amountofAggregates;
+  }
   // Confirm schedule exists to update
-  const schedule = await Schedule.findById(scheduleId).exec();
+  // const schedule = await Schedule.findById(scheduleId).exec();
+
+  const schedule = await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.elementName": elementName,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": updatedValue,
+      },
+    }
+  ).exec();
 
   if (!schedule) {
     return res
@@ -317,24 +351,11 @@ const updateScheduleMaterial = async (req, res) => {
     });
   }
 
-  schedule.materials.remove(material);
-
-  // update material
-  if (material) {
-    material.name = materialName;
-  }
-  if (description) {
-    material.description = description;
-  }
-  if (parameters) {
-    material.parameters = parameters;
-  }
-  schedule.materials.push(material);
-
-  await schedule.save();
+  const updatedMaterial = await schedule.save();
 
   res.json({
     "message ": "Material updated successfully",
+    material: updatedMaterial,
   });
 };
 
