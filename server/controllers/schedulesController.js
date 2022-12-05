@@ -304,22 +304,22 @@ const updateScheduleMaterial = async (req, res) => {
 
   //Run New Parameters through function
   let results = {};
+  let updatedValue = 1;
   if (elementName === "Concrete") {
     results = calculateConcreteGivenClass(
       parameters.concreteClass,
       parameters.cum
     );
+    //Find out which of the three concrete constituent materials to update
+    if (materialName == "Cement") {
+      updatedValue = results.cementBags;
+    } else if (materialName == "Sand") {
+      updatedValue = results.amountofSand;
+    } else if (materialName == "Aggregates") {
+      updatedValue = results.amountofAggregates;
+    }
   }
 
-  //Find out which of the three concrete constituent materials to update
-  let updatedValue = 1;
-  if (elementName === "Concrete" && materialName == "Cement") {
-    updatedValue = results.cementBags;
-  } else if (elementName === "Concrete" && materialName == "Sand") {
-    updatedValue = results.amountofSand;
-  } else if (elementName === "Concrete" && materialName == "Aggregates") {
-    updatedValue = results.amountofAggregates;
-  }
   // Confirm schedule exists to update
   // const schedule = await Schedule.findById(scheduleId).exec();
 

@@ -1,8 +1,14 @@
 import { Box, Button, Modal } from "@mui/material";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { close } from "../features/schedules/modalSlice";
 
 export default function ModalComponent({ openModal = false, children }) {
   const [open, setOpen] = React.useState(false);
+  // const dispatch = useDispatch();
+  // const open = useSelector((state) => state.modal.open);
+  // const handleOpen = () => dispatch(close());
+  // const handleClose = () => dispatch(close());
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const style = {

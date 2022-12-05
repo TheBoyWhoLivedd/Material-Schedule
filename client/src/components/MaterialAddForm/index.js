@@ -20,7 +20,8 @@ const MaterialAddForm = ({ formData = {}, id }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
-  const [updateMaterial, { isSuccess }] = useUpdateMaterialMutation();
+  const [updateMaterial, { isLoading, isSuccess }] =
+    useUpdateMaterialMutation();
 
   useEffect(() => {
     if (isSuccess || isAddSuccess) {
@@ -29,6 +30,9 @@ const MaterialAddForm = ({ formData = {}, id }) => {
   }, [isSuccess, isAddSuccess]);
   const [options, setOptions] = useState(formData);
   console.log(options);
+  const handleOnElementSelect = (e, name) => {
+    setOptions({ ...options, [name]: e.target.value });
+  };
   const handleOnSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
   };
@@ -51,6 +55,19 @@ const MaterialAddForm = ({ formData = {}, id }) => {
 
     console.log(e.target.value);
   };
+
+  //validating that all object keys have values before sending update request
+  let canSave;
+  if ("parameters" in options) {
+    canSave =
+      Object.values(options?.parameters).every((value) => value) &&
+      !isLoading &&
+      Object.values(options).every((value) => value);
+  }
+//preventing edit of elementName property if calculation from backend has already been made
+  const canEdit =
+    "_id" in options 
+
 
   // Add Material
   const onSaveMaterialClicked = async (e) => {
@@ -87,8 +104,9 @@ const MaterialAddForm = ({ formData = {}, id }) => {
           options={elementsData.map((option) => option)}
           name="elementName"
           placeholder="Choose Element"
-          onSelect={(e) => handleOnSelect(e, "elementName")}
+          onSelect={(e) => handleOnElementSelect(e, "elementName")}
           value={options?.elementName}
+          disabled={canEdit}
           required
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
@@ -271,6 +289,7 @@ const MaterialAddForm = ({ formData = {}, id }) => {
             variant="outlined"
             type="submit"
             className="button"
+            disabled={!canSave}
           >
             Update
           </Button>

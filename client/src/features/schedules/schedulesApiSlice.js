@@ -18,6 +18,8 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         },
       }),
       transformResponse: (responseData) => {
+        // responseData.sort((a, b) => a.createdAt - b.createdAt);
+
         const loadedSchedules = responseData.map((schedule) => {
           schedule.id = schedule._id;
           return schedule;
@@ -106,7 +108,7 @@ export const {
   useDeleteScheduleMutation,
   useAddNewMaterialMutation,
   useDeleteMaterialMutation,
-  useUpdateMaterialMutation
+  useUpdateMaterialMutation,
 } = schedulesApiSlice;
 
 // returns the query result object
