@@ -1,6 +1,7 @@
 // const { calculateConcreteGivenClass } = require("./Calculations");
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
+const mongoose = require("mongoose");
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
@@ -183,6 +184,7 @@ const deleteSchedule = async (req, res) => {
 const addScheduleMaterial = async (req, res) => {
   const { materialName, elementName, description, parameters } = req.body;
   const scheduleId = req.params.scheduleId;
+
   console.log(req.params);
   // Confirm data
   if (!elementName || !description || !parameters) {
@@ -229,10 +231,8 @@ const addScheduleMaterial = async (req, res) => {
       parameters: parameters,
     });
   }
-  // Edit these
 
   const updatedSchedule = await schedule.save();
-
   res.json({
     "message ": "Material added successfully",
     schedule: updatedSchedule,
@@ -359,6 +359,39 @@ const updateScheduleMaterial = async (req, res) => {
   });
 };
 
+const getSummary = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  console.log(req.params);
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  console.log(objectId);
+  // Confirm schedule exists to aggregate
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  const results = await Schedule.aggregate([
+    { $match: { _id: objectId } },
+    { $unwind: "$materials" },
+    {
+      $group: {
+        //grouping by name and unit
+        _id: "$materials.materialName",
+        Value: { $sum: "$materials.computedValue" },
+      },
+    },
+  ]);
+
+  console.log(results);
+
+  res.json({
+    "message ": "Please find attached aggregated quantities",
+    summary: results,
+  });
+};
 module.exports = {
   getAllSchedules,
   createNewSchedule,
@@ -368,4 +401,5 @@ module.exports = {
   deleteScheduleMaterial,
   getScheduleDetails,
   updateScheduleMaterial,
+  getSummary,
 };

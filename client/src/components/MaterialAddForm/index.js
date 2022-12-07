@@ -82,6 +82,7 @@ const MaterialAddForm = ({ formData = {}, id }) => {
     });
   };
 
+  
   const onUpdateMaterialClicked = async (e) => {
     e.preventDefault();
     await updateMaterial({

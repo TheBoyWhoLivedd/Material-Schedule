@@ -15,7 +15,7 @@ router
   .patch(schedulesController.updateSchedule)
   .get(schedulesController.getScheduleDetails)
   .delete(schedulesController.deleteSchedule);
-   
+
 // Materials routes
 router
   .route("/:scheduleId/materials")
@@ -26,4 +26,8 @@ router
   .patch(schedulesController.updateScheduleMaterial);
 module.exports = router;
 
+//summary route
+router
+  .route("/:scheduleId/summary")
+  .get(schedulesController.getSummary);
 //Deduction routes

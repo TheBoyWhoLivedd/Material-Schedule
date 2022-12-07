@@ -19,6 +19,7 @@ import RequireAuth from "./features/auth/RequireAuth";
 import { ROLES } from "./config/roles";
 import useTitle from "./hooks/useTitle";
 import SingleSchedulePage from "./features/schedules/SingleSchedulePage";
+import SummaryPage from "./features/schedules/SummaryPage"
 import AddMaterialsPage from "./features/schedules/AddMaterialsPage";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
                 <Route path="schedules">
                   <Route index element={<ScheduleList />} />
                   <Route path=":id" element={<SingleSchedulePage />} />
+                  <Route path=":id/summary" element={<SummaryPage />} />
                   <Route path="new" element={<NewSchedule />} />
                   <Route path="add" element={<AddMaterialsPage />} />
                   <Route path="edit/:id" element={<EditSchedule />} />

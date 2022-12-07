@@ -98,6 +98,17 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         { type: "Schedule", id: arg.id, _id: arg._id },
       ],
     }),
+    getSummary: builder.query({
+      query: ({ id }) => ({
+        url: `/schedules/${id}/summary`,
+        method: "GET",
+        validateStatus: (response, result) => {
+          return response.status === 200 && !result.isError;
+        },
+      }),
+
+      invalidatesTags: (result, error, arg) => [{ type: "Result", id: arg.id }],
+    }),
   }),
 });
 
@@ -109,6 +120,7 @@ export const {
   useAddNewMaterialMutation,
   useDeleteMaterialMutation,
   useUpdateMaterialMutation,
+  useGetSummaryQuery,
 } = schedulesApiSlice;
 
 // returns the query result object
