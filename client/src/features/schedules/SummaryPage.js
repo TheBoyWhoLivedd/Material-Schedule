@@ -59,13 +59,13 @@ const SummaryPage = () => {
           <TableBody>
             {res?.data?.summary?.map((child) => (
               <TableRow
-                key={child._id}
+                key={child._id.name}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {child._id}
+                  Total {child._id.name}
                 </TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
+                <TableCell align="right">{child._id.unit}</TableCell>
                 <TableCell component="th" scope="row" align="right">
                   {child.Value}
                 </TableCell>

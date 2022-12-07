@@ -68,6 +68,14 @@ const SingleSchedulePage = () => {
             <Button variant="outlined">View Summary</Button>
           </Link>
         </div>
+        <div style={{ marginLeft: "1rem" }}>
+          <Link to={`/`}>
+            <Button variant="outlined">
+              <Plus width={20} />
+              Add Application
+            </Button>
+          </Link>
+        </div>
       </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">

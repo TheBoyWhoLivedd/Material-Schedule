@@ -379,7 +379,8 @@ const getSummary = async (req, res) => {
     {
       $group: {
         //grouping by name and unit
-        _id: "$materials.materialName",
+        // _id: "$materials.materialName",
+        _id: { name: "$materials.materialName", unit: "$materials.unit" },
         Value: { $sum: "$materials.computedValue" },
       },
     },
