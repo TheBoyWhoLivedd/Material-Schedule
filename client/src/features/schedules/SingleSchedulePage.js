@@ -37,21 +37,22 @@ const SingleSchedulePage = () => {
     }),
   });
   console.log(schedule);
-  const [
-    deleteMaterial,
-  ] = useDeleteMaterialMutation();
-
+  const [deleteMaterial] = useDeleteMaterialMutation();
 
   const onDeleteMaterialClicked = async (materialId) => {
     await deleteMaterial({ id: schedule.id, _id: materialId });
   };
 
-
   let content;
 
   content = (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
         <ModalComponent
           openModal={
             <Button variant="outlined">
@@ -62,12 +63,18 @@ const SingleSchedulePage = () => {
         >
           <MaterialAddForm id={id} />
         </ModalComponent>
+        <div style={{ marginLeft: "1rem" }}>
+          <Link to={`/dash/schedules/${id}/summary`}>
+            <Button variant="outlined">View Summary</Button>
+          </Link>
+        </div>
       </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
           <TableHead>
             <TableRow>
               <TableCell>ITEM</TableCell>
+              <TableCell align="right">Element</TableCell>
               <TableCell align="right">Description</TableCell>
               <TableCell align="right">UNIT</TableCell>
               <TableCell align="right">QUANTITy</TableCell>
@@ -84,6 +91,9 @@ const SingleSchedulePage = () => {
                 <TableCell component="th" scope="row">
                   {child.materialName}
                 </TableCell>
+                <TableCell component="th" scope="row" align="right">
+                  {child.elementName}
+                </TableCell>
                 <TableCell align="right">{child.materialDescription}</TableCell>
                 <TableCell align="right">{child.unit}</TableCell>
                 <TableCell align="right">{child.computedValue}</TableCell>
@@ -95,11 +105,11 @@ const SingleSchedulePage = () => {
                       </Button>
                     }
                   >
-                    <MaterialAddForm formData={child} id={id} schedule={schedule} />
+                    <MaterialAddForm formData={child} id={id} />
                   </ModalComponent>
                 </TableCell>
                 <TableCell align="right">
-                  <Button onClick={()=>onDeleteMaterialClicked(child._id)}>
+                  <Button onClick={() => onDeleteMaterialClicked(child._id)}>
                     <Trash size={20} />
                   </Button>
                 </TableCell>

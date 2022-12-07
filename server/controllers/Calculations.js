@@ -21,28 +21,47 @@ let MASONRY_SAND_TONS_PER_CUBIC_YARD = 1.2;
 let BASE_TONS_PER_CUBIC_YARD = 1.5;
 const CONCRETE_POUNDS_PER_CUBIC_FOOT = 150;
 
-
-function calculateConcreteGivenClass(concreteClass, cum) {
+ function calculateConcreteGivenClass(concreteClass, cum) {
   if (concreteClass === "C25") {
-    const numCementBags = Number(cum) * 8.3;
-    const sandWeight = Number(numCementBags) * 1.5 * 50;
-    const aggregateWeight = Number(numCementBags) * 3 * 50;
-    return numCementBags, sandWeight, aggregateWeight;
+    let cementKgs = Number(cum) * 6.25;
+    let numCementBags = Number(cum) * 8.3;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
   } else if (concreteClass === "C20") {
-    const numCementBags = Number(cum) * 6.25;
-    const sandWeight = Number(numCementBags) * 1.5 * 50;
-    const aggregateWeight = Number(numCementBags) * 3 * 50;
-    return numCementBags, sandWeight, aggregateWeight;
+    let cementKgs = Number(cum) * 6.25;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
   } else if (concreteClass === "C30") {
-    const numCementBags = Number(cum) * 10.25;
-    const sandWeight = Number(numCementBags) * 1.5 * 50;
-    const aggregateWeight = Number(numCementBags) * 3 * 50;
-    return numCementBags, sandWeight, aggregateWeight;
+    let cementKgs = Number(cum) * 10.25;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
   } else if (concreteClass === "C40") {
-    const numCementBags = Number(cum) * 12.43;
-    const sandWeight = Number(numCementBags) * 1.5 * 50;
-    const aggregateWeight = Number(numCementBags) * 3 * 50;
-    return numCementBags, sandWeight, aggregateWeight;
+    let cementKgs = Number(cum) * 12.43;
+    let sandWeight = Number(cementKgs) * 1.5 * 50;
+    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeight,
+      amountofAggregates: aggregateWeight,
+    };
   }
 }
 

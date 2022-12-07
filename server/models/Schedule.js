@@ -25,8 +25,12 @@ const scheduleSchema = new mongoose.Schema(
       // required: true,
     },
 
+    summary:[],
     materials: [
       {
+        elementName: {
+          type: String,
+        },
         materialName: {
           type: String,
         },

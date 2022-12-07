@@ -7,10 +7,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField } from "@mui/material";
 import "./MaterialAddForm.css";
 import {
-  materialsData,
   concreteClassOptions,
   elementsData,
-  concreteMaterialsData,
   wallingMaterialsData,
   mortarOptions,
   reinforcementMaterialsData,
@@ -18,11 +16,12 @@ import {
   rebarSizeOptions,
   bondData,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {}, id, schedule }) => {
+const MaterialAddForm = ({ formData = {}, id }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
-  const [updateMaterial, { isSuccess }] = useUpdateMaterialMutation();
+  const [updateMaterial, { isLoading, isSuccess }] =
+    useUpdateMaterialMutation();
 
   useEffect(() => {
     if (isSuccess || isAddSuccess) {
@@ -31,6 +30,9 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
   }, [isSuccess, isAddSuccess]);
   const [options, setOptions] = useState(formData);
   console.log(options);
+  const handleOnElementSelect = (e, name) => {
+    setOptions({ ...options, [name]: e.target.value });
+  };
   const handleOnSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
   };
@@ -39,6 +41,33 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
 
     console.log(e.target.value);
   };
+  const handleOnParamSelect = (e, name) => {
+    setOptions({
+      ...options,
+      parameters: { ...options.parameters, [name]: e.target.value },
+    });
+  };
+  const handleOnParamChange = (e) => {
+    setOptions({
+      ...options,
+      parameters: { ...options.parameters, [e.target.name]: e.target.value },
+    });
+
+    console.log(e.target.value);
+  };
+
+  //validating that all object keys have values before sending update request
+  let canSave;
+  if ("parameters" in options) {
+    canSave =
+      Object.values(options?.parameters).every((value) => value) &&
+      !isLoading &&
+      Object.values(options).every((value) => value);
+  }
+//preventing edit of elementName property if calculation from backend has already been made
+  const canEdit =
+    "_id" in options 
+
 
   // Add Material
   const onSaveMaterialClicked = async (e) => {
@@ -46,26 +75,23 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
     console.log(options);
     await addNewMaterial({
       id: id,
-      description: options.description,
+      elementName: options.elementName,
+      description: options.materialDescription,
       materialName: options.materialName,
-      parameters: {
-        concreteClass: options.concreteClass,
-        cum: options.cum,
-      },
+      parameters: options.parameters,
     });
   };
 
+  
   const onUpdateMaterialClicked = async (e) => {
     e.preventDefault();
     await updateMaterial({
       id: id,
       _id: options._id,
-      description: options.description,
+      elementName: options.elementName,
+      description: options.materialDescription,
       materialName: options.materialName,
-      parameters: {
-        concreteClass: options.concreteClass,
-        cum: options.cum,
-      },
+      parameters: options.parameters,
     });
   };
 
@@ -79,9 +105,10 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
           options={elementsData.map((option) => option)}
           name="elementName"
           placeholder="Choose Element"
-          onSelect={(e) => handleOnSelect(e, "elementName")}
+          onSelect={(e) => handleOnElementSelect(e, "elementName")}
           value={options?.elementName}
-          required={true}
+          disabled={canEdit}
+          required
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
           )}
@@ -107,8 +134,8 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
               name="concreteClass"
               value={options?.parameters?.concreteClass}
               placeholder="Choose Concrete Class"
-              onSelect={(e) => handleOnSelect(e, "concreteClass")}
-              required={true}
+              onSelect={(e) => handleOnParamSelect(e, "concreteClass")}
+              required
               renderInput={(params) => (
                 <TextField {...params} label="Concrete Class" required />
               )}
@@ -118,8 +145,9 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
               name="cum"
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"
-              onChange={handleOnChange}
+              onChange={handleOnParamChange}
               value={options?.parameters?.cum}
+              required
             />
           </>
         )}
@@ -241,7 +269,7 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
         )}
         <TextField
           type="text"
-          name="description"
+          name="materialDescription"
           label="Description"
           placeholder="Enter Description"
           onChange={handleOnChange}
@@ -262,6 +290,7 @@ const MaterialAddForm = ({ formData = {}, id, schedule }) => {
             variant="outlined"
             type="submit"
             className="button"
+            disabled={!canSave}
           >
             Update
           </Button>

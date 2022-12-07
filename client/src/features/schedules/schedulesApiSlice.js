@@ -18,6 +18,8 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         },
       }),
       transformResponse: (responseData) => {
+        // responseData.sort((a, b) => a.createdAt - b.createdAt);
+
         const loadedSchedules = responseData.map((schedule) => {
           schedule.id = schedule._id;
           return schedule;
@@ -96,6 +98,17 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         { type: "Schedule", id: arg.id, _id: arg._id },
       ],
     }),
+    getSummary: builder.query({
+      query: ({ id }) => ({
+        url: `/schedules/${id}/summary`,
+        method: "GET",
+        validateStatus: (response, result) => {
+          return response.status === 200 && !result.isError;
+        },
+      }),
+
+      invalidatesTags: (result, error, arg) => [{ type: "Result", id: arg.id }],
+    }),
   }),
 });
 
@@ -106,7 +119,8 @@ export const {
   useDeleteScheduleMutation,
   useAddNewMaterialMutation,
   useDeleteMaterialMutation,
-  useUpdateMaterialMutation
+  useUpdateMaterialMutation,
+  useGetSummaryQuery,
 } = schedulesApiSlice;
 
 // returns the query result object
