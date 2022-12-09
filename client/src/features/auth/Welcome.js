@@ -20,7 +20,7 @@ const Welcome = () => {
       <h1>Welcome {username}!</h1>
 
       <p>
-        <Link to="/dash/schedules">View Schedules</Link>
+        <Link to="/dash/schedules">View Projects</Link>
       </p>
       {/* <p>
         <Link to="/dash/notes">View Notes</Link>
@@ -30,7 +30,7 @@ const Welcome = () => {
         <Link to="/dash/notes/new">Add New Note</Link>
       </p> */}
       <p>
-        <Link to="/dash/schedules/new">Add New Schedule</Link>
+        <Link to="/dash/schedules/new">Add New Project</Link>
       </p>
 
       {(isManager || isAdmin) && (

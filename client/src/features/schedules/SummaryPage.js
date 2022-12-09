@@ -1,15 +1,10 @@
 import { useEffect } from "react";
-import { useGetNotesQuery } from "../notes/notesApiSlice";
 
 import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
-import {
-  selectScheduleById,
-  useGetSchedulesQuery,
-  useGetSummaryQuery,
-} from "./schedulesApiSlice";
+import { useGetSummaryQuery } from "./schedulesApiSlice";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,12 +23,6 @@ const SummaryPage = () => {
 
   console.log(id);
 
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
-    selectFromResult: ({ data }) => ({
-      schedule: data?.entities[id],
-    }),
-  });
-  console.log(schedule);
   const res = useGetSummaryQuery(
     { id: id },
     {
@@ -42,7 +31,10 @@ const SummaryPage = () => {
       refetchOnMountOrArgChange: true,
     }
   );
-  console.log(res.data);
+
+
+  // const sortedData = data.sort();
+
   let content;
 
   content = (
@@ -59,13 +51,13 @@ const SummaryPage = () => {
           <TableBody>
             {res?.data?.summary?.map((child) => (
               <TableRow
-                key={child._id}
+                key={child._id.name}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {child._id}
+                  Total {child._id.name}
                 </TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
+                <TableCell align="right">{child._id.unit}</TableCell>
                 <TableCell component="th" scope="row" align="right">
                   {child.Value}
                 </TableCell>

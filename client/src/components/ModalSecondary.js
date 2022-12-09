@@ -1,12 +1,18 @@
 import { Box, Button, Modal } from "@mui/material";
 import React from "react";
 
-export default function ModalComponent({ open,handleOpen, handleClose, openModal = false, children }) {
+export default function ModalSecondary({
+  open,
+  handleOpen,
+  handleClose,
+  openModal = false,
+  children,
+}) {
   // const dispatch = useDispatch();
   // const open = useSelector((state) => state.modal.open);
   // const handleOpen = () => dispatch(close());
   // const handleClose = () => dispatch(close());
-  
+
   const style = {
     position: "absolute",
     top: "50%",
@@ -27,13 +33,6 @@ export default function ModalComponent({ open,handleOpen, handleClose, openModal
   };
   return (
     <div>
-      <div onClick={handleOpen}>
-        {openModal ? (
-          openModal
-        ) : (
-          <Button onClick={handleOpen}>Open modal</Button>
-        )}
-      </div>
       <Modal
         open={open}
         onClose={handleClose}
@@ -42,7 +41,6 @@ export default function ModalComponent({ open,handleOpen, handleClose, openModal
         sx={styles}
       >
         <Box sx={style}>{children}</Box>
-
       </Modal>
     </div>
   );

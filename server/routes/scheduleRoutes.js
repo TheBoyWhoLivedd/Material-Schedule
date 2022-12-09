@@ -27,7 +27,8 @@ router
 module.exports = router;
 
 //summary route
-router
-  .route("/:scheduleId/summary")
-  .get(schedulesController.getSummary);
+router.route("/:scheduleId/summary").get(schedulesController.getSummary);
 //Deduction routes
+router
+  .route("/:scheduleId/application")
+  .post(schedulesController.postApplication);

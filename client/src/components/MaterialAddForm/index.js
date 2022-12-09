@@ -16,7 +16,7 @@ import {
   rebarSizeOptions,
   bondData,
 } from "../../assets/data";
-const MaterialAddForm = ({ formData = {}, id }) => {
+const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
@@ -28,6 +28,7 @@ const MaterialAddForm = ({ formData = {}, id }) => {
       //Set the state that closes the modals
     }
   }, [isSuccess, isAddSuccess]);
+
   const [options, setOptions] = useState(formData);
   console.log(options);
   const handleOnElementSelect = (e, name) => {
@@ -64,10 +65,8 @@ const MaterialAddForm = ({ formData = {}, id }) => {
       !isLoading &&
       Object.values(options).every((value) => value);
   }
-//preventing edit of elementName property if calculation from backend has already been made
-  const canEdit =
-    "_id" in options 
-
+  //preventing edit of elementName property if calculation from backend has already been made
+  const canEdit = "_id" in options;
 
   // Add Material
   const onSaveMaterialClicked = async (e) => {
@@ -79,10 +78,11 @@ const MaterialAddForm = ({ formData = {}, id }) => {
       description: options.materialDescription,
       materialName: options.materialName,
       parameters: options.parameters,
+    }).then(() => {
+      handleClose();
     });
   };
 
-  
   const onUpdateMaterialClicked = async (e) => {
     e.preventDefault();
     await updateMaterial({
@@ -92,6 +92,8 @@ const MaterialAddForm = ({ formData = {}, id }) => {
       description: options.materialDescription,
       materialName: options.materialName,
       parameters: options.parameters,
+    }).then(() => {
+      handleClose();
     });
   };
 

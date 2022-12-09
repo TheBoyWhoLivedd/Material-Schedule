@@ -37,7 +37,7 @@ const EditScheduleForm = ({ schedule, users }) => {
 
   const onTitleChanged = (e) => setTitle(e.target.value);
   const onDescriptionChanged = (e) => setDescription(e.target.value);
-  const onCompletedChanged = (e) => setCompleted((prev) => !prev);
+  const onCompletedChanged = (e) => setCompleted((prev) => !prev)
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const canSave = [title, description, userId].every(Boolean) && !isLoading;
