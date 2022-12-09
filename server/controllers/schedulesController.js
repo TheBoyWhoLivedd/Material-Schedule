@@ -7,45 +7,65 @@ const mongoose = require("mongoose");
 // @access Private
 
 function calculateConcreteGivenClass(concreteClass, cum) {
-  if (concreteClass === "C25") {
-    let cementKgs = Number(cum) * 6.25;
-    let numCementBags = Number(cum) * 8.3;
-    let sandWeight = Number(cementKgs) * 1.5 * 50;
-    let aggregateWeight = Number(cementKgs) * 3 * 50;
+  if (concreteClass === "C30") {
+    let cementKgs = Number(cum) * 540;
+    let sandWeightkgs = Number(cum) * 400;
+    let sandWeighttTonnes = Number(sandWeightkgs) / 1000;
+    let aggregateWeightkgs = Number(cum) * 850;
+    let aggregateWeightTonnes = Number(aggregateWeightkgs) / 1000;
+    let numCementBags = Number(cementKgs) / 50;
     return {
       cementBags: numCementBags,
-      amountofSand: sandWeight,
-      amountofAggregates: aggregateWeight,
+      amountofSand: sandWeighttTonnes,
+      amountofAggregates: aggregateWeightTonnes,
+    };
+  } else if (concreteClass === "C25") {
+    let cementKgs = Number(cum) * 393;
+    let sandWeightkgs = Number(cum) * 435;
+    let sandWeighttTonnes = Number(sandWeightkgs) / 1000;
+    let aggregateWeightkgs = Number(cum) * 928;
+    let aggregateWeightTonnes = Number(aggregateWeightkgs) / 1000;
+    let numCementBags = Number(cementKgs) / 50;
+    return {
+      cementBags: numCementBags,
+      amountofSand: sandWeighttTonnes,
+      amountofAggregates: aggregateWeightTonnes,
     };
   } else if (concreteClass === "C20") {
-    let cementKgs = Number(cum) * 6.25;
-    let sandWeight = Number(cementKgs) * 1.5 * 50;
-    let aggregateWeight = Number(cementKgs) * 3 * 50;
+    let cementKgs = Number(cum) * 309;
+    let sandWeightkgs = Number(cum) * 456;
+    let sandWeighttTonnes = Number(sandWeightkgs) / 1000;
+    let aggregateWeightkgs = Number(cum) * 972;
+    let aggregateWeightTonnes = Number(aggregateWeightkgs) / 1000;
     let numCementBags = Number(cementKgs) / 50;
     return {
       cementBags: numCementBags,
-      amountofSand: sandWeight,
-      amountofAggregates: aggregateWeight,
+      amountofSand: sandWeighttTonnes,
+      amountofAggregates: aggregateWeightTonnes,
     };
-  } else if (concreteClass === "C30") {
-    let cementKgs = Number(cum) * 10.25;
-    let sandWeight = Number(cementKgs) * 1.5 * 50;
-    let aggregateWeight = Number(cementKgs) * 3 * 50;
+  } else if (concreteClass === "C15") {
+    let cementKgs = Number(cum) * 216;
+    let sandWeightkgs = Number(cum) * 479;
+    let sandWeighttTonnes = Number(sandWeightkgs) / 1000;
+    let aggregateWeightkgs = Number(cum) * 1020;
+    let aggregateWeightTonnes = Number(aggregateWeightkgs) / 1000;
     let numCementBags = Number(cementKgs) / 50;
     return {
       cementBags: numCementBags,
-      amountofSand: sandWeight,
-      amountofAggregates: aggregateWeight,
+      amountofSand: sandWeighttTonnes,
+      amountofAggregates: aggregateWeightTonnes,
     };
-  } else if (concreteClass === "C40") {
-    let cementKgs = Number(cum) * 12.43;
-    let sandWeight = Number(cementKgs) * 1.5 * 50;
-    let aggregateWeight = Number(cementKgs) * 3 * 50;
+  } else if (concreteClass === "C10") {
+    let cementKgs = Number(cum) * 166;
+    let sandWeightkgs = Number(cum) * 491;
+    let sandWeighttTonnes = Number(sandWeightkgs) / 1000;
+    let aggregateWeightkgs = Number(cum) * 1046;
+    let aggregateWeightTonnes = Number(aggregateWeightkgs) / 1000;
     let numCementBags = Number(cementKgs) / 50;
     return {
       cementBags: numCementBags,
-      amountofSand: sandWeight,
-      amountofAggregates: aggregateWeight,
+      amountofSand: sandWeighttTonnes,
+      amountofAggregates: aggregateWeightTonnes,
     };
   }
 }
@@ -219,7 +239,7 @@ const addScheduleMaterial = async (req, res) => {
       materialName: "Sand",
       materialDescription: description,
       computedValue: results.amountofSand,
-      unit: "Kgs",
+      unit: "Tonnes",
       parameters: parameters,
     });
     schedule.materials.push({
@@ -227,7 +247,7 @@ const addScheduleMaterial = async (req, res) => {
       materialName: "Aggregates",
       materialDescription: description,
       computedValue: results.amountofAggregates,
-      unit: "Kgs",
+      unit: "Tonnes",
       parameters: parameters,
     });
   }
@@ -393,6 +413,37 @@ const getSummary = async (req, res) => {
     summary: results,
   });
 };
+
+const postApplication = async (req, res) => {
+  // const { item, supplier, requested, allowed } = req.body;
+  const scheduleId = req.params.scheduleId;
+
+  console.log(req.params);
+  // Confirm data
+  // if (!item || !supplier || !requested || !allowed) {
+  //   return res.status(400).json({ message: "Please provide a relevant field" });
+  // }
+
+  // Confirm schedule exists to update
+  const schedule = await Schedule.findById(scheduleId).exec();
+
+  if (!schedule) {
+    return res
+      .status(400)
+      .json({ message: `Schedule with id ${scheduleId} not found` });
+  }
+
+  schedule.application.push({
+    req,
+  });
+
+  const updatedSchedule = await schedule.save();
+  res.json({
+    "message ": "Material added successfully",
+    schedule: updatedSchedule,
+  });
+};
+
 module.exports = {
   getAllSchedules,
   createNewSchedule,
@@ -403,4 +454,5 @@ module.exports = {
   getScheduleDetails,
   updateScheduleMaterial,
   getSummary,
+  postApplication,
 };

@@ -53,6 +53,7 @@ const createNewNote = async (req, res) => {
 
 }
 
+
 // @desc Update a note
 // @route PATCH /notes
 // @access Private

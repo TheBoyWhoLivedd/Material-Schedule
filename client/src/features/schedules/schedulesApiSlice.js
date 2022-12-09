@@ -109,6 +109,16 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
 
       invalidatesTags: (result, error, arg) => [{ type: "Result", id: arg.id }],
     }),
+    addApplication: builder.mutation({
+      query: ({body,id}) => ({
+        url: `/schedules/${id}/application`,
+        method: "POST",
+        body: {
+          ...body
+        },
+      }),
+      invalidatesTags: [{ type: "Schedule", id: "LIST" }],
+    }),
   }),
 });
 
@@ -121,6 +131,7 @@ export const {
   useDeleteMaterialMutation,
   useUpdateMaterialMutation,
   useGetSummaryQuery,
+  useAddApplicationMutation,
 } = schedulesApiSlice;
 
 // returns the query result object

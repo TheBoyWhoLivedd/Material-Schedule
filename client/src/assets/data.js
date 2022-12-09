@@ -24,10 +24,11 @@ export const reinforcementMaterialsData = ["BRC", "Rebar"];
 export const bondData = ["Header", "Stretcher"];
 
 export const concreteClassOptions = [
+  { class: "C30", ratio: "1:3:6" },
   { class: "C25", ratio: "1:1.5:3" },
   { class: "C20", ratio: "1:2:4" },
-  { class: "C30", ratio: "1:3:6" },
-  { class: "C40", ratio: "1:8:4" },
+  { class: "C15", ratio: "1:8:4" },
+  { class: "C10", ratio: "1:8:4" },
 ];
 
 export const beamSizeOptions = [
@@ -52,5 +53,3 @@ export const rebarSizeOptions = [
   { size: "32" },
 ];
 export const mortarOptions = [{ ratio: "1:3" }, { ratio: "1:4" }];
-
-
