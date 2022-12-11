@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGetNotesQuery } from "../notes/notesApiSlice";
 import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
@@ -25,7 +25,11 @@ import { useDeleteMaterialMutation } from "./schedulesApiSlice";
 
 const SingleApplicationPage = () => {
   useTitle("techNotes: Single Application Page");
+  const [open, setOpen] = useState(false);
 
+  const handleOpen = () => setOpen(true);
+
+  const handleClose = () => setOpen(false);
   const { id } = useParams();
 
   console.log(id);
@@ -53,6 +57,9 @@ const SingleApplicationPage = () => {
         }}
       >
         <ModalComponent
+          open={open}
+          handleOpen={handleOpen}
+          handleClose={handleClose}
           openModal={
             <Button variant="outlined">
               <Plus width={20} />
@@ -60,7 +67,7 @@ const SingleApplicationPage = () => {
             </Button>
           }
         >
-          <ApplicationAddForm id={id} />
+          <ApplicationAddForm id={id} handleClose={handleClose} />
         </ModalComponent>
         <div style={{ marginLeft: "1rem" }}>
           <Link to={`/dash/schedules/${id}/summary`}>
@@ -89,17 +96,17 @@ const SingleApplicationPage = () => {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {child.materialName}
+                  {}
                 </TableCell>
                 <TableCell component="th" scope="row">
                   {}
                 </TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
+                <TableCell align="right">{}</TableCell>
                 <TableCell component="th" scope="row" align="right">
-                  {child.computedValue}
+                  {}
                 </TableCell>
 
-                <TableCell align="right">{child.computedValue}</TableCell>
+                <TableCell align="right">{}</TableCell>
                 <TableCell align="right">
                   <ModalComponent
                     openModal={
@@ -108,7 +115,7 @@ const SingleApplicationPage = () => {
                       </Button>
                     }
                   >
-                    <ApplicationAddForm formData={child} id={id} />
+                    {/* <ApplicationAddForm formData={child} id={id} /> */}
                   </ModalComponent>
                 </TableCell>
                 <TableCell align="right">

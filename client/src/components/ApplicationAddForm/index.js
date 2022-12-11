@@ -14,122 +14,62 @@ import {
   Grid,
   Text,
 } from "@mui/material";
-import { Trash } from "feather-icons-react";
+import AddEntryComponent from "../AddEntryComponent";
 
 import "./ApplicationAddForm.css";
-import {
-  concreteClassOptions,
-  elementsData,
-  wallingMaterialsData,
-  mortarOptions,
-  reinforcementMaterialsData,
-  brcSizeOptions,
-  rebarSizeOptions,
-  bondData,
-} from "../../assets/data";
-const ApplicationAddForm = ({ id }) => {
+import Content from "../Content";
 
-  const userTemplate = { item: "", supplier: "", requested: "", allowed: "" };
+const ApplicationAddForm = ({ id, handleClose }) => {
+  const [entries, setEntries] = useState([]);
+  const initialState = {
+    item: "",
+    supplier: "",
+    requested: "",
+    allowed: "",
+  };
+  const [newEntry, setNewEntry] = useState(initialState);
+
   const [addApplication, { isSuccess: isAddSuccess }] =
     useAddApplicationMutation();
+    useEffect(() => {
+      console.log(entries);
+    }, [entries]);
+  const addEntry = (entry) => {
+    const id = entries.length ? entries[entries.length - 1].id + 1 : 1;
+    const myNewEntry = { ...entry, id };
+    const listEntries = [...entries, myNewEntry];
+    console.log(listEntries);
 
-  const [users, setUsers] = useState( [userTemplate] );
+    setEntries(listEntries);
 
-  const addUser = () => {
-    setUsers([...users, userTemplate]);
   };
-  const onChange = (e, index) => {
-    console.log(users.length)
-    const updatedUsers = users.map((user, i) =>
-      index === i
-        ? Object.assign(user, { [e.target.name]: e.target.value })
-        : users[0]
-    );
-    setUsers(updatedUsers);
-  };
-  const removeUser = (index) => {
-    const filteredUsers = [...users];
-    filteredUsers.splice(index, 1);
-    setUsers(filteredUsers);
-  };
-  const handleSubmit = async (e) => {
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+    if (Object.keys(newEntry).length === 0) {
+      return;
+    } else {
+      addEntry(newEntry);
+      setNewEntry(initialState);
+    }
+  };
 
-    await addApplication({
-      id: id,
-      body:users,
-    });
+  const handleOnChange = (e) => {
+    setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
+    console.log(newEntry);
   };
   return (
     <div>
       <Container>
         <Paper component={Box} p={4}>
-          {users.map((user, index) => (
-            <Grid container spacing={3} key={index}>
-              <Grid item md={3}>
-                <TextField
-                  label="Item"
-                  name="item"
-                  placeholder="Item Description"
-                  variant="outlined"
-                  value={user.item}
-                  onChange={(e) => onChange(e, index)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={3}>
-                <TextField
-                  label="Supplier"
-                  name="supplier"
-                  placeholder="Enter Supplier"
-                  variant="outlined"
-                  value={user.supplier}
-                  onChange={(e) => onChange(e, index)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={3}>
-                <TextField
-                  label="Requested"
-                  name="requested"
-                  placeholder="Enter Quantity Requested"
-                  variant="outlined"
-                  value={user.requested}
-                  onChange={(e) => onChange(e, index)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={3}>
-                <TextField
-                  label="Allowed"
-                  name="allowed"
-                  placeholder="Enter Quantity Allowed"
-                  variant="outlined"
-                  value={user.allowed}
-                  onChange={(e) => onChange(e, index)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={1}>
-                <Button onClick={() => removeUser(index)}>
-                  <Trash size={20} />
-                </Button>
-              </Grid>
-            </Grid>
-          ))}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <Button variant="contained" color="primary" onClick={addUser}>
-              add more
-            </Button>
-            <Button onClick={handleSubmit} variant="contained" type="submit">
-              Submit
-            </Button>
-          </div>
+          <AddEntryComponent
+            newEntry={newEntry}
+            handleChange={handleOnChange}
+            handleSubmit={handleSubmit}
+          />
+          <main>
+            <Content />
+          </main>
         </Paper>
       </Container>
     </div>

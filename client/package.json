@@ -11,6 +11,7 @@
     "@hookform/resolvers": "^2.9.10",
     "@mui/icons-material": "^5.10.16",
     "@mui/material": "^5.10.13",
+    "@mui/x-data-grid": "^5.17.14",
     "@reduxjs/toolkit": "^1.8.4",
     "feather-icons-react": "^0.6.2",
     "jwt-decode": "^3.1.2",
@@ -21,7 +22,6 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-spinners": "^0.13.4"
-
   },
   "scripts": {
     "start": "react-scripts start",
