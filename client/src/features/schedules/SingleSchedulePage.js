@@ -42,12 +42,12 @@ const SingleSchedulePage = () => {
     setOpen1(false);
   };
 
-
-  const { schedule, isSuccess } = useGetSchedulesQuery("schedulesList", {
+  const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
   });
+  // const sortedScheduleMaterials = schedule.materials.sort();
   console.log(schedule);
   const [deleteMaterial] = useDeleteMaterialMutation();
 
@@ -67,7 +67,7 @@ const SingleSchedulePage = () => {
       field: "actions",
       headerName: "Edit",
       type: "actions",
-      width:200,
+      width: 200,
       renderCell: (params) => (
         <Button onClick={() => expandModel(params.row)}>
           <Edit size={20} />
@@ -78,7 +78,7 @@ const SingleSchedulePage = () => {
       field: "action",
       headerName: "Delete",
       type: "actions",
-      width:200,
+      width: 200,
       renderCell: (params) => (
         <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
           <Trash size={20} />
@@ -129,28 +129,29 @@ const SingleSchedulePage = () => {
             height: 580,
             width: "100%",
           }}
-        > {(schedule) &&
-
-          <DataGrid
-            columns={columns}
-            rows={schedule.materials}
-            getRowId={(row) => row._id}
-            rowsPerPageOptions={[5, 10, 20]}
-            pageSize={pageSize}
-            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            getRowSpacing={(params) => ({
-              top: params.isFirstVisible ? 0 : 5,
-              bottom: params.isLastVisible ? 0 : 5,
-            })}
-            sx={{
-              [`& .${gridClasses.row}`]: {
-                bgcolor: (theme) =>
-                  theme.palette.mode === "light" ? grey[200] : grey[900],
-              },
-            }}
-            onCellEditCommit={(params) => setRowId(params.id)}
-          />
-        }
+        >
+          
+          {schedule && (
+            <DataGrid
+              columns={columns}
+              rows={schedule.materials}
+              getRowId={(row) => row._id}
+              rowsPerPageOptions={[5, 10, 20]}
+              pageSize={pageSize}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              getRowSpacing={(params) => ({
+                top: params.isFirstVisible ? 0 : 5,
+                bottom: params.isLastVisible ? 0 : 5,
+              })}
+              sx={{
+                [`& .${gridClasses.row}`]: {
+                  bgcolor: (theme) =>
+                    theme.palette.mode === "light" ? grey[200] : grey[900],
+                },
+              }}
+              onCellEditCommit={(params) => setRowId(params.id)}
+            />
+          )}
         </Box>
       </TableContainer>
     </div>

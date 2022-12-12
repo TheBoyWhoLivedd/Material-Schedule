@@ -20,7 +20,7 @@ const AddEntryComponent = ({
 
   return (
     <div>
-      AddEntryComponent
+     
       <form >
         <Grid container spacing={3}>
           <Grid item md={3}>
