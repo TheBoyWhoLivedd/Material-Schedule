@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
-import { useGetNotesQuery } from "../notes/notesApiSlice";
-
-import ScheduleTable from "./ScheduleTable";
-import useAuth from "../../hooks/useAuth";
+import { useEffect, useState, useMemo } from "react";
 import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
 import { selectScheduleById, useGetSchedulesQuery } from "./schedulesApiSlice";
-import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import Table from "@mui/material/Table";
@@ -16,14 +11,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "@mui/material";
+import { Button, Box, Typography } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
 import MaterialAddForm from "../../components/MaterialAddForm";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
+import { DataGrid, gridClasses } from "@mui/x-data-grid";
 
 const SingleSchedulePage = () => {
   useTitle("techNotes: Single Schedule Page");
@@ -46,9 +41,9 @@ const SingleSchedulePage = () => {
     setSelectedChild(null);
     setOpen1(false);
   };
-  console.log(id);
 
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+
+  const { schedule, isSuccess } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
@@ -59,7 +54,38 @@ const SingleSchedulePage = () => {
   const onDeleteMaterialClicked = async (materialId) => {
     await deleteMaterial({ id: schedule.id, _id: materialId });
   };
+  const [pageSize, setPageSize] = useState(5);
+  const [rowId, setRowId] = useState(null);
 
+  const columns = useMemo(() => [
+    { field: "materialName", headerName: "Item", width: 170 },
+    { field: "elementName", headerName: "Element", width: 200 },
+    { field: "materialDescription", headerName: "Description", width: 200 },
+    { field: "unit", headerName: "Unit", width: 200 },
+    { field: "computedValue", headerName: "Quantity", width: 200 },
+    {
+      field: "actions",
+      headerName: "Edit",
+      type: "actions",
+      width:200,
+      renderCell: (params) => (
+        <Button onClick={() => expandModel(params.row)}>
+          <Edit size={20} />
+        </Button>
+      ),
+    },
+    {
+      field: "action",
+      headerName: "Delete",
+      type: "actions",
+      width:200,
+      renderCell: (params) => (
+        <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
+          <Trash size={20} />
+        </Button>
+      ),
+    },
+  ]);
   let content;
 
   content = (
@@ -89,62 +115,43 @@ const SingleSchedulePage = () => {
             <Button variant="outlined">View Summary</Button>
           </Link>
         </div>
-        <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/`}>
-            <Button variant="outlined">View Applications</Button>
-          </Link>
-        </div>
       </div>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ITEM</TableCell>
-              <TableCell align="right">Element</TableCell>
-              <TableCell align="right">Description</TableCell>
-              <TableCell align="right">UNIT</TableCell>
-              <TableCell align="right">QUANTITy</TableCell>
-              <TableCell align="right">Edit</TableCell>
-              <TableCell align="right">Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {schedule?.materials?.map((child) => (
-              <TableRow
-                key={child._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {child.materialName}
-                </TableCell>
-                <TableCell component="th" scope="row" align="right">
-                  {child.elementName}
-                </TableCell>
-                <TableCell align="right">{child.materialDescription}</TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
-                <TableCell align="right">{child.computedValue}</TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => expandModel(child)}>
-                    <Edit size={20} />
-                  </Button>
-                </TableCell>
-   
-                <TableCell align="right">
-                  <Button onClick={() => onDeleteMaterialClicked(child._id)}>
-                    <Trash size={20} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            <ModalSecondary open={open1} handleClose={closeModal}>
-              <MaterialAddForm
-                formData={selectedChild}
-                id={id}
-                handleClose={closeModal}
-              />
-            </ModalSecondary>
-          </TableBody>
-        </Table>
+        <ModalSecondary open={open1} handleClose={closeModal}>
+          <MaterialAddForm
+            formData={selectedChild}
+            id={id}
+            handleClose={closeModal}
+          />
+        </ModalSecondary>
+        <Box
+          sx={{
+            height: 580,
+            width: "100%",
+          }}
+        > {(schedule) &&
+
+          <DataGrid
+            columns={columns}
+            rows={schedule.materials}
+            getRowId={(row) => row._id}
+            rowsPerPageOptions={[5, 10, 20]}
+            pageSize={pageSize}
+            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+            getRowSpacing={(params) => ({
+              top: params.isFirstVisible ? 0 : 5,
+              bottom: params.isLastVisible ? 0 : 5,
+            })}
+            sx={{
+              [`& .${gridClasses.row}`]: {
+                bgcolor: (theme) =>
+                  theme.palette.mode === "light" ? grey[200] : grey[900],
+              },
+            }}
+            onCellEditCommit={(params) => setRowId(params.id)}
+          />
+        }
+        </Box>
       </TableContainer>
     </div>
   );
