@@ -43,7 +43,7 @@ const SingleSchedulePage = () => {
   };
 
 
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+  const { schedule, isSuccess } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
@@ -129,7 +129,8 @@ const SingleSchedulePage = () => {
             height: 580,
             width: "100%",
           }}
-        >
+        > {(schedule) &&
+
           <DataGrid
             columns={columns}
             rows={schedule.materials}
@@ -149,6 +150,7 @@ const SingleSchedulePage = () => {
             }}
             onCellEditCommit={(params) => setRowId(params.id)}
           />
+        }
         </Box>
       </TableContainer>
     </div>
