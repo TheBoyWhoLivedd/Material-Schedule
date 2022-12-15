@@ -16,6 +16,7 @@ const AddEntryComponent = ({
   setNewEntry,
   handleSubmit,
   handleChange,
+  handleFormSubmit
 }) => {
 
   return (
@@ -79,16 +80,16 @@ const AddEntryComponent = ({
           </Grid>
         </Grid>
 
-        {/* <div
+        <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
           }}
         >
-          <Button onClick={""} variant="contained" type="submit">
+          <Button onClick={handleFormSubmit} variant="contained" type="submit">
             Submit
           </Button>
-        </div> */}
+        </div>
       </form>
     </div>
   );

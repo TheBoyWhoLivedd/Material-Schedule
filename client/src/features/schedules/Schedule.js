@@ -43,7 +43,8 @@ const Schedule = ({ scheduleId }) => {
                 {schedule.title}
               </Typography>
               <Typography> Funded By {schedule.funder}</Typography>
-              <Typography> {schedule.contractor}</Typography>
+              <Typography> Contractor: {schedule.contractor}</Typography>
+              <Typography>Contractor's TIN: {schedule.tin}</Typography>
               <Typography>By {schedule.username}</Typography>
               <Typography>{created}</Typography>
             </CardContent>

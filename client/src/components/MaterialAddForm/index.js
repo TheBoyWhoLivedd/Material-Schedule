@@ -16,6 +16,8 @@ import {
   rebarSizeOptions,
   bondData,
 } from "../../assets/data";
+import { evaluate } from "mathjs";
+
 const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
@@ -30,6 +32,8 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
   }, [isSuccess, isAddSuccess]);
 
   const [options, setOptions] = useState(formData);
+  const [error, setError] = React.useState("");
+
   console.log(options);
   const handleOnElementSelect = (e, name) => {
     setOptions({ ...options, [name]: e.target.value });
@@ -56,6 +60,45 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
 
     console.log(e.target.value);
   };
+  const handleOnCalcParamChange = (e) => {
+    try {
+      // Check the input string for any incomplete expressions
+
+      const regex = /[+-/*]$|[(][^)]*$/;
+      if (regex.test(e.target.value)) {
+        // If there is an incomplete expression, don't evaluate the input
+        setError(
+          "The expression is incomplete because it has an open brcaket or missing operator at end"
+        );
+        setOptions({
+          ...options,
+          parameters: {
+            ...options.parameters,
+            expression: e.target.value,
+            [e.target.name]: e.target.value,
+          },
+        });
+      } else {
+        // Use the math.js evaluate function to calculate the result
+        const result = evaluate(e.target.value);
+        setOptions({
+          ...options,
+          parameters: {
+            ...options.parameters,
+            expression: e.target.value,
+            [e.target.name]: result,
+          },
+        });
+
+        setError(false);
+        // If the calculation is successful, update the state or UI to show the result
+      }
+    } catch (error) {
+      // If an error occurs, you can set the error message using the TextField's error prop
+      setError(error.message);
+      console.log(error);
+    }
+  };
 
   //validating that all object keys have values before sending update request
   let canSave;
@@ -78,6 +121,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
       description: options.materialDescription,
       materialName: options.materialName,
       parameters: options.parameters,
+      materialType: options?.materialType,
     }).then(() => {
       handleClose();
     });
@@ -92,6 +136,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
       description: options.materialDescription,
       materialName: options.materialName,
       parameters: options.parameters,
+      materialType: options?.materialType,
     }).then(() => {
       handleClose();
     });
@@ -143,13 +188,15 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
               )}
             />
             <TextField
-              type="number"
+              type="string"
               name="cum"
               label="Cubic Meters"
               placeholder="Enter Cubic Metres"
-              onChange={handleOnParamChange}
-              value={options?.parameters?.cum}
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
               required
+              error={Boolean(error)}
+              helperText={error}
             />
           </>
         )}
@@ -160,8 +207,8 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
               options={wallingMaterialsData.map((option) => option)}
               name="materialName"
               placeholder="Enter Material"
-              onSelect={(e) => handleOnSelect(e, "materialName")}
-              value={options?.materialName}
+              onSelect={(e) => handleOnSelect(e, "materialType")}
+              value={options?.materialType}
               required={true}
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
@@ -172,32 +219,32 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
               options={bondData.map((option) => option)}
               name="bondName"
               placeholder="Choose Bond Type"
-              onSelect={(e) => handleOnSelect(e, "bondName")}
-              value={options?.bondName}
+              onSelect={(e) => handleOnParamSelect(e, "bondName")}
+              value={options?.parameters?.bondName}
               required={true}
               renderInput={(params) => (
                 <TextField {...params} label="Bond Type" required />
               )}
             />
-            <Autocomplete
+            {/* <Autocomplete
               id="mortarOptions_id"
               options={mortarOptions.map((option) => option.ratio)}
               name="mortarRatio"
               value={options?.parameters?.ratio}
               placeholder="Choose Mortar Ratio"
-              onSelect={(e) => handleOnSelect(e, "mortarRatio")}
+              onSelect={(e) => handleOnParamSelect(e, "mortarRatio")}
               required={true}
               renderInput={(params) => (
                 <TextField {...params} label="Mortar Ratio" required />
               )}
-            />
+            /> */}
             <TextField
               type="text"
               name="wallArea"
-              value={options?.area}
+              value={options?.parameters?.wallArea}
               label="Wall Area (sqm)"
               placeholder="Enter Wall Area"
-              onChange={handleOnChange}
+              onChange={handleOnParamChange}
             />
           </>
         )}
@@ -221,9 +268,9 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                   id="brcSizeOptions_id"
                   options={brcSizeOptions.map((option) => option.size)}
                   name="brcSize"
-                  value={options?.parameters?.size}
+                  value={options?.parameters?.brcSize}
                   placeholder="Choose BRC Size"
-                  onSelect={(e) => handleOnSelect(e, "brcSize")}
+                  onSelect={(e) => handleOnParamSelect(e, "brcSize")}
                   required={true}
                   renderInput={(params) => (
                     <TextField {...params} label="BRC Size" required />
@@ -231,11 +278,11 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                 />
                 <TextField
                   type="text"
-                  name="Area"
-                  value={options?.area}
+                  name="area"
+                  value={options?.parameters?.area}
                   label="Area (sqm)"
                   placeholder="Area"
-                  onChange={handleOnChange}
+                  onChange={handleOnParamChange}
                 />
               </>
             )}
@@ -245,9 +292,9 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                   id="rebarSizeOptions_id"
                   options={rebarSizeOptions.map((option) => option.size)}
                   name="rebarSize"
-                  value={options?.parameters?.size}
+                  value={options?.parameters?.rebarSize}
                   placeholder="Choose Rebar Diameter (mm)"
-                  onSelect={(e) => handleOnSelect(e, "rebarSize")}
+                  onSelect={(e) => handleOnParamSelect(e, "rebarSize")}
                   required={true}
                   renderInput={(params) => (
                     <TextField
@@ -260,10 +307,10 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                 <TextField
                   type="text"
                   name="Kgs"
-                  value={options?.kgs}
+                  value={options?.parameters?.Kgs}
                   label="Kilograms"
                   placeholder="Total Kilograms"
-                  onChange={handleOnChange}
+                  onChange={handleOnParamChange}
                 />
               </>
             )}
@@ -277,12 +324,14 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
           onChange={handleOnChange}
           value={options?.materialDescription}
         />
+
         {Object.keys(formData).length === 0 ? (
           <Button
             onClick={onSaveMaterialClicked}
             variant="outlined"
             type="submit"
             className="button"
+            disabled={error}
           >
             Generate
           </Button>

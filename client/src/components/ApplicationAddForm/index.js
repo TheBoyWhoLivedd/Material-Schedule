@@ -4,16 +4,7 @@ import {
   useUpdateMaterialMutation,
 } from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
-import {
-  Button,
-  TextField,
-  Container,
-  Paper,
-  Box,
-  Typography,
-  Grid,
-  Text,
-} from "@mui/material";
+import { Container, Paper, Box } from "@mui/material";
 import AddEntryComponent from "../AddEntryComponent";
 
 import "./ApplicationAddForm.css";
@@ -51,6 +42,8 @@ const ApplicationAddForm = ({ id, handleClose }) => {
     }
   };
 
+  const handleFormSubmit = (e) => {};
+
   const handleOnChange = (e) => {
     setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
     // console.log(newEntry);
@@ -82,6 +75,7 @@ const ApplicationAddForm = ({ id, handleClose }) => {
             newEntry={newEntry}
             handleChange={handleOnChange}
             handleSubmit={handleSubmit}
+            handleFormSubmit={handleFormSubmit}
           />
         </Paper>
       </Container>

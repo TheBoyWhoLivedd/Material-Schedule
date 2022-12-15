@@ -1,0 +1,164 @@
+import React from "react";
+import { evaluate } from "mathjs";
+
+export function validateBodmasString(bodmasString) {
+  // Check if the string is empty
+  if (bodmasString.length === 0) {
+    return false;
+  }
+
+  // Check if the string contains any characters other than numbers, parentheses,
+  // and the four basic arithmetic operators
+  const validCharacters = /^[0-9()+-/*]+$/;
+  if (!validCharacters.test(bodmasString)) {
+    return false;
+  }
+
+  // Check if the string has balanced parentheses
+  const parentheses = bodmasString
+    .split("")
+    .filter((char) => char === "(" || char === ")");
+  let openParentheses = 0;
+  for (const char of parentheses) {
+    if (char === "(") {
+      openParentheses++;
+    } else {
+      openParentheses--;
+    }
+
+    if (openParentheses < 0) {
+      return false;
+    }
+  }
+
+  if (openParentheses !== 0) {
+    return false;
+  }
+
+  return true;
+}
+
+export function calculateBodmas(bodmasString) {
+  // Check if the string is empty or not a valid BODMAS string
+  if (!bodmasString || !validateBodmasString(bodmasString)) {
+    return NaN;
+  }
+
+  // Use a regular expression to find all sub-expressions enclosed in parentheses
+  const regex = /\(([^()]+)\)/g;
+  let match = regex.exec(bodmasString);
+
+  // Replace each sub-expression with its calculated result
+  while (match != null) {
+    const subExpression = match[1];
+    const result = calculateBodmas(subExpression);
+    bodmasString = bodmasString.replace(match[0], result);
+    match = regex.exec(bodmasString);
+  }
+
+  // Split the string into an array of numbers and operators
+  const tokens = bodmasString.split(/([+-/*])/).filter((token) => token !== "");
+
+  // Calculate the result of the expression using the BODMAS rules
+  let result = parseInt(tokens[0], 10);
+  for (let i = 1; i < tokens.length; i += 2) {
+    const operator = tokens[i];
+    const operand = parseInt(tokens[i + 1], 10);
+
+    switch (operator) {
+      case "+":
+        result += operand;
+        break;
+      case "-":
+        result -= operand;
+        break;
+      case "*":
+        result *= operand;
+        break;
+      case "/":
+        result /= operand;
+        break;
+    }
+  }
+
+  return result;
+}
+
+// function that checks if input has a proper bodmas string and returns value.
+
+export const BodmasCalculator = () => {
+  const [input, setInput] = React.useState("");
+  const [result, setResult] = React.useState("");
+  const [error, setError] = React.useState(false);
+
+  const handleChange = (event) => {
+    const input = event.target.value;
+    // Use a regular expression to validate the input as a proper bodmas string
+    const isValid =
+      /^\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|[\+-\/\*]))*\)*)*\)*)*[\+-\/\*]*)+\)*$/.test(
+        input
+      );
+
+    const isValidOrNumber =
+      /^(\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|[\+-\/\*]))*\)*)*\)*)*[\+-\/\*]*)+\)*|\d+(\.\d+)*)$/.test(
+        input
+      );
+
+    const isValidOrNumberOrEmpty =
+      /^(\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|[\+-\/\*]))*\)*)*\)*)*[\+-\/\*]*)+\)*|\d+(\.\d+)*|)$/.test(
+        input
+      );
+
+    // const isValid =
+    //   /^\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|\(*(\d+(\.\d+)*|\((\d+(\.\d+)*|[\+-\/\*]))*\)*)*\)*)*[\+-\/\*]*)+\)*$/.test(
+    //     input
+    //   );
+
+    if (!isValid) {
+      // If the input is not valid, display an error message
+      setInput(input);
+      setError(true);
+    } else {
+      // If the input is valid, perform the calculation and display the result
+      // Use a safer method for performing the calculation, such as the mathjs library
+      const result = evaluate(input);
+      setInput(input);
+      setResult(result);
+      setError(false);
+    }
+  };
+
+  return (
+    <form>
+      <input type="text" value={input} onChange={handleChange} />
+      <div>{result}</div>
+      <div>{error}</div>
+    </form>
+  );
+};
+
+
+const validateExpression = (input) => {
+  // Use the updated regex to validate the input
+  const validExpression = /^(\+|[+-]?)(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?((\s+)?(?<=\s|^|\()[-+*/^\(\)](\s+)?)*[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+  if (!validExpression.test(input)) {
+    return false;
+  }
+
+  // Use a stack to check that the parentheses are used correctly
+  const stack = [];
+  for (const c of input) {
+    if (c === "(") {
+      stack.push(c);
+    } else if (c === ")") {
+      if (stack.length === 0) {
+        return false;
+      }
+      stack.pop();
+    }
+  }
+
+  // Return true if the stack is empty, indicating that all opening
+  // parentheses have a matching closing parenthesis
+  return stack.length === 0;
+};
