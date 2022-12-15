@@ -241,10 +241,12 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
             <TextField
               type="text"
               name="wallArea"
-              value={options?.parameters?.wallArea}
+              value={options?.parameters?.expression}
               label="Wall Area (sqm)"
               placeholder="Enter Wall Area"
-              onChange={handleOnParamChange}
+              onChange={handleOnCalcParamChange}
+              error={Boolean(error)}
+              helperText={error}
             />
           </>
         )}
@@ -279,10 +281,12 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                 <TextField
                   type="text"
                   name="area"
-                  value={options?.parameters?.area}
+                  value={options?.parameters?.expression}
                   label="Area (sqm)"
                   placeholder="Area"
-                  onChange={handleOnParamChange}
+                  onChange={handleOnCalcParamChange}
+                  error={Boolean(error)}
+                  helperText={error}
                 />
               </>
             )}
@@ -307,10 +311,12 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
                 <TextField
                   type="text"
                   name="Kgs"
-                  value={options?.parameters?.Kgs}
+                  value={options?.parameters?.expression}
                   label="Kilograms"
                   placeholder="Total Kilograms"
-                  onChange={handleOnParamChange}
+                  onChange={handleOnCalcParamChange}
+                  error={Boolean(error)}
+                  helperText={error}
                 />
               </>
             )}
@@ -341,7 +347,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
             variant="outlined"
             type="submit"
             className="button"
-            disabled={!canSave}
+            disabled={!canSave || error}
           >
             Update
           </Button>

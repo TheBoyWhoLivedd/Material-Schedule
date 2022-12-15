@@ -19,6 +19,7 @@ import MaterialAddForm from "../../components/MaterialAddForm";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import DeleteModal from "../../components/DeleteModal";
 
 const SingleSchedulePage = () => {
   useTitle("techNotes: Single Schedule Page");
@@ -80,9 +81,12 @@ const SingleSchedulePage = () => {
       type: "actions",
       width: 200,
       renderCell: (params) => (
-        <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
-          <Trash size={20} />
-        </Button>
+        // <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
+        //   <Trash size={20} />
+        // </Button>
+        <DeleteModal
+          handleDelete={() => onDeleteMaterialClicked(params.row._id)}
+        />
       ),
     },
   ]);
@@ -130,7 +134,6 @@ const SingleSchedulePage = () => {
             width: "100%",
           }}
         >
-          
           {schedule && (
             <DataGrid
               columns={columns}
