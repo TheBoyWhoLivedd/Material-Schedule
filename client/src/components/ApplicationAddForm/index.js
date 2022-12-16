@@ -4,16 +4,7 @@ import {
   useUpdateMaterialMutation,
 } from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
-import {
-  Button,
-  TextField,
-  Container,
-  Paper,
-  Box,
-  Typography,
-  Grid,
-  Text,
-} from "@mui/material";
+import { Container, Paper, Box } from "@mui/material";
 import AddEntryComponent from "../AddEntryComponent";
 
 import "./ApplicationAddForm.css";
@@ -31,17 +22,14 @@ const ApplicationAddForm = ({ id, handleClose }) => {
 
   const [addApplication, { isSuccess: isAddSuccess }] =
     useAddApplicationMutation();
-    useEffect(() => {
-      console.log(entries);
-    }, [entries]);
+
   const addEntry = (entry) => {
     const id = entries.length ? entries[entries.length - 1].id + 1 : 1;
     const myNewEntry = { ...entry, id };
     const listEntries = [...entries, myNewEntry];
-    console.log(listEntries);
+    // console.log(listEntries);
 
     setEntries(listEntries);
-
   };
 
   const handleSubmit = (e) => {
@@ -54,22 +42,41 @@ const ApplicationAddForm = ({ id, handleClose }) => {
     }
   };
 
+  const handleFormSubmit = (e) => {};
+
   const handleOnChange = (e) => {
     setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
-    console.log(newEntry);
+    // console.log(newEntry);
+  };
+  const handleDelete = (id) => {
+    const entryItems = entries.filter((entry) => entry.id !== id);
+    setEntries(entryItems);
+  };
+  const handleEntryChange = (e, id) => {
+    const entryItems = entries.map((entry) => {
+      if (entry.id === id) {
+        return { ...entry, [e.target.name]: e.target.value };
+      }
+      return entry;
+    });
+    setEntries(entryItems);
+    console.log(entryItems);
   };
   return (
     <div>
       <Container>
         <Paper component={Box} p={4}>
+          <Content
+            entries={entries}
+            handleDelete={handleDelete}
+            handleChange={handleEntryChange}
+          />
           <AddEntryComponent
             newEntry={newEntry}
             handleChange={handleOnChange}
             handleSubmit={handleSubmit}
+            handleFormSubmit={handleFormSubmit}
           />
-          <main>
-            <Content />
-          </main>
         </Paper>
       </Container>
     </div>

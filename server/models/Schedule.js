@@ -24,14 +24,21 @@ const scheduleSchema = new mongoose.Schema(
       type: String,
       // required: true,
     },
+    tin: {
+      type: Number,
+      // required: true,
+    },
 
-    summary:[],
+    summary: [],
     materials: [
       {
         elementName: {
           type: String,
         },
         materialName: {
+          type: String,
+        },
+        materialType: {
           type: String,
         },
         materialDescription: {
@@ -41,6 +48,9 @@ const scheduleSchema = new mongoose.Schema(
           type: Number,
         },
         unit: {
+          type: String,
+        },
+        relatedId: {
           type: String,
         },
         parameters: {},

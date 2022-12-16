@@ -20,6 +20,7 @@ const NewScheduleForm = ({ users }) => {
   const [program, setProgram] = useState("");
   const [funder, setFunder] = useState("");
   const [contractor, setContractor] = useState("");
+  const [tin, setTin] = useState("");
 
   const [userId, setUserId] = useState(users[0].id);
 
@@ -39,6 +40,7 @@ const NewScheduleForm = ({ users }) => {
   const onProgramChanged = (e) => setProgram(e.target.value);
   const onFunderChanged = (e) => setFunder(e.target.value);
   const onContractorChanged = (e) => setContractor(e.target.value);
+  const onTinChanged = (e) => setTin(e.target.value);
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const canSave =
@@ -53,6 +55,7 @@ const NewScheduleForm = ({ users }) => {
         program,
         funder,
         contractor,
+        tin
       });
     }
   };
@@ -133,9 +136,10 @@ const NewScheduleForm = ({ users }) => {
               width: { sm: 200, md: 640 },
               "& .MuiInputBase-root": {
                 height: 60,
+                background: "white",
               },
             }}
-            inputProps={{ style: { fontFamily: "Arial", color: "white" } }}
+            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
             style={{ color: "white" }}
             id="contractor"
             name="contractor"
@@ -148,6 +152,27 @@ const NewScheduleForm = ({ users }) => {
             onChange={onContractorChanged}
             margin="normal"
           />
+          <TextField
+            sx={{
+              width: { sm: 200, md: 640 },
+              "& .MuiInputBase-root": {
+                height: 60,
+                background: "white",
+              },
+            }}
+            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
+            style={{ color: "white" }}
+            id="tin"
+            name="tin"
+            type="number"
+            autoComplete="off"
+            value={tin}
+            size="normal"
+            variant="outlined"
+            label="Contractor's TIN"
+            onChange={onTinChanged}
+            margin="normal"
+          />
 
           <FormLabel
             // className="form__label form__checkbox-container"
@@ -158,6 +183,7 @@ const NewScheduleForm = ({ users }) => {
                 width: { sm: 200, md: 300 },
                 "& .MuiInputBase-root": {
                   height: 60,
+                  background: "white",
                 },
               }}
               className="select"

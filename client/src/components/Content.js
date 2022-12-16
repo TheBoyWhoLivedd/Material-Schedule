@@ -1,13 +1,15 @@
 import EntryList from "./EntryList";
 
-const Content = ({ entries, handleCheck, handleDelete }) => {
+const Content = ({ entries, handleCheck, handleDelete, handleChange }) => {
+  console.log(entries);
   return (
     <>
       {entries?.length ? (
         <EntryList
-          items={entries}
+          entries={entries}
           handleCheck={handleCheck}
           handleDelete={handleDelete}
+          handleChange={handleChange}
         />
       ) : (
         <p style={{ marginTop: "2rem" }}>Your list is empty.</p>

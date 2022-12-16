@@ -11,7 +11,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Snackbar } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
@@ -19,6 +19,7 @@ import MaterialAddForm from "../../components/MaterialAddForm";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
+import DeleteModal from "../../components/DeleteModal";
 
 const SingleSchedulePage = () => {
   useTitle("techNotes: Single Schedule Page");
@@ -26,6 +27,17 @@ const SingleSchedulePage = () => {
   const { id } = useParams();
   const [open, setOpen] = useState(false);
   const [open1, setOpen1] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const openSnackbarWithMessage = (message) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
+
+  const closeSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const handleOpen = () => setOpen(true);
 
@@ -42,12 +54,12 @@ const SingleSchedulePage = () => {
     setOpen1(false);
   };
 
-
-  const { schedule, isSuccess } = useGetSchedulesQuery("schedulesList", {
+  const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
   });
+  // const sortedScheduleMaterials = schedule.materials.sort();
   console.log(schedule);
   const [deleteMaterial] = useDeleteMaterialMutation();
 
@@ -67,7 +79,7 @@ const SingleSchedulePage = () => {
       field: "actions",
       headerName: "Edit",
       type: "actions",
-      width:200,
+      width: 200,
       renderCell: (params) => (
         <Button onClick={() => expandModel(params.row)}>
           <Edit size={20} />
@@ -78,11 +90,14 @@ const SingleSchedulePage = () => {
       field: "action",
       headerName: "Delete",
       type: "actions",
-      width:200,
+      width: 200,
       renderCell: (params) => (
-        <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
-          <Trash size={20} />
-        </Button>
+        // <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
+        //   <Trash size={20} />
+        // </Button>
+        <DeleteModal
+          handleDelete={() => onDeleteMaterialClicked(params.row._id)}
+        />
       ),
     },
   ]);
@@ -107,7 +122,11 @@ const SingleSchedulePage = () => {
             </Button>
           }
         >
-          <MaterialAddForm id={id} handleClose={handleClose} />
+          <MaterialAddForm
+            id={id}
+            handleClose={handleClose}
+            openSnackbarWithMessage={openSnackbarWithMessage}
+          />
         </ModalComponent>
 
         <div style={{ marginLeft: "1rem" }}>
@@ -116,12 +135,24 @@ const SingleSchedulePage = () => {
           </Link>
         </div>
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={openSnackbar}
+        message={snackbarMessage}
+        autoHideDuration={3000} // closes after 3 seconds
+        onClose={closeSnackbar}
+        style={{
+          width: "500px",
+          color: "white !important",
+        }}
+      />
       <TableContainer component={Paper}>
         <ModalSecondary open={open1} handleClose={closeModal}>
           <MaterialAddForm
             formData={selectedChild}
             id={id}
             handleClose={closeModal}
+            openSnackbarWithMessage={openSnackbarWithMessage}
           />
         </ModalSecondary>
         <Box
@@ -129,28 +160,28 @@ const SingleSchedulePage = () => {
             height: 580,
             width: "100%",
           }}
-        > {(schedule) &&
-
-          <DataGrid
-            columns={columns}
-            rows={schedule.materials}
-            getRowId={(row) => row._id}
-            rowsPerPageOptions={[5, 10, 20]}
-            pageSize={pageSize}
-            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            getRowSpacing={(params) => ({
-              top: params.isFirstVisible ? 0 : 5,
-              bottom: params.isLastVisible ? 0 : 5,
-            })}
-            sx={{
-              [`& .${gridClasses.row}`]: {
-                bgcolor: (theme) =>
-                  theme.palette.mode === "light" ? grey[200] : grey[900],
-              },
-            }}
-            onCellEditCommit={(params) => setRowId(params.id)}
-          />
-        }
+        >
+          {schedule && (
+            <DataGrid
+              columns={columns}
+              rows={schedule.materials}
+              getRowId={(row) => row._id}
+              rowsPerPageOptions={[5, 10, 20]}
+              pageSize={pageSize}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              getRowSpacing={(params) => ({
+                top: params.isFirstVisible ? 0 : 5,
+                bottom: params.isLastVisible ? 0 : 5,
+              })}
+              sx={{
+                [`& .${gridClasses.row}`]: {
+                  bgcolor: (theme) =>
+                    theme.palette.mode === "light" ? grey[200] : grey[900],
+                },
+              }}
+              onCellEditCommit={(params) => setRowId(params.id)}
+            />
+          )}
         </Box>
       </TableContainer>
     </div>

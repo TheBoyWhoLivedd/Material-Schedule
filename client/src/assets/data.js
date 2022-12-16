@@ -19,7 +19,7 @@ export const materialsData = [
   "Concrete",
 ];
 export const concreteMaterialsData = ["Cement"];
-export const wallingMaterialsData = ["Brick Work", "Block Work"];
+export const wallingMaterialsData = ["Bricks", "Blocks"];
 export const reinforcementMaterialsData = ["BRC", "Rebar"];
 export const bondData = ["Header", "Stretcher"];
 
@@ -41,15 +41,21 @@ export const beamSizeOptions = [
 ];
 
 export const brcSizeOptions = [
+  { size: "A66" },
+  { size: "A98(30) " },
+  { size: "A98(48)" },
   { size: "A142" },
-  { size: "A98" },
-  { size: "A200" },
+  { size: "A193" },
+  { size: "A252" },
 ];
 export const rebarSizeOptions = [
   { size: "8" },
+  { size: "10" },
   { size: "12" },
   { size: "16" },
-  { size: "24" },
+  { size: "20" },
+  { size: "25" },
   { size: "32" },
+  { size: "40" },
 ];
 export const mortarOptions = [{ ratio: "1:3" }, { ratio: "1:4" }];
