@@ -238,3 +238,44 @@ function DataGridExample() {
 
   return <DataGrid columns={columns} rows={rows} />;
 }
+
+
+const Schedule = require("../models/Schedule");
+const User = require("../models/User");
+const mongoose = require("mongoose");
+
+// @desc Update a schedule
+// @route PUT /schedules/:id
+// @access Private
+async function updateScheduleMaterial(req, res) {
+  try {
+    // Find the element being updated
+    const element = await Schedule.findById(req.params.id);
+
+    // If the element is not found, return a 404 error
+    if (!element) return res.status(404).json({ message: "Element not found" });
+
+    // If the element name is "concrete", fetch all the related objects
+    if (element.elementName === "concrete") {
+      const concreteElements = await Schedule.find({
+        elementName: "concrete",
+        relatedElement: element._id,
+      });
+      // Update all the related objects in a single operation
+      await Schedule.updateMany(
+        {
+          _id: { $in: concreteElements.map((e) => e._id) },
+        },
+        req.body
+      );
+    } else {
+      // Otherwise, update the element as usual
+      element.set(req.body);
+      await element.save();
+    }
+
+    res.json({ message: "Element updated" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating element" });
+  }
+}

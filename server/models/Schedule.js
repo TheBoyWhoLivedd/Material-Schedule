@@ -50,6 +50,9 @@ const scheduleSchema = new mongoose.Schema(
         unit: {
           type: String,
         },
+        relatedId: {
+          type: String,
+        },
         parameters: {},
       },
     ],

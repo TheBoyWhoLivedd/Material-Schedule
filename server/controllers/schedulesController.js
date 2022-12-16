@@ -2,6 +2,7 @@
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const { v4: uuid } = require("uuid");
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
@@ -199,7 +200,6 @@ function calculateBlocks(area, bond) {
   }
 }
 
-
 const getAllSchedules = async (req, res) => {
   // Get all notes from MongoDB
   const schedules = await Schedule.find().lean();
@@ -295,7 +295,6 @@ const updateSchedule = async (req, res) => {
     schedule.title = title;
   }
 
-
   if (description) {
     schedule.description = description;
   }
@@ -307,7 +306,6 @@ const updateSchedule = async (req, res) => {
     schedule: updatedSchedule,
   });
 };
-
 
 // @desc Delete a note
 // @route DELETE /notes
@@ -347,6 +345,8 @@ const addScheduleMaterial = async (req, res) => {
 
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
+  const relatedId = uuid();
+  console.log(relatedId);
 
   if (!schedule) {
     return res
@@ -367,6 +367,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.cementBags,
       unit: "Bags",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Concrete",
@@ -375,6 +376,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.amountofSand,
       unit: "Tonnes",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Concrete",
@@ -383,6 +385,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.amountofAggregates,
       unit: "Tonnes",
       parameters: parameters,
+      relatedId: relatedId,
     });
   } else if (elementName === "Reinforcement" && materialName === "BRC") {
     const results = calculateBRC(parameters.brcSize, parameters.area);
@@ -418,6 +421,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.numBricks,
       unit: "Bricks",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -427,7 +431,9 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.numCementBags,
       unit: "Bags",
       parameters: parameters,
+      relatedId: relatedId,
     });
+    
     schedule.materials.push({
       elementName: "Walling",
       materialName: "Sand",
@@ -436,6 +442,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.sandWeighttTonnes,
       unit: "Tonnes",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -445,6 +452,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.hoopIron,
       unit: "Rolls",
       parameters: parameters,
+      relatedId: relatedId, 
     });
   } else if (elementName === "Walling" && materialType === "Blocks") {
     const results = calculateBlocks(parameters.wallArea, parameters.bondName);
@@ -546,12 +554,19 @@ const getScheduleDetails = async (req, res) => {
 
 const updateScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
-  console.log(scheduleId);
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  console.log(objectId);
   const materialId = req.params.materialId;
   // Validate update data
-  const { elementName, materialName, description, parameters, materialType } =
-    req.body;
-
+  const {
+    elementName,
+    materialName,
+    description,
+    parameters,
+    materialType,
+    relatedId,
+  } = req.body;
+  console.log(relatedId);
   // Confirm data
   if (!materialName && !description && !parameters && !elementName) {
     return res.status(400).json({ message: "Please provide a relevant field" });
@@ -562,29 +577,48 @@ const updateScheduleMaterial = async (req, res) => {
   let updatedValue = 1;
   let schedule;
   if (elementName === "Concrete") {
+    // Find objects that have the relatedId in the request body
+    schedule = await Schedule.findOne({
+      _id: scheduleId,
+    }).exec();
+
+    const materials = schedule?.materials?.filter(
+      (material) => material.relatedId === relatedId
+    );
     results = calculateConcreteGivenClass(
       parameters.concreteClass,
       parameters.cum
     );
-    //Find out which of the three concrete constituent materials to update
-    if (materialName == "Cement") {
-      updatedValue = results.cementBags;
-    } else if (materialName == "Sand") {
-      updatedValue = results.amountofSand;
-    } else if (materialName == "Aggregates") {
-      updatedValue = results.amountofAggregates;
-    }
-    schedule = await Schedule.findOneAndUpdate(
-      { _id: scheduleId, "materials._id": materialId },
-      {
-        $set: {
-          "materials.$.parameters": parameters,
-          "materials.$.elementName": elementName,
-          "materials.$.materialDescription": description,
-          "materials.$.computedValue": updatedValue,
-        },
+    for (const material of materials) {
+      //Find out which of the three concrete constituent materials to update
+      if (material.materialName == "Cement") {
+        material.computedValue = results.cementBags;
+        material.parameters = parameters;
+        material.materialDescription = description;
+      } else if (material.materialName == "Sand") {
+        material.computedValue = results.amountofSand;
+        material.parameters = parameters;
+        material.materialDescription = description;
+      } else if (material.materialName == "Aggregates") {
+        material.computedValue = results.amountofAggregates;
+        material.parameters = parameters;
+        material.materialDescription = description;
       }
-    ).exec();
+    }
+    await schedule.save();
+
+    // Update the material's computedValue property
+    //  await Schedule.updateOne(
+    //   { "materials._id": materialId },
+    //   {
+    //     $set: {
+    //       "materials.$.parameters": parameters,
+    //       "materials.$.elementName": elementName,
+    //       "materials.$.materialDescription": description,
+    //       "materials.$.computedValue": updatedValue,
+    //     },
+    //   }
+    // ).exec();
   } else if (elementName === "Reinforcement" && materialName === "BRC") {
     const results = calculateBRC(parameters.brcSize, parameters.area);
     schedule = await Schedule.findOneAndUpdate(

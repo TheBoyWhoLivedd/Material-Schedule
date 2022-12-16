@@ -11,7 +11,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Snackbar } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
@@ -27,6 +27,17 @@ const SingleSchedulePage = () => {
   const { id } = useParams();
   const [open, setOpen] = useState(false);
   const [open1, setOpen1] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const openSnackbarWithMessage = (message) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
+
+  const closeSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const handleOpen = () => setOpen(true);
 
@@ -111,7 +122,11 @@ const SingleSchedulePage = () => {
             </Button>
           }
         >
-          <MaterialAddForm id={id} handleClose={handleClose} />
+          <MaterialAddForm
+            id={id}
+            handleClose={handleClose}
+            openSnackbarWithMessage={openSnackbarWithMessage}
+          />
         </ModalComponent>
 
         <div style={{ marginLeft: "1rem" }}>
@@ -120,12 +135,24 @@ const SingleSchedulePage = () => {
           </Link>
         </div>
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={openSnackbar}
+        message={snackbarMessage}
+        autoHideDuration={3000} // closes after 3 seconds
+        onClose={closeSnackbar}
+        style={{
+          width: "500px",
+          color: "white !important",
+        }}
+      />
       <TableContainer component={Paper}>
         <ModalSecondary open={open1} handleClose={closeModal}>
           <MaterialAddForm
             formData={selectedChild}
             id={id}
             handleClose={closeModal}
+            openSnackbarWithMessage={openSnackbarWithMessage}
           />
         </ModalSecondary>
         <Box

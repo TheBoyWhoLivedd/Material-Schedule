@@ -18,7 +18,7 @@ import {
 } from "../../assets/data";
 import { evaluate } from "mathjs";
 
-const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
+const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessage }) => {
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
@@ -28,6 +28,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
   useEffect(() => {
     if (isSuccess || isAddSuccess) {
       //Set the state that closes the modals
+      openSnackbarWithMessage('Material Updated Successfully');
     }
   }, [isSuccess, isAddSuccess]);
 
@@ -124,6 +125,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
       materialType: options?.materialType,
     }).then(() => {
       handleClose();
+      openSnackbarWithMessage('Material Added Successfully');
     });
   };
 
@@ -137,8 +139,10 @@ const MaterialAddForm = ({ formData = {}, id, handleClose }) => {
       materialName: options.materialName,
       parameters: options.parameters,
       materialType: options?.materialType,
+      relatedId: options?.relatedId,
     }).then(() => {
       handleClose();
+      
     });
   };
 
