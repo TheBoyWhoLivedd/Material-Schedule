@@ -9,6 +9,8 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 
+import { Edit } from "feather-icons-react";
+
 const Schedule = ({ scheduleId }) => {
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
@@ -36,6 +38,10 @@ const Schedule = ({ scheduleId }) => {
               height: "100%",
               display: "flex",
               flexDirection: "column",
+              ":hover": {
+                transform: "scale(1.06)",
+                transition: "transform 0.5s ease",
+              },
             }}
           >
             <CardContent sx={{ flexGrow: 1 }}>
@@ -50,13 +56,27 @@ const Schedule = ({ scheduleId }) => {
             </CardContent>
             <CardActions>
               <Link to={`/dash/schedules/${schedule.id}`}>
-                <Button size="small">View Schedule</Button>
+                <Button size="small"> Schedules</Button>
               </Link>
               <Link to={`/dash/schedules/${schedule.id}/application`}>
-                <Button size="small">View Applications</Button>
+                <Button size="small">Applications</Button>
               </Link>
               <Link to={`/dash/schedules/edit/${schedule.id}`}>
-                <Button size="small">Edit</Button>
+                <Button
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    background: "transparent",
+                    color: "black",
+                    "&:hover": {
+                      background: "transparent",
+                      color: "black",
+                    },
+                  }}
+                >
+                  <Edit size={20} />
+                </Button>
               </Link>
             </CardActions>
           </Card>

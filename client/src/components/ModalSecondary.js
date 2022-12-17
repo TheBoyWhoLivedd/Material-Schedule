@@ -25,11 +25,31 @@ export default function ModalSecondary({
     p: 2,
     color: "#000",
     borderRadius: "10px",
-    overflow: "hidden",
+    overflow: "scroll",
+    height: "80%",
+    scrollbarWidth: "none",
+    "::-webkit-scrollbar": {
+      width: "8px",
+      backgroundColor: "rgba(0, 0, 0, 0.1)",
+      "&:hover": {
+        backgroundColor: "rgba(0, 0, 0, 0.2)",
+      },
+    },
+    "::-webkit-scrollbar-thumb": {
+      backgroundColor: "gray",
+      borderRadius: "10px",
+      "&:hover": {
+        backgroundColor: "darkgray",
+      },
+    },
+    "::-webkit-scrollbar-button": {
+      display: "none",
+    },
   };
 
   const styles = {
     overflow: "scroll",
+    scrollbarWidth: "none",
   };
   return (
     <div>

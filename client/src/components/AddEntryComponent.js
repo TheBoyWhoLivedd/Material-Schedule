@@ -23,7 +23,7 @@ const AddEntryComponent = ({
     <div>
      
       <form >
-        <Grid container spacing={3}>
+        <Grid container spacing={3} mt={0.5}>
           <Grid item md={3}>
             <TextField
               label="Item"
