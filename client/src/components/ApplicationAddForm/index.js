@@ -62,10 +62,13 @@ const ApplicationAddForm = ({ id, handleClose }) => {
     setEntries(entryItems);
     console.log(entryItems);
   };
+  const style = {
+    boxShadow: "none",
+  };
   return (
     <div>
-      <Container>
-        <Paper component={Box} p={4}>
+      <Container >
+        <Paper component={Box}  sx={style}>
           <Content
             entries={entries}
             handleDelete={handleDelete}

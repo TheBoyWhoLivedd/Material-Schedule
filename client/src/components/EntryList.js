@@ -17,7 +17,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
       {entries?.map((entry) => (
         <div>
           <form>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} mt={0.5}>
               <Grid item md={3}>
                 <TextField
                   label="Item"
@@ -40,7 +40,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={2}>
                 <TextField
                   label="Requested"
                   name="requested"
@@ -51,7 +51,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={2}>
                 <TextField
                   label="Allowed"
                   name="allowed"
@@ -62,23 +62,12 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={2}>
                 <Button onClick={() => handleDelete(entry.id)}>
                   <Trash size={20} />
                 </Button>
               </Grid>
             </Grid>
-
-            {/* <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <Button onClick={""} variant="contained" type="submit">
-                  Submit
-                </Button>
-              </div> */}
           </form>
         </div>
       ))}
