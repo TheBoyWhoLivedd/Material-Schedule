@@ -279,3 +279,23 @@ async function updateScheduleMaterial(req, res) {
     res.status(500).json({ message: "Error updating element" });
   }
 }
+
+db.collection.aggregate([
+   {
+      $group:
+         {
+            _id: "$materialName",
+            totalQuantity: { $sum: "$quantity" },
+            unit: { $first: "$unit" }
+         }
+   },
+   {
+      $project: {
+         _id: 0,
+         materialName: "$_id",
+         totalQuantity: 1,
+         unit: 1
+      }
+   }
+])
+
