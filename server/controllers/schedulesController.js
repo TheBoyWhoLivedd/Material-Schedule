@@ -3,6 +3,7 @@ const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const { v4: uuid } = require("uuid");
+const { aggregatePipeline } = require("../utils/aggregatePipeline");
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
@@ -336,6 +337,7 @@ const addScheduleMaterial = async (req, res) => {
   const { materialName, elementName, description, parameters, materialType } =
     req.body;
   const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
 
   console.log(req.params);
   // Confirm data
@@ -433,7 +435,7 @@ const addScheduleMaterial = async (req, res) => {
       parameters: parameters,
       relatedId: relatedId,
     });
-    
+
     schedule.materials.push({
       elementName: "Walling",
       materialName: "Sand",
@@ -452,7 +454,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.hoopIron,
       unit: "Rolls",
       parameters: parameters,
-      relatedId: relatedId, 
+      relatedId: relatedId,
     });
   } else if (elementName === "Walling" && materialType === "Blocks") {
     const results = calculateBlocks(parameters.wallArea, parameters.bondName);
@@ -494,17 +496,28 @@ const addScheduleMaterial = async (req, res) => {
       parameters: parameters,
     });
   }
+
   const updatedSchedule = await schedule.save();
+  const summary = await aggregatePipeline(objectId);
+  console.log(summary);
+
+  // Update the summary field of the Schedule document
+  await Schedule.updateOne(
+    { _id: scheduleId },
+    { $set: { summary: summary } }
+  ).exec();
   res.json({
-    "message ": "Material added successfully",
+    message:
+      "Please find attached added material and new aggregated quantities",
     schedule: updatedSchedule,
+    summary: summary,
   });
 };
 
 const deleteScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const materialId = req.params.materialId;
-
+  const objectId = mongoose.Types.ObjectId(scheduleId);
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
 
@@ -528,6 +541,13 @@ const deleteScheduleMaterial = async (req, res) => {
   await schedule.materials.remove(material);
 
   await schedule.save();
+  const summary = await aggregatePipeline(objectId);
+  // Update the summary field of the Schedule document
+  await Schedule.updateOne(
+    { _id: scheduleId },
+    { $set: { summary: summary } }
+  ).exec();
+  console.log(summary);
 
   res.json({
     "message ": `Material ${material.materialName} deleted successfully`,
@@ -606,19 +626,6 @@ const updateScheduleMaterial = async (req, res) => {
       }
     }
     await schedule.save();
-
-    // Update the material's computedValue property
-    //  await Schedule.updateOne(
-    //   { "materials._id": materialId },
-    //   {
-    //     $set: {
-    //       "materials.$.parameters": parameters,
-    //       "materials.$.elementName": elementName,
-    //       "materials.$.materialDescription": description,
-    //       "materials.$.computedValue": updatedValue,
-    //     },
-    //   }
-    // ).exec();
   } else if (elementName === "Reinforcement" && materialName === "BRC") {
     const results = calculateBRC(parameters.brcSize, parameters.area);
     schedule = await Schedule.findOneAndUpdate(
@@ -691,6 +698,14 @@ const updateScheduleMaterial = async (req, res) => {
 
   const updatedMaterial = await schedule.save();
 
+  const summary = await aggregatePipeline(objectId);
+  // Update the summary field of the Schedule document
+  await Schedule.updateOne(
+    { _id: scheduleId },
+    { $set: { summary: summary } }
+  ).exec();
+  console.log(summary);
+
   res.json({
     "message ": "Material updated successfully",
     material: updatedMaterial,
@@ -716,10 +731,17 @@ const getSummary = async (req, res) => {
     { $unwind: "$materials" },
     {
       $group: {
-        //grouping by name and unit
-        // _id: "$materials.materialName",
-        _id: { name: "$materials.materialName", unit: "$materials.unit" },
+        //grouping by name
+        _id: "$materials.materialName",
+        unit: { $first: "$materials.unit" },
         Value: { $sum: "$materials.computedValue" },
+      },
+    },
+    {
+      $project: {
+        name: "$_id",
+        unit: "$unit",
+        Value: 1,
       },
     },
   ]);
