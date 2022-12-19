@@ -22,6 +22,15 @@ import ModalComponent from "../../components/ModalComponent";
 import ApplicationAddForm from "../../components/ApplicationAddForm";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
+import {
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+} from "@material-ui/core";
 
 const SingleApplicationPage = () => {
   useTitle("techNotes: Single Application Page");
@@ -49,85 +58,33 @@ const SingleApplicationPage = () => {
   let content;
 
   content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <ModalComponent
-          open={open}
-          handleOpen={handleOpen}
-          handleClose={handleClose}
-          openModal={
-            <Button variant="outlined">
-              <Plus width={20} />
-              Add Application
-            </Button>
-          }
-        >
-          <ApplicationAddForm id={id} handleClose={handleClose} />
-        </ModalComponent>
-        <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/summary`}>
-            <Button variant="outlined">View Summary</Button>
-          </Link>
-        </div>
-      </div>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ITEM</TableCell>
-              <TableCell>Supplier</TableCell>
-
-              <TableCell align="right">UNIT</TableCell>
-              <TableCell align="right">Allowed</TableCell>
-              <TableCell align="right">Rejected</TableCell>
-              <TableCell align="right">Edit</TableCell>
-              <TableCell align="right">Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {schedule?.materials?.map((child) => (
-              <TableRow
-                key={child._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {}
-                </TableCell>
-                <TableCell align="right">{}</TableCell>
-                <TableCell component="th" scope="row" align="right">
-                  {}
-                </TableCell>
-
-                <TableCell align="right">{}</TableCell>
-                <TableCell align="right">
-                  <ModalComponent
-                    openModal={
-                      <Button>
-                        <Edit size={20} />
-                      </Button>
-                    }
-                  >
-                    {/* <ApplicationAddForm formData={child} id={id} /> */}
-                  </ModalComponent>
-                </TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => onDeleteMaterialClicked(child._id)}>
-                    <Trash size={20} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    <div>
+      {schedule?.application?.map((application) => (
+        <ExpansionPanel key={application._id}>
+          <ExpansionPanelSummary>{application.date}</ExpansionPanelSummary>
+          <Button variant="contained" color="primary" onClick={""}>Print</Button>
+          <ExpansionPanelDetails>
+            <List>
+              {application.items.map((item) => (
+                <ListItem key={item._id}>
+                  <ListItemText
+                    primary={item.item}
+                    secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Allowed: ${item.amountAllowed}`}
+                  />
+                  <ListItemSecondaryAction>
+                    <Button variant="contained" color="primary" onClick={""}>
+                      <Edit />
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={""}>
+                      <Trash />
+                    </Button>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      ))}
     </div>
   );
 
