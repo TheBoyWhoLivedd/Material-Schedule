@@ -16,7 +16,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
     <div>
       {entries?.map((entry) => (
         <div>
-          <form>
+          <form key={entry.id}>
             <Grid container spacing={3} mt={0.5}>
               <Grid item md={3}>
                 <TextField

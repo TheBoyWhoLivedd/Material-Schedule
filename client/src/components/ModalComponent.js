@@ -27,7 +27,8 @@ export default function ModalComponent({
     color: "#000",
     borderRadius: "10px",
     overflow: "scroll",
-    height: "50%",
+    height: "auto",
+    maxHeight: "85%",
     scrollbarWidth: "none",
     "::-webkit-scrollbar": {
       width: "8px",
@@ -49,7 +50,6 @@ export default function ModalComponent({
   };
 
   const styles = {
-   
     scrollbarWidth: "none",
   };
   return (

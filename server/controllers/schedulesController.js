@@ -4,73 +4,11 @@ const User = require("../models/User");
 const mongoose = require("mongoose");
 const { v4: uuid } = require("uuid");
 const { aggregatePipeline } = require("../utils/aggregatePipeline");
+const { calculateConcreteGivenClass } = require("../utils/calculations");
+
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
-
-function calculateConcreteGivenClass(concreteClass, cum) {
-  if (concreteClass === "C30") {
-    let cementKgs = Number(cum) * 540;
-    let sandWeightkgs = Number(cum) * 400;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 850;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C25") {
-    let cementKgs = Number(cum) * 393;
-    let sandWeightkgs = Number(cum) * 435;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 928;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C20") {
-    let cementKgs = Number(cum) * 309;
-    let sandWeightkgs = Number(cum) * 456;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 972;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C15") {
-    let cementKgs = Number(cum) * 216;
-    let sandWeightkgs = Number(cum) * 479;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 1020;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C10") {
-    let cementKgs = Number(cum) * 166;
-    let sandWeightkgs = Number(cum) * 491;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 1046;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  }
-}
 
 function calculateBRC(size, area) {
   if (size === "A66" || "A98(30)") {
@@ -755,14 +693,10 @@ const getSummary = async (req, res) => {
 };
 
 const postApplication = async (req, res) => {
-  // const { item, supplier, requested, allowed } = req.body;
+  const applications = req.body;
   const scheduleId = req.params.scheduleId;
 
-  console.log(req.params);
-  // Confirm data
-  // if (!item || !supplier || !requested || !allowed) {
-  //   return res.status(400).json({ message: "Please provide a relevant field" });
-  // }
+  console.log(applications);
 
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
@@ -773,9 +707,31 @@ const postApplication = async (req, res) => {
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
 
-  schedule.application.push({
-    req,
+  // Validate and create a single application object with a date field and an items array
+  const date = new Date().toISOString();
+  const updatedApplication = {
+    date,
+    items: []
+  };
+  applications.forEach((application) => {
+    if (
+      !application.item ||
+      !application.supplier ||
+      !application.requested ||
+      !application.allowed
+    ) {
+      throw new Error("Missing required fields");
+    }
+    updatedApplication.items.push({
+      item: application.item,
+      supplier: application.supplier,
+      amountRequested: application.requested,
+      amountAllowed: application.allowed,
+    });
   });
+
+  // Add the updated application to the schedule
+  schedule.application.push(updatedApplication);
 
   const updatedSchedule = await schedule.save();
   res.json({
@@ -783,6 +739,7 @@ const postApplication = async (req, res) => {
     schedule: updatedSchedule,
   });
 };
+
 
 module.exports = {
   getAllSchedules,
