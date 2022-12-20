@@ -42,7 +42,14 @@ const ApplicationAddForm = ({ id, handleClose }) => {
     }
   };
 
-  const handleFormSubmit = (e) => {};
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    await addApplication({
+      body:entries,
+      id:id
+    });
+   
+  };
 
   const handleOnChange = (e) => {
     setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
@@ -67,8 +74,8 @@ const ApplicationAddForm = ({ id, handleClose }) => {
   };
   return (
     <div>
-      <Container >
-        <Paper component={Box}  sx={style}>
+      <Container>
+        <Paper component={Box} sx={style}>
           <Content
             entries={entries}
             handleDelete={handleDelete}

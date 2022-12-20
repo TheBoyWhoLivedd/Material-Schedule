@@ -4,7 +4,7 @@ import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
-import { useGetSummaryQuery } from "./schedulesApiSlice";
+import { useGetSummaryQuery,useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -23,17 +23,15 @@ const SummaryPage = () => {
 
   console.log(id);
 
-  const res = useGetSummaryQuery(
-    { id: id },
-    {
-      pollingInterval: 150000,
-      refetchOnFocus: true,
-      refetchOnMountOrArgChange: true,
-    }
-  );
+  const { schedule } = useGetSchedulesQuery("schedulesList", {
+    selectFromResult: ({ data }) => ({
+      schedule: data?.entities[id],
+    }),
+  });
+
+  console.log(schedule);
 
 
-  // const sortedData = data.sort();
 
   let content;
 
@@ -49,15 +47,15 @@ const SummaryPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {res?.data?.summary?.map((child) => (
+            {schedule?.summary?.map((child) => (
               <TableRow
-                key={child._id.name}
+                key={child._id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  Total {child._id.name}
+                  Total {child._id}
                 </TableCell>
-                <TableCell align="right">{child._id.unit}</TableCell>
+                <TableCell align="right">{child.unit}</TableCell>
                 <TableCell component="th" scope="row" align="right">
                   {child.Value}
                 </TableCell>

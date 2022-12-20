@@ -58,12 +58,15 @@ const scheduleSchema = new mongoose.Schema(
     ],
     application: [
       {
-        supplierName: {
-          type: String,
+        date: {
+          type: Date,
         },
-        amounts: [
+        items: [
           {
-            itemRequested: {
+            item: {
+              type: String,
+            },
+            supplier: {
               type: String,
             },
             amountRequested: {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGetNotesQuery } from "../notes/notesApiSlice";
 import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
@@ -17,22 +17,63 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import ModalComponent from "../../components/ModalComponent";
 import ApplicationAddForm from "../../components/ApplicationAddForm";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
+import {
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Popper,
+  Fade,
+  ClickAwayListener,
+} from "@material-ui/core";
+
+const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
+  <ClickAwayListener onClickAway={clickAwayHandler}>
+    <Popper open={isOpen} anchorEl={anchorEl}>
+      <Paper>{children}</Paper>
+    </Popper>
+  </ClickAwayListener>
+);
 
 const SingleApplicationPage = () => {
   useTitle("techNotes: Single Application Page");
-  const [open, setOpen] = useState(false);
 
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => setOpen(false);
   const { id } = useParams();
 
+  const [editItem, setEditItem] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const [isPopperOpen, setIsPopperOpen] = useState(false);
+  const clickAwayHandler = (event) => {
+    // Check if the event target has the "edit-button" class name
+    if (event.target.className.includes("edit-button")) {
+      return;
+    }
+
+    setIsPopperOpen(false);
+  };
+  const openPopper = (event, item) => {
+    setIsPopperOpen(true);
+    setEditItem(item);
+    setAnchorEl(event.currentTarget);
+  };
   console.log(id);
+  // State variables for the popper
+
+  // Function to update the item
+  const updateItem = () => {
+    // Update the item here
+    // Use the editItem state variable to get the values of the item to be edited
+    // and the schedule.id to update the item in the correct schedule
+  };
 
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
@@ -49,88 +90,97 @@ const SingleApplicationPage = () => {
   let content;
 
   content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <ModalComponent
-          open={open}
-          handleOpen={handleOpen}
-          handleClose={handleClose}
-          openModal={
-            <Button variant="outlined">
-              <Plus width={20} />
-              Add Application
-            </Button>
-          }
+    <div>
+      {schedule?.application?.map((application) => (
+        <ExpansionPanel key={application._id}>
+          <ExpansionPanelSummary>{application.date}</ExpansionPanelSummary>
+          <Button variant="contained" color="primary" onClick={""}>
+            Print
+          </Button>
+          
+
+          <ExpansionPanelDetails style={{  display: "block" }}>
+            <List>
+              {application.items.map((item) => (
+                <ListItem key={item._id} style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+                  <ListItemText
+                    primary={item.item}
+                    secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Allowed: ${item.amountAllowed}`}
+                  />
+                  <ListItemSecondaryAction>
+                    {/* Add a button to open the popper when clicked */}
+                    <div >
+                    <Button
+                      className="edit-button"
+                      variant="contained"
+                      color="primary"
+                      onClick={(e) => openPopper(e, item)}
+                    >
+                      <Edit />
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={""}>
+                      <Trash />
+                    </Button>
+                    </div>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </ExpansionPanelDetails>
+          
+        </ExpansionPanel>
+      ))}
+      {/* Render the popper component */}
+      {isPopperOpen && (
+        <MyPopper
+          isOpen={isPopperOpen}
+          clickAwayHandler={clickAwayHandler}
+          anchorEl={anchorEl}
         >
-          <ApplicationAddForm id={id} handleClose={handleClose} />
-        </ModalComponent>
-        <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/summary`}>
-            <Button variant="outlined">View Summary</Button>
-          </Link>
-        </div>
-      </div>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ITEM</TableCell>
-              <TableCell>Supplier</TableCell>
-
-              <TableCell align="right">UNIT</TableCell>
-              <TableCell align="right">Allowed</TableCell>
-              <TableCell align="right">Rejected</TableCell>
-              <TableCell align="right">Edit</TableCell>
-              <TableCell align="right">Delete</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {schedule?.materials?.map((child) => (
-              <TableRow
-                key={child._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {}
-                </TableCell>
-                <TableCell align="right">{}</TableCell>
-                <TableCell component="th" scope="row" align="right">
-                  {}
-                </TableCell>
-
-                <TableCell align="right">{}</TableCell>
-                <TableCell align="right">
-                  <ModalComponent
-                    openModal={
-                      <Button>
-                        <Edit size={20} />
-                      </Button>
-                    }
-                  >
-                    {/* <ApplicationAddForm formData={child} id={id} /> */}
-                  </ModalComponent>
-                </TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => onDeleteMaterialClicked(child._id)}>
-                    <Trash size={20} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <form>
+            <TextField
+              label="Item"
+              value={editItem.item}
+              onChange={(e) =>
+                setEditItem({ ...editItem, item: e.target.value })
+              }
+            />
+            <TextField
+              label="Supplier"
+              value={editItem.supplier}
+              onChange={(e) =>
+                setEditItem({ ...editItem, supplier: e.target.value })
+              }
+            />
+            <TextField
+              label="Amount Requested"
+              value={editItem.amountRequested}
+              onChange={(e) =>
+                setEditItem({
+                  ...editItem,
+                  amountRequested: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Amount Allowed"
+              value={editItem.amountAllowed}
+              onChange={(e) =>
+                setEditItem({ ...editItem, amountAllowed: e.target.value })
+              }
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => updateItem(editItem)}
+            >
+              Update
+            </Button>
+          </form>
+        </MyPopper>
+      )}
     </div>
   );
-
   return content;
 };
 export default SingleApplicationPage;

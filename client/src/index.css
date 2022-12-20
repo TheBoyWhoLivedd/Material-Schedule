@@ -316,8 +316,39 @@ tr {
 }
 
 .form__select {
-  width: fit-content;
-  padding: 0.25em;
+  /* Add styles for the select container */
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  appearance: none;
+  box-shadow: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form__select::-ms-expand {
+  display: none;
+}
+
+.form__select:focus {
+  /* Add styles for the select element when it is focused */
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form__select:disabled {
+  /* Add styles for the select element when it is disabled */
+  color: #6c757d;
+  background-color: #e9ecef;
 }
 
 .form__action-buttons {
