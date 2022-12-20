@@ -26,7 +26,8 @@ export default function ModalSecondary({
     color: "#000",
     borderRadius: "10px",
     overflow: "scroll",
-    height: "80%",
+    height:"auto",
+    maxHeight: "85%",
     scrollbarWidth: "none",
     "::-webkit-scrollbar": {
       width: "8px",
