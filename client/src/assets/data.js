@@ -18,6 +18,21 @@ export const materialsData = [
   "Granite",
   "Concrete",
 ];
+export const applicationItems = [
+  "Cement",
+  "Sand",
+  "Aggregate",
+  "Tiles",
+  "Beams",
+  "Hardcore",
+  "Sections",
+  "Roofing",
+  "Curbstones",
+  "Granite",
+  "Concrete",
+];
+
+
 export const concreteMaterialsData = ["Cement"];
 export const wallingMaterialsData = ["Bricks", "Blocks"];
 export const reinforcementMaterialsData = ["BRC", "Rebar"];
