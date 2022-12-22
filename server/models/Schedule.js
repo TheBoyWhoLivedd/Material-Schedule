@@ -70,10 +70,10 @@ const scheduleSchema = new mongoose.Schema(
               type: String,
             },
             amountRequested: {
-              type: Number,
+              type: String,
             },
             amountAllowed: {
-              type: Number,
+              type: String,
             },
           },
         ],

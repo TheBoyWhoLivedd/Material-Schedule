@@ -1,38 +1,37 @@
 import { React, useRef } from "react";
-import {
-  Button,
-  TextField,
-  Container,
-  Paper,
-  Box,
-  Typography,
-  Grid,
-  Text,
-} from "@mui/material";
+import { Button, TextField, Grid } from "@mui/material";
 import { Trash, Plus } from "feather-icons-react";
+import Autocomplete from "@mui/material/Autocomplete";
+import { applicationItems } from "../assets/data";
 
 const AddEntryComponent = ({
   newEntry,
   setNewEntry,
   handleSubmit,
   handleChange,
-  handleFormSubmit
+  handleFormSubmit,
+  handleOnItemSelect,
 }) => {
-
   return (
     <div>
-     
-      <form >
+      <form>
         <Grid container spacing={3} mt={0.5}>
           <Grid item md={3}>
-            <TextField
-              label="Item"
+            <Autocomplete
+              options={applicationItems.map((option) => option)}
               name="item"
-              placeholder="Item Description"
-              variant="outlined"
+              placeholder="Choose Element"
+              onSelect={(e) => handleOnItemSelect(e, "item")}
               value={newEntry?.item}
-              onChange={handleChange}
-              fullWidth
+              required
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Item"
+                  required
+                  placeholder="Item Description"
+                />
+              )}
             />
           </Grid>
           <Grid item md={3}>

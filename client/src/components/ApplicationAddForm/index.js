@@ -10,8 +10,11 @@ import AddEntryComponent from "../AddEntryComponent";
 import "./ApplicationAddForm.css";
 import Content from "../Content";
 
-const ApplicationAddForm = ({ id, handleClose }) => {
+const ApplicationAddForm = ({ id, handleClose, content }) => {
   const [entries, setEntries] = useState([]);
+  if (content) {
+    setEntries(content);
+  }
   const initialState = {
     item: "",
     supplier: "",
@@ -45,14 +48,17 @@ const ApplicationAddForm = ({ id, handleClose }) => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     await addApplication({
-      body:entries,
-      id:id
+      body: entries,
+      id: id,
     });
-   
   };
 
   const handleOnChange = (e) => {
     setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
+    // console.log(newEntry);
+  };
+  const handleOnItemSelect = (e, name) => {
+    setNewEntry({ ...newEntry, [name]: e.target.value });
     // console.log(newEntry);
   };
   const handleDelete = (id) => {
@@ -86,6 +92,7 @@ const ApplicationAddForm = ({ id, handleClose }) => {
             handleChange={handleOnChange}
             handleSubmit={handleSubmit}
             handleFormSubmit={handleFormSubmit}
+            handleOnItemSelect={handleOnItemSelect}
           />
         </Paper>
       </Container>

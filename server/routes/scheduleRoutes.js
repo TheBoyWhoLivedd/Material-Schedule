@@ -24,7 +24,6 @@ router
   .route("/:scheduleId/materials/:materialId")
   .delete(schedulesController.deleteScheduleMaterial)
   .patch(schedulesController.updateScheduleMaterial);
-module.exports = router;
 
 //summary route
 router.route("/:scheduleId/summary").get(schedulesController.getSummary);
@@ -32,3 +31,13 @@ router.route("/:scheduleId/summary").get(schedulesController.getSummary);
 router
   .route("/:scheduleId/application")
   .post(schedulesController.postApplication);
+
+router
+  .route("/:scheduleId/applications/:appId/:itemId")
+  .delete(schedulesController.deleteApplicationItem)
+  .patch(schedulesController.updateApplicationItem);
+router
+  .route("/:scheduleId/applications/:appId")
+  .patch(schedulesController.updateApplication);
+
+module.exports = router;

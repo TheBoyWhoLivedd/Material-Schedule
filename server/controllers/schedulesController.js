@@ -711,7 +711,7 @@ const postApplication = async (req, res) => {
   const date = new Date().toISOString();
   const updatedApplication = {
     date,
-    items: []
+    items: [],
   };
   applications.forEach((application) => {
     if (
@@ -740,6 +740,108 @@ const postApplication = async (req, res) => {
   });
 };
 
+const updateApplicationItem = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+
+  const applicationId = mongoose.Types.ObjectId(req.params.appId);
+
+  const itemId = req.params.itemId;
+
+  // Extract fields from the request body
+  const { item, supplier, amountRequested, amountAllowed } = req.body;
+
+  // Find the updated document and save it to the database
+  let updatedSchedule;
+  try {
+    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
+    console.log(updatedSchedule);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error finding schedule" });
+  }
+  console.log(item, supplier, amountAllowed, amountRequested);
+  // Update the item in the database
+  try {
+    await Schedule.updateOne(
+      { _id: objectId, "date._id": applicationId },
+      {
+        $set: {
+          "application.$[].items.$[elem].item": item,
+          "application.$[].items.$[elem].supplier": supplier,
+          "application.$[].items.$[elem].amountRequested": amountRequested,
+          "application.$[].items.$[elem].amountAllowed": amountAllowed,
+        },
+      },
+      { arrayFilters: [{ "elem._id": itemId }], returnOriginal: false }
+    );
+    await updatedSchedule.save();
+    res
+      .status(200)
+      .send({ message: "Item updated successfully", updatedSchedule });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error updating item" });
+  }
+};
+const updateApplication = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  const applicationId = mongoose.Types.ObjectId(req.params.appId);
+
+  const applications = req.body;
+  console.log(applications);
+
+  // Find the updated document and save it to the database
+  let updatedSchedule;
+  try {
+    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
+    console.log(updatedSchedule);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error finding schedule" });
+  }
+
+  // Update the item in the database
+  try {
+    await Schedule.updateOne(
+      { _id: objectId, "date._id": applicationId },
+      {
+        $set: {
+          "application.$[elem].items": applications.entries,
+        },
+      },
+      {
+        arrayFilters: [{ "elem._id": applicationId }],
+      }
+    );
+    await updatedSchedule.save();
+    res
+      .status(200)
+      .send({ message: "Item updated successfully", updatedSchedule });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error updating item" });
+  }
+};
+
+const deleteApplicationItem = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  const applicationId = mongoose.Types.ObjectId(req.params.appId);
+  const itemId = req.params.itemId;
+
+  try {
+    const result = await Schedule.updateOne(
+      { _id: objectId, "date._id": applicationId },
+      { $pull: { "application.$[].items": { _id: itemId } } }
+    );
+    res.status(200).send({ message: "Item deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error deleting item" });
+  }
+};
 
 module.exports = {
   getAllSchedules,
@@ -752,4 +854,7 @@ module.exports = {
   updateScheduleMaterial,
   getSummary,
   postApplication,
+  updateApplicationItem,
+  deleteApplicationItem,
+  updateApplication,
 };

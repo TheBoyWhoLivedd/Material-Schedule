@@ -1,27 +1,19 @@
-import { useEffect, useState, useRef } from "react";
-import { useGetNotesQuery } from "../notes/notesApiSlice";
-import ScheduleTable from "./ScheduleTable";
-import useAuth from "../../hooks/useAuth";
+import { useState } from "react";
 import useTitle from "../../hooks/useTitle";
-import PulseLoader from "react-spinners/PulseLoader";
-import { selectScheduleById, useGetSchedulesQuery } from "./schedulesApiSlice";
-import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { Link, useNavigate } from "react-router-dom";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { useGetSchedulesQuery } from "./schedulesApiSlice";
+import { useParams, Link } from "react-router-dom";
 import Paper from "@mui/material/Paper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { Button, TextField } from "@mui/material";
-import ModalComponent from "../../components/ModalComponent";
-import ApplicationAddForm from "../../components/ApplicationAddForm";
+// import { Button, TextField } from "@mui/material";
 import { Plus, Edit, Trash } from "feather-icons-react";
-import { useDeleteMaterialMutation } from "./schedulesApiSlice";
+import {
+  useDeleteMaterialMutation,
+  useUpdateApplicationItemMutation,
+  useDeleteApplicationItemMutation,
+} from "./schedulesApiSlice";
+import ModalComponent from "../../components/ModalComponent";
+import ModalSecondary from "../../components/ModalSecondary";
+import ApplicationAddForm from "../../components/ApplicationAddForm";
+import ApplicationEditForm from "../../components/ApplicationAddForm/ApplicationEditForm";
 import {
   ExpansionPanel,
   ExpansionPanelSummary,
@@ -31,10 +23,14 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Popper,
-  Fade,
   ClickAwayListener,
+  Button,
+  TextField,
 } from "@material-ui/core";
+import { applicationItems } from "../../assets/data";
+import { Autocomplete } from "@mui/material";
 
+// Custom Popper component that also handles closing when user clicks away
 const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
   <ClickAwayListener onClickAway={clickAwayHandler}>
     <Popper open={isOpen} anchorEl={anchorEl}>
@@ -45,12 +41,17 @@ const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
 
 const SingleApplicationPage = () => {
   useTitle("techNotes: Single Application Page");
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const { id } = useParams();
 
+  // State for the edit form
   const [editItem, setEditItem] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-
+  const [appId, setAppId] = useState(null);
+  const [itemId, setItemId] = useState(null);
   const [isPopperOpen, setIsPopperOpen] = useState(false);
   const clickAwayHandler = (event) => {
     // Check if the event target has the "edit-button" class name
@@ -60,76 +61,165 @@ const SingleApplicationPage = () => {
 
     setIsPopperOpen(false);
   };
-  const openPopper = (event, item) => {
+
+  // Handles the click event for the edit button
+  const handleEditClick = (event, item, applId) => {
     setIsPopperOpen(true);
     setEditItem(item);
     setAnchorEl(event.currentTarget);
-  };
-  console.log(id);
-  // State variables for the popper
-
-  // Function to update the item
-  const updateItem = () => {
-    // Update the item here
-    // Use the editItem state variable to get the values of the item to be edited
-    // and the schedule.id to update the item in the correct schedule
+    setAppId(applId);
+    setItemId(item._id);
+    console.log(appId, itemId);
   };
 
+  // RTK Query mutations for updating and deleting items
+  const [updateApplicationItem, { isSuccess }] =
+    useUpdateApplicationItemMutation();
+  const [deleteApplicationItem, { isSuccess: isDelSuccess }] =
+    useDeleteApplicationItemMutation();
+
+  // Function to update the individual item
+  const updateItem = async () => {
+    await updateApplicationItem({
+      id: id,
+      appId: appId,
+      itemId: itemId,
+      editItem: editItem,
+    });
+  };
+  // Function to delete the item
+  const onDeleteitemClicked = async (applId, itemlId) => {
+    console.log(appId, itemId);
+    await deleteApplicationItem({ id: id, appId: applId, itemId: itemlId });
+  };
+
+  // Query to get the schedule from the API
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
   });
   console.log(schedule);
+
+  // Handles change events for the edit individual item form
+  const handleOnItemSelect = (e, name) => {
+    setEditItem({ ...editItem, [name]: e.target.value });
+    console.log(editItem);
+  };
+
   const [deleteMaterial] = useDeleteMaterialMutation();
 
-  const onDeleteMaterialClicked = async (materialId) => {
-    await deleteMaterial({ id: schedule.id, _id: materialId });
+  // Handling Secondary Modal
+  const [open1, setOpen1] = useState(false);
+  const [selectedChild, setSelectedChild] = useState(null);
+
+  const expandModel = (child) => {
+    setSelectedChild(child);
+    setOpen1(true);
+  };
+  const closeModal = () => {
+    setSelectedChild(null);
+    setOpen1(false);
   };
 
   let content;
-
   content = (
     <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
+        <ModalComponent
+          open={open}
+          handleOpen={handleOpen}
+          handleClose={handleClose}
+          openModal={
+            <Button variant="outlined">
+              <Plus width={20} />
+              Add Application
+            </Button>
+          }
+        >
+          <ApplicationAddForm id={id} handleClose={handleClose} />
+        </ModalComponent>
+        <div style={{ marginLeft: "1rem" }}>
+          <Link to={`/dash/schedules/${id}/summary`}>
+            <Button variant="outlined">View Summary</Button>
+          </Link>
+        </div>
+      </div>
       {schedule?.application?.map((application) => (
         <ExpansionPanel key={application._id}>
           <ExpansionPanelSummary>{application.date}</ExpansionPanelSummary>
-          <Button variant="contained" color="primary" onClick={""}>
-            Print
-          </Button>
-          
+          <div
+            style={{
+              display: "flex",
+            }}
+          >
+            <Button variant="contained" color="primary" onClick={""}>
+              Print
+            </Button>
+            <Button variant="outlined" onClick={() => expandModel(application)}>
+              <Plus width={20} />
+              Add
+            </Button>
+          </div>
 
-          <ExpansionPanelDetails style={{  display: "block" }}>
+          <ExpansionPanelDetails style={{ display: "block" }}>
             <List>
               {application.items.map((item) => (
-                <ListItem key={item._id} style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+                <ListItem
+                  key={item._id}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <ListItemText
                     primary={item.item}
                     secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Allowed: ${item.amountAllowed}`}
                   />
                   <ListItemSecondaryAction>
                     {/* Add a button to open the popper when clicked */}
-                    <div >
-                    <Button
-                      className="edit-button"
-                      variant="contained"
-                      color="primary"
-                      onClick={(e) => openPopper(e, item)}
-                    >
-                      <Edit />
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={""}>
-                      <Trash />
-                    </Button>
+                    <div>
+                      <Button
+                        className="edit-button"
+                        variant="contained"
+                        color="primary"
+                        onClick={(e) =>
+                          handleEditClick(e, item, application._id)
+                        }
+                      >
+                        <Edit />
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={(e) =>
+                          onDeleteitemClicked(application._id, item._id)
+                        }
+                      >
+                        <Trash />
+                      </Button>
                     </div>
                   </ListItemSecondaryAction>
                 </ListItem>
               ))}
             </List>
           </ExpansionPanelDetails>
-          
         </ExpansionPanel>
       ))}
+      <ModalSecondary open={open1} handleClose={closeModal}>
+        <ApplicationEditForm
+          id={id}
+          handleClose={handleClose}
+          content={selectedChild}
+        />
+      </ModalSecondary>
       {/* Render the popper component */}
       {isPopperOpen && (
         <MyPopper
@@ -137,14 +227,7 @@ const SingleApplicationPage = () => {
           clickAwayHandler={clickAwayHandler}
           anchorEl={anchorEl}
         >
-          <form>
-            <TextField
-              label="Item"
-              value={editItem.item}
-              onChange={(e) =>
-                setEditItem({ ...editItem, item: e.target.value })
-              }
-            />
+          <form style={{ display: "flex" }}>
             <TextField
               label="Supplier"
               value={editItem.supplier}
@@ -152,6 +235,20 @@ const SingleApplicationPage = () => {
                 setEditItem({ ...editItem, supplier: e.target.value })
               }
             />
+            <Autocomplete
+              id="items_id"
+              options={applicationItems.map((option) => option)}
+              name="item"
+              placeholder="Choose Element"
+              onSelect={(e) => handleOnItemSelect(e, "item")}
+              value={editItem.item}
+              style={{ width: 200 }}
+              required
+              renderInput={(params) => (
+                <TextField {...params} label="Item" required />
+              )}
+            />
+
             <TextField
               label="Amount Requested"
               value={editItem.amountRequested}
