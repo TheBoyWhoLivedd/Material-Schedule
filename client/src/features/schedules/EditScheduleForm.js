@@ -7,6 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
+import TextField from "@mui/material/TextField";
+import Stack from "@mui/material/Stack";
+import Autocomplete from "@mui/material/Autocomplete";
+import { Box } from "@mui/system";
+import MenuItem from "@mui/material/MenuItem";
+import { FormLabel } from "@mui/material";
 
 const EditScheduleForm = ({ schedule, users }) => {
   const { isManager, isAdmin } = useAuth();
@@ -22,6 +28,10 @@ const EditScheduleForm = ({ schedule, users }) => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState(schedule.title);
+  const [program, setProgram] = useState(schedule.program);
+  const [funder, setFunder] = useState(schedule.funder);
+  const [contractor, setContractor] = useState(schedule.contractor);
+  const [tin, setTin] = useState(schedule.tin);
   const [description, setDescription] = useState(schedule.description);
   const [completed, setCompleted] = useState(schedule.completed);
   const [userId, setUserId] = useState(schedule.user);
@@ -29,18 +39,27 @@ const EditScheduleForm = ({ schedule, users }) => {
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
       setTitle("");
-      setDescription("");
+      setProgram("");
+      setFunder("");
+      setContractor("");
+
+      setTin("");
       setUserId("");
       navigate("/dash/schedules");
     }
   }, [isSuccess, isDelSuccess, navigate]);
 
   const onTitleChanged = (e) => setTitle(e.target.value);
+  const onProgramChanged = (e) => setProgram(e.target.value);
+  const onFunderChanged = (e) => setFunder(e.target.value);
+  const onContractorChanged = (e) => setContractor(e.target.value);
+  const onTinChanged = (e) => setTin(e.target.value);
   const onDescriptionChanged = (e) => setDescription(e.target.value);
-  const onCompletedChanged = (e) => setCompleted((prev) => !prev)
+  const onCompletedChanged = (e) => setCompleted((prev) => !prev);
+
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
-  const canSave = [title, description, userId].every(Boolean) && !isLoading;
+  const canSave = [title, program, funder, contractor, tin, userId].every(Boolean) && !isLoading;
 
   const onSaveNoteClicked = async (e) => {
     if (canSave) {
@@ -48,7 +67,11 @@ const EditScheduleForm = ({ schedule, users }) => {
         id: schedule.id,
         user: userId,
         title,
-        description,
+        program,
+        funder,
+        contractor,
+        tin,
+       
         completed,
       });
     }
@@ -83,6 +106,12 @@ const EditScheduleForm = ({ schedule, users }) => {
       </option>
     );
   });
+  const options2 = users.map((user) => {
+    return {
+      id: user.id,
+      username: user.username,
+    };
+  });
 
   const errClass = isError || isDelError ? "errmsg" : "offscreen";
   const validTitleClass = !title ? "form__input--incomplete" : "";
@@ -109,7 +138,7 @@ const EditScheduleForm = ({ schedule, users }) => {
 
       <form className="form" onSubmit={(e) => e.preventDefault()}>
         <div className="form__title-row">
-          <h2>Edit Schedule #{schedule.ticket}</h2>
+          <h2>Edit Project #{schedule.ticket}</h2>
           <div className="form__action-buttons">
             <button
               className="icon-button"
@@ -122,29 +151,65 @@ const EditScheduleForm = ({ schedule, users }) => {
             {deleteButton}
           </div>
         </div>
-        <label className="form__label" htmlFor="note-title">
-          Title:
-        </label>
-        <input
-          className={`form__input ${validTitleClass}`}
-          id="note-title"
-          name="title"
-          type="text"
-          autoComplete="off"
-          value={title}
-          onChange={onTitleChanged}
-        />
 
-        <label className="form__label" htmlFor="note-text">
-          Description
-        </label>
-        <textarea
-          className={`form__input form__input--text ${validTextClass}`}
-          id="note-text"
-          name="text"
-          value={description}
-          onChange={onDescriptionChanged}
-        />
+        <Box
+          sx={{
+            width: 800,
+            maxWidth: "100%",
+          }}
+        >
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="program"
+            name="program"
+            type="text"
+            autoComplete="off"
+            value={program}
+            onChange={onProgramChanged}
+            label="Program"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="title"
+            name="title"
+            type="text"
+            autoComplete="off"
+            value={title}
+            onChange={onTitleChanged}
+            label="Title"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="funder"
+            name="funder"
+            type="text"
+            autoComplete="off"
+            value={funder}
+            onChange={onFunderChanged}
+            label="Funder"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="contractor"
+            name="contractor"
+            type="text"
+            autoComplete="off"
+            value={contractor}
+            onChange={onContractorChanged}
+            label="Contractor"
+          />
+          <TextField
+            className={`form__input ${validTitleClass}`}
+            id="tin"
+            name="tin"
+            type="text"
+            autoComplete="off"
+            value={tin}
+            onChange={onTinChanged}
+            label="TIN"
+          />
+          
+        </Box>
         <div className="form__row">
           <div className="form__divider">
             <label

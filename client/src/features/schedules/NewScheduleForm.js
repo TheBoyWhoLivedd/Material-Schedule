@@ -31,6 +31,7 @@ const NewScheduleForm = ({ users }) => {
       setFunder("");
       setContractor("");
 
+      setTin("");
       setUserId("");
       navigate("/dash/schedules");
     }
@@ -44,9 +45,9 @@ const NewScheduleForm = ({ users }) => {
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const canSave =
-    [title, userId, program, funder, contractor].every(Boolean) && !isLoading;
+    [title, userId, program, funder, contractor,tin].every(Boolean) && !isLoading;
 
-  const onSaveNoteClicked = async (e) => {
+  const onSaveProjectClicked = async (e) => {
     e.preventDefault();
     if (canSave) {
       await addNewSchedule({
@@ -76,9 +77,9 @@ const NewScheduleForm = ({ users }) => {
     <>
       <p className={errClass}>{error?.data?.message}</p>
 
-      <form className="form" onSubmit={onSaveNoteClicked}>
+      <form className="form" onSubmit={onSaveProjectClicked}>
         <div className="form__title-row">
-          <h2>New Schedule</h2>
+          <h2>New Project</h2>
           <div className="form__action-buttons">
             <button className="icon-button" title="Save" disabled={!canSave}>
               <FontAwesomeIcon icon={faSave} />

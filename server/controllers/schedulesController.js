@@ -206,37 +206,38 @@ const createNewSchedule = async (req, res) => {
 // @route PATCH /schedules
 // @access Private
 const updateSchedule = async (req, res) => {
-  const { title, description } = req.body;
   const scheduleId = req.params.scheduleId;
+  const updateFields = req.body;
+
   // Confirm data
-  if (!title && !description) {
+  if (Object.keys(updateFields).length === 0) {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
-
   if (!schedule) {
     return res.status(400).json({ message: "Schedule not found" });
   }
 
   // Check for duplicate title
-  const duplicate = await Schedule.findOne({ title })
-    .collation({ locale: "en", strength: 2 })
-    .lean()
-    .exec();
+  if (updateFields.title) {
+    const duplicate = await Schedule.findOne({ title: updateFields.title })
+      .collation({ locale: "en", strength: 2 })
+      .lean()
+      .exec();
 
-  // Allow renaming of the original schedule
-  if (duplicate && duplicate?._id.toString() !== scheduleId) {
-    return res.status(409).json({ message: "Duplicate Schedule title" });
+    // Allow renaming of the original schedule
+    if (duplicate && duplicate?._id.toString() !== scheduleId) {
+      return res.status(409).json({ message: "Duplicate Schedule title" });
+    }
   }
-  if (title) {
-    schedule.title = title;
-  }
-
-  if (description) {
-    schedule.description = description;
-  }
+  // Exclude id field
+  delete updateFields.id;
+  // Update fields
+  Object.keys(updateFields).forEach((field) => {
+    schedule[field] = updateFields[field];
+  });
 
   const updatedSchedule = await schedule.save();
 
@@ -740,6 +741,63 @@ const postApplication = async (req, res) => {
   });
 };
 
+const updateApplication = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  const applicationId = mongoose.Types.ObjectId(req.params.appId);
+
+  const applications = req.body;
+  console.log(applications);
+
+  // Find the updated document and save it to the database
+  let updatedSchedule;
+  try {
+    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
+    console.log(updatedSchedule);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error finding schedule" });
+  }
+
+  // Update the item in the database
+  try {
+    await Schedule.updateOne(
+      { _id: objectId, "date._id": applicationId },
+      {
+        $set: {
+          "application.$[elem].items": applications.entries,
+        },
+      },
+      {
+        arrayFilters: [{ "elem._id": applicationId }],
+      }
+    );
+    await updatedSchedule.save();
+    res
+      .status(200)
+      .send({ message: "Item updated successfully", updatedSchedule });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error updating item" });
+  }
+};
+const deleteApplication = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  const applicationId = mongoose.Types.ObjectId(req.params.appId);
+  console.log(applicationId);
+
+  try {
+    const schedule = await Schedule.findOne({ _id: objectId });
+    schedule.application.pull({ _id: applicationId });
+    await schedule.save();
+    res.send({ message: "Application deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error deleting item" });
+  }
+};
+
 const updateApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
@@ -784,47 +842,6 @@ const updateApplicationItem = async (req, res) => {
     res.status(500).send({ message: "Error updating item" });
   }
 };
-const updateApplication = async (req, res) => {
-  const scheduleId = req.params.scheduleId;
-  const objectId = mongoose.Types.ObjectId(scheduleId);
-  const applicationId = mongoose.Types.ObjectId(req.params.appId);
-
-  const applications = req.body;
-  console.log(applications);
-
-  // Find the updated document and save it to the database
-  let updatedSchedule;
-  try {
-    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
-    console.log(updatedSchedule);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Error finding schedule" });
-  }
-
-  // Update the item in the database
-  try {
-    await Schedule.updateOne(
-      { _id: objectId, "date._id": applicationId },
-      {
-        $set: {
-          "application.$[elem].items": applications.entries,
-        },
-      },
-      {
-        arrayFilters: [{ "elem._id": applicationId }],
-      }
-    );
-    await updatedSchedule.save();
-    res
-      .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Error updating item" });
-  }
-};
-
 const deleteApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
@@ -857,4 +874,5 @@ module.exports = {
   updateApplicationItem,
   deleteApplicationItem,
   updateApplication,
+  deleteApplication,
 };

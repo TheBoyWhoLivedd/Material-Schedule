@@ -9,6 +9,7 @@ import {
   useDeleteMaterialMutation,
   useUpdateApplicationItemMutation,
   useDeleteApplicationItemMutation,
+  useDeleteApplicationMutation,
 } from "./schedulesApiSlice";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
@@ -29,6 +30,8 @@ import {
 } from "@material-ui/core";
 import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
+import DeleteModal from "../../components/DeleteModal";
+import moment from "moment";
 
 // Custom Popper component that also handles closing when user clicks away
 const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
@@ -77,6 +80,8 @@ const SingleApplicationPage = () => {
     useUpdateApplicationItemMutation();
   const [deleteApplicationItem, { isSuccess: isDelSuccess }] =
     useDeleteApplicationItemMutation();
+  const [deleteApplication, { isSuccess: isDelAppSuccess }] =
+    useDeleteApplicationMutation();
 
   // Function to update the individual item
   const updateItem = async () => {
@@ -91,6 +96,11 @@ const SingleApplicationPage = () => {
   const onDeleteitemClicked = async (applId, itemlId) => {
     console.log(appId, itemId);
     await deleteApplicationItem({ id: id, appId: applId, itemId: itemlId });
+  };
+  // Function to delete the whole Application
+  const onDeleteApplicationClicked = async (applId) => {
+    console.log(appId);
+    await deleteApplication({ id: id, appId: applId });
   };
 
   // Query to get the schedule from the API
@@ -153,19 +163,46 @@ const SingleApplicationPage = () => {
       </div>
       {schedule?.application?.map((application) => (
         <ExpansionPanel key={application._id}>
-          <ExpansionPanelSummary>{application.date}</ExpansionPanelSummary>
+          <ExpansionPanelSummary>
+            {moment(application.date).format("MMMM DD, YYYY")}
+          </ExpansionPanelSummary>
           <div
             style={{
               display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <Button variant="contained" color="primary" onClick={""}>
+            {" "}
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={""}
+              style={{ marginLeft: "2rem" }}
+            >
               Print
             </Button>
-            <Button variant="outlined" onClick={() => expandModel(application)}>
-              <Plus width={20} />
-              Add
-            </Button>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "2rem",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={() => expandModel(application)}
+                style={{ marginRight: "8px" }}
+              >
+                <Plus width={20} />
+                Add
+              </Button>
+              <DeleteModal
+                handleDelete={(e) =>
+                  onDeleteApplicationClicked(application._id)
+                }
+              />
+            </div>
           </div>
 
           <ExpansionPanelDetails style={{ display: "block" }}>
@@ -185,18 +222,23 @@ const SingleApplicationPage = () => {
                   />
                   <ListItemSecondaryAction>
                     {/* Add a button to open the popper when clicked */}
-                    <div>
+                    <div
+                      style={{
+                        display: "flex",
+                      }}
+                    >
                       <Button
                         className="edit-button"
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
                         onClick={(e) =>
                           handleEditClick(e, item, application._id)
                         }
+                        style={{ border: "none" }}
                       >
                         <Edit />
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="contained"
                         color="secondary"
                         onClick={(e) =>
@@ -204,7 +246,13 @@ const SingleApplicationPage = () => {
                         }
                       >
                         <Trash />
-                      </Button>
+                      </Button> */}
+                      <DeleteModal
+                        handleDelete={(e) =>
+                          onDeleteitemClicked(application._id, item._id)
+                        }
+                        element="icon"
+                      />
                     </div>
                   </ListItemSecondaryAction>
                 </ListItem>

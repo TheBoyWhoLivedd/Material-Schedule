@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Trash } from "feather-icons-react";
 
-const DeleteModal = ({ handleDelete }) => {
+const DeleteModal = ({ handleDelete, element }) => {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -26,8 +26,8 @@ const DeleteModal = ({ handleDelete }) => {
   // };
   return (
     <div>
-      <Button onClick={handleClickOpen}>
-        <Trash size={20} />
+      <Button onClick={handleClickOpen} color="secondary">
+        {element === 'icon' ? (<Trash size={20} />) : ("Delete")}
       </Button>
       <Dialog
         open={open}
