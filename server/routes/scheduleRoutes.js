@@ -38,6 +38,7 @@ router
   .patch(schedulesController.updateApplicationItem);
 router
   .route("/:scheduleId/applications/:appId")
-  .patch(schedulesController.updateApplication);
+  .patch(schedulesController.updateApplication)
+  .delete(schedulesController.deleteApplication);
 
 module.exports = router;

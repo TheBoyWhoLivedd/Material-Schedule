@@ -47,7 +47,7 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
     }),
     updateSchedule: builder.mutation({
       query: (initialSchedule) => ({
-        url: "/schedules",
+        url: `/schedules/${initialSchedule.id}`,
         method: "PATCH",
         body: {
           ...initialSchedule,
@@ -117,6 +117,25 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Schedule", id: "LIST" }],
     }),
+    updateApplication: builder.mutation({
+      query: ({ id, appId, body }) => ({
+        url: `/schedules/${id}/applications/${appId}`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Schedule", id: arg.id },
+      ],
+    }),
+    deleteApplication: builder.mutation({
+      query: ({ id, appId }) => ({
+        url: `/schedules/${id}/applications/${appId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Schedule", id: arg.id, appId: arg.appId },
+      ],
+    }),
     updateApplicationItem: builder.mutation({
       query: ({ id, appId, itemId, editItem }) => ({
         url: `/schedules/${id}/applications/${appId}/${itemId}`,
@@ -124,16 +143,6 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         body: {
           ...editItem,
         },
-      }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Schedule", id: arg.id },
-      ],
-    }),
-    updateApplication: builder.mutation({
-      query: ({ id, appId, body }) => ({
-        url: `/schedules/${id}/applications/${appId}`,
-        method: "PATCH",
-        body: body,
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Schedule", id: arg.id },
@@ -164,6 +173,7 @@ export const {
   useUpdateApplicationItemMutation,
   useUpdateApplicationMutation,
   useDeleteApplicationItemMutation,
+  useDeleteApplicationMutation,
 } = schedulesApiSlice;
 
 // returns the query result object

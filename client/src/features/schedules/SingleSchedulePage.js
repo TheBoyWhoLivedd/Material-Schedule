@@ -97,6 +97,7 @@ const SingleSchedulePage = () => {
         // </Button>
         <DeleteModal
           handleDelete={() => onDeleteMaterialClicked(params.row._id)}
+          element="icon"
         />
       ),
     },
