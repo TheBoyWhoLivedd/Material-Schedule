@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import * as images from "../assets/images/index";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import useTitle from "../hooks/useTitle";
@@ -87,9 +87,9 @@ const DashLayout = () => {
   let notesButton = null;
   if (!NOTES_REGEX.test(pathname) && pathname.includes("/dash")) {
     notesButton = (
-      <button className="icon-button" title="Notes" onClick={onNotesClicked}>
-        <FontAwesomeIcon icon={faFilePen} />
-      </button>
+      <li  title="Notes" onClick={onNotesClicked}>
+        <i className="fa fa-clock-o blue1_color" /> <span>Schedules</span>
+      </li>
     );
   }
 
@@ -194,7 +194,7 @@ const DashLayout = () => {
                   <div className="user_info">
                     <h6>{username}</h6>
                     <h6 className="yellow_color" style={{ fontSize: "0.9em" }}>
-                    {status}
+                      {status}
                     </h6>
                     <p>
                       <span className="online_animation" /> Online
@@ -217,37 +217,41 @@ const DashLayout = () => {
                     <span>Add new Project</span>
                   </Link>
                 </li>
-                {/* <li>
+                <li>
                 <Link
-                  to="/applications"
+                  to="/dash/notes"
                   data-toggle="collapse"
                   aria-expanded="false"
                 >
                   <i className="fa fa-tasks purple_color2" />{" "}
-                  <span>Applications</span>
+                  <span>Notes</span>
                 </Link>
-              </li> */}
-                {/* <li>
-                <Link to="/schedules">
-                  <i className="fa fa-clock-o blue1_color" />{" "}
-                  <span>Schedules</span>
+              </li>
+                <li>
+                <Link
+                  to="/dash/notes/new"
+                  data-toggle="collapse"
+                  aria-expanded="false"
+                >
+                  <i className="fa fa-plus  purple_color" />{" "}
+                  <span>Add New Note</span>
                 </Link>
-              </li> */}
-                 {(isManager || isAdmin) && (
-                <li>
-                  <Link to="/dash/users">
-                    <i className="fa fa-cog yellow_color" />{" "}
-                    <span>User Settings</span>
-                  </Link>
-                </li>
-                 )}
-                 {(isManager || isAdmin) && (
-                <li>
-                  <Link to="/dash/users/new">
-                    <i className="fa fa-plus green_color" />{" "}
-                    <span>Add New User</span>
-                  </Link>
-                </li>
+              </li>
+                {(isManager || isAdmin) && (
+                  <li>
+                    <Link to="/dash/users">
+                      <i className="fa fa-users yellow_color" />{" "}
+                      <span>Users</span>
+                    </Link>
+                  </li>
+                )}
+                {(isManager || isAdmin) && (
+                  <li>
+                    <Link to="/dash/users/new">
+                      <i className="fa fa-plus green_color" />{" "}
+                      <span>Add New User</span>
+                    </Link>
+                  </li>
                 )}
               </ul>
             </div>
@@ -318,7 +322,7 @@ const DashLayout = () => {
             {/* end topbar */}
             {/* dashboard inner */}
             {/* {children} */}
-      <p className={errClass}>{error?.data?.message}</p>
+            {/* <p className={errClass}>{error?.data?.message}</p> */}
             <Outlet />
             {/* end dashboard inner */}
           </div>

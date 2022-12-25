@@ -48,11 +48,11 @@ const Schedule = ({ scheduleId }) => {
               <Typography gutterBottom variant="h5" component="h2">
                 {schedule.title}
               </Typography>
-              <Typography> Funded By {schedule.funder}</Typography>
+              <Typography> Funded By: {schedule.funder}</Typography>
               <Typography> Contractor: {schedule.contractor}</Typography>
               <Typography>Contractor's TIN: {schedule.tin}</Typography>
-              <Typography>By {schedule.username}</Typography>
-              <Typography>{created}</Typography>
+              <Typography>By: {schedule.username}</Typography>
+              <Typography>Date:{created}</Typography>
             </CardContent>
             <CardActions>
               <Link to={`/dash/schedules/${schedule.id}`}>
@@ -62,6 +62,9 @@ const Schedule = ({ scheduleId }) => {
                 <Button size="small">Applications</Button>
               </Link>
               <Link to={`/dash/schedules/edit/${schedule.id}`}>
+                <Button size="small">Edit</Button>
+              </Link>
+              {/* <Link to={`/dash/schedules/edit/${schedule.id}`}>
                 <Button
                   sx={{
                     position: "absolute",
@@ -77,7 +80,7 @@ const Schedule = ({ scheduleId }) => {
                 >
                   <Edit size={20} />
                 </Button>
-              </Link>
+              </Link> */}
             </CardActions>
           </Card>
         </Grid>

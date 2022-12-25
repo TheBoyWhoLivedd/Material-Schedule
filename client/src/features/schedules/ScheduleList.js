@@ -55,13 +55,29 @@ const ScheduleList = () => {
       ));
 
     return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Container sx={{ py: 2 }} maxWidth="md"></Container>
-        <Grid container spacing={4}>
-          {ScheduleContent}
-        </Grid>
-      </ThemeProvider>
+      <>
+        <div className="midde_cont">
+          <div className="container-fluid">
+            <div className="row column_title">
+              <div className="col-md-12">
+                <div className="page_title">
+                  <h2>Projects</h2>
+                </div>
+              </div>
+            </div>
+            <div className="row column1">
+              <div className="col-md-12">
+                <div className="white_shd full margin_bottom_30">
+                  <Grid container spacing={4}>
+                    {ScheduleContent}
+                  </Grid>
+                </div>
+              </div>
+              {/* end row */}
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 };

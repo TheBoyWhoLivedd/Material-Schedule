@@ -1958,5 +1958,170 @@ button.main_bt {
   background: #ff5722;
   color: #fff;
 }
+.price_table_head h2 {
+  line-height: normal;
+  color: #fff;
+  text-align: center;
+  font-weight: 400;
+  padding: 18px 20px;
+  font-size: 24px;
+}
+.price_table_bottom {
+  float: left;
+  width: 100%;
+}
 
+.price_table_head {
+  margin: -1px -1px 0;
+}
 
+.graph_head {
+  padding: 18px 25px 15px;
+  float: left;
+  width: 100%;
+  border-bottom: solid #f3f3f3 2px;
+}
+.price_table_bottom {
+  float: left;
+  width: 100%;
+  border-top: solid #ddd 1px;
+  padding-top: 35px;
+}
+.profile_img {
+  float: left;
+  margin-right: 20px;
+}
+.profile_contant {
+  float: left;
+  padding: 0 20px 20px 20px;
+  width: 100%;
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+}
+.dis_flex {
+  display: flex;
+}
+.white_shd {
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+  margin-top: 0;
+}
+.contact_inner {
+  float: left;
+  width: 100%;
+}
+
+.contact_inner .left {
+  width: 70%;
+  float: left;
+  padding-right: 20px;
+}
+
+.contact_inner .right {
+  width: 30%;
+  float: left;
+}
+
+.contact_inner h3 {
+  font-weight: 600;
+  text-transform: none;
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #455a64;
+}
+
+.contact_inner p {
+  font-size: 13px;
+  margin: 0 0 10px 0;
+}
+
+.contact_inner p strong {
+  font-weight: 600;
+}
+
+.contact_inner .list-unstyled {
+  list-style: none;
+}
+
+.contact_inner .list-unstyled li {
+  float: left;
+  margin-right: 15px;
+  font-size: 14px;
+  color: #58718a;
+  width: 100%;
+}
+.tabbar {
+  float: left;
+  width: 100%;
+}
+.tabbar .nav-tabs {
+  border-bottom: solid #eee 1px;
+}
+
+.tabbar nav div.nav-tabs .nav-link {
+  border-radius: 0;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+/** tabbar style 2 **/
+
+.tab_style2 .tabbar nav div.nav-tabs .nav-link.active {
+  background: #ff5722;
+  color: #fff;
+  border-color: #ff5722;
+}
+.msg_list_main {
+  float: left;
+  width: 100%;
+}
+.msg_list_main ul {
+  list-style: none;
+  float: left;
+  width: 100%;
+}
+.msg_list_main ul li>span img {
+  width: 70px;
+  border-radius: 100%;
+}
+.msg_list_main ul li span .name_user {
+  font-size: 16px;
+  font-weight: 500;
+  color: #455a64;
+  float: left;
+  width: 100%;
+  margin-bottom: 0;
+  margin-top: 5px;
+}
+.msg_list_main ul li span .msg_user {
+  font-size: 15px;
+  font-weight: 300;
+  color: #99abb4;
+}
+.msg_list_main ul li span .time_ago {
+  position: absolute;
+  right: 40px;
+  top: 25px;
+}
+.tab-content .msg_list_main ul li {
+  border-left: none;
+  padding-left: 15px;
+  padding-right: 0;
+}
+.msg_list_main ul li {
+  padding: 22px 40px;
+  border-bottom: solid #eee 1px;
+  line-height: normal;
+  font-size: 14px;
+  border-left: solid 5px #666;
+  float: left;
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+.msg_list_main ul li>span:nth-child(1) {
+  margin-right: 20px;
+}
