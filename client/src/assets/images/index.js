@@ -1,0 +1,15 @@
+export { default as user_img } from './layout_img/user_img.jpg';
+export { default as logo } from './logo/logo.png';
+export { default as logo_icon } from './logo/logo_icon.png';
+export { default as msg2 }  from './layout_img/msg2.png';
+export { default as msg3 }  from './layout_img/msg3.png';
+export { default as msg4 }  from './layout_img/msg4.png';
+export { default as msg5 }  from './layout_img/msg5.png';
+export { default as g1 }  from './layout_img/g1.jpg';
+export { default as g2 }  from './layout_img/g2.jpg';
+export { default as g3 }  from './layout_img/g3.jpg';
+export { default as g4 }  from './layout_img/g4.jpg';
+export { default as g5 }  from './layout_img/g5.jpg';
+export { default as g6 }  from './layout_img/g6.jpg';
+export { default as g7 }  from './layout_img/g7.jpg';
+export { default as g8 }  from './layout_img/g8.jpg';
