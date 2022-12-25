@@ -40,7 +40,7 @@ function App() {
           >
             <Route element={<Prefetch />}>
               <Route path="dash" element={<DashLayout />}>
-                <Route index element={<Welcome />} />
+                <Route index element={<ScheduleList />} />
 
                 <Route
                   element={
