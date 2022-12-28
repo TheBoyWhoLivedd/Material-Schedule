@@ -134,8 +134,19 @@ const SingleApplicationPage = () => {
 
   let content;
   content = (
-    <div>
-      <div
+      <div className="midde_cont">
+        <div className="container-fluid">
+          <div className="row column_title">
+            <div className="col-md-12">
+              <div className="page_title">
+                <h2>Application</h2>
+              </div>
+            </div>
+          </div>
+          <div className="row column1">
+            <div className="col-md-12">
+              <div className="white_shd full margin_bottom_30">
+              <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
@@ -324,7 +335,12 @@ const SingleApplicationPage = () => {
           </form>
         </MyPopper>
       )}
-    </div>
+              </div>
+            </div>
+            {/* end row */}
+          </div>
+        </div>
+      </div>
   );
   return content;
 };

@@ -56,11 +56,21 @@ const NewNoteForm = ({ users }) => {
 
     const content = (
         <>
-            <p className={errClass}>{error?.data?.message}</p>
-
-            <form className="form" onSubmit={onSaveNoteClicked}>
+            {/* <p className={errClass}>{error?.data?.message}</p> */}
+            <div className="midde_cont">
+        <div className="container-fluid">
+          <div className="row column_title">
+            <div className="col-md-12">
+              <div className="page_title">
+              <h2>New Note</h2>
+              </div>
+            </div>
+          </div>
+          <div className="row column1">
+            <div className="col-md-12">
+              <div className="white_shd full margin_bottom_30">
+              <form className="form" onSubmit={onSaveNoteClicked}>
                 <div className="form__title-row">
-                    <h2>New Note</h2>
                     <div className="form__action-buttons">
                         <button
                             className="icon-button"
@@ -106,6 +116,12 @@ const NewNoteForm = ({ users }) => {
                 </select>
 
             </form>
+              </div>
+            </div>
+            {/* end row */}
+          </div>
+        </div>
+      </div>
         </>
     )
 

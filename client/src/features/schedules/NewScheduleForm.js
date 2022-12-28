@@ -45,7 +45,8 @@ const NewScheduleForm = ({ users }) => {
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const canSave =
-    [title, userId, program, funder, contractor,tin].every(Boolean) && !isLoading;
+    [title, userId, program, funder, contractor, tin].every(Boolean) &&
+    !isLoading;
 
   const onSaveProjectClicked = async (e) => {
     e.preventDefault();
@@ -56,7 +57,7 @@ const NewScheduleForm = ({ users }) => {
         program,
         funder,
         contractor,
-        tin
+        tin,
       });
     }
   };
@@ -75,133 +76,150 @@ const NewScheduleForm = ({ users }) => {
 
   const content = (
     <>
-      <p className={errClass}>{error?.data?.message}</p>
-
-      <form className="form" onSubmit={onSaveProjectClicked}>
-        <div className="form__title-row">
-          <h2>New Project</h2>
-          <div className="form__action-buttons">
-            <button className="icon-button" title="Save" disabled={!canSave}>
-              <FontAwesomeIcon icon={faSave} />
-            </button>
+      {/* <p className={errClass}>{error?.data?.message}</p> */}
+      <div className="midde_cont">
+        <div className="container-fluid">
+          <div className="row column_title">
+            <div className="col-md-12">
+              <div className="page_title">
+                <h2>New Project</h2>
+              </div>
+            </div>
           </div>
-        </div>
+          <div className="row column1">
+            <div className="col-md-12">
+              <div className="white_shd full margin_bottom_30">
+                <form className="form" onSubmit={onSaveProjectClicked}>
+                  <Box
+                    sx={{
+                      width: 800,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    <TextField
+                      className={`form__input ${validTitleClass}`}
+                      id="program"
+                      name="program"
+                      type="text"
+                      autoComplete="off"
+                      value={program}
+                      size="normal"
+                      variant="outlined"
+                      label="Program Title"
+                      onChange={onProgramChanged}
+                      margin="normal"
+                    />
+                    <TextField
+                      className={`form__input ${validTitleClass}`}
+                      id="title"
+                      name="title"
+                      type="text"
+                      autoComplete="off"
+                      value={title}
+                      size="normal"
+                      variant="outlined"
+                      label="Project Title"
+                      onChange={onTitleChanged}
+                      margin="normal"
+                    />
+                    <TextField
+                      className={`form__input ${validTitleClass}`}
+                      id="funder"
+                      name="funder"
+                      type="text"
+                      autoComplete="off"
+                      value={funder}
+                      size="normal"
+                      variant="outlined"
+                      label="Project Funder"
+                      onChange={onFunderChanged}
+                      margin="normal"
+                    />
+                    <TextField
+                      sx={{
+                        width: { sm: 200, md: 640 },
+                        "& .MuiInputBase-root": {
+                          height: 60,
+                          background: "white",
+                        },
+                      }}
+                      inputProps={{
+                        style: { fontFamily: "Arial", color: "black" },
+                      }}
+                      style={{ color: "white" }}
+                      id="contractor"
+                      name="contractor"
+                      type="text"
+                      autoComplete="off"
+                      value={contractor}
+                      size="normal"
+                      variant="outlined"
+                      label="Contractor's Name"
+                      onChange={onContractorChanged}
+                      margin="normal"
+                    />
+                    <TextField
+                      sx={{
+                        width: { sm: 200, md: 640 },
+                        "& .MuiInputBase-root": {
+                          height: 60,
+                          background: "white",
+                        },
+                      }}
+                      inputProps={{
+                        style: { fontFamily: "Arial", color: "black" },
+                      }}
+                      style={{ color: "white" }}
+                      id="tin"
+                      name="tin"
+                      type="number"
+                      autoComplete="off"
+                      value={tin}
+                      size="normal"
+                      variant="outlined"
+                      label="Contractor's TIN"
+                      onChange={onTinChanged}
+                      margin="normal"
+                    />
 
-        <Box
-          sx={{
-            width: 800,
-            maxWidth: "100%",
-          }}
-        >
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="program"
-            name="program"
-            type="text"
-            autoComplete="off"
-            value={program}
-            size="normal"
-            variant="outlined"
-            label="Program Title"
-            onChange={onProgramChanged}
-            margin="normal"
-          />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="title"
-            name="title"
-            type="text"
-            autoComplete="off"
-            value={title}
-            size="normal"
-            variant="outlined"
-            label="Project Title"
-            onChange={onTitleChanged}
-            margin="normal"
-          />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="funder"
-            name="funder"
-            type="text"
-            autoComplete="off"
-            value={funder}
-            size="normal"
-            variant="outlined"
-            label="Project Funder"
-            onChange={onFunderChanged}
-            margin="normal"
-          />
-          <TextField
-            sx={{
-              width: { sm: 200, md: 640 },
-              "& .MuiInputBase-root": {
-                height: 60,
-                background: "white",
-              },
-            }}
-            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
-            style={{ color: "white" }}
-            id="contractor"
-            name="contractor"
-            type="text"
-            autoComplete="off"
-            value={contractor}
-            size="normal"
-            variant="outlined"
-            label="Contractor's Name"
-            onChange={onContractorChanged}
-            margin="normal"
-          />
-          <TextField
-            sx={{
-              width: { sm: 200, md: 640 },
-              "& .MuiInputBase-root": {
-                height: 60,
-                background: "white",
-              },
-            }}
-            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
-            style={{ color: "white" }}
-            id="tin"
-            name="tin"
-            type="number"
-            autoComplete="off"
-            value={tin}
-            size="normal"
-            variant="outlined"
-            label="Contractor's TIN"
-            onChange={onTinChanged}
-            margin="normal"
-          />
+                    <FormLabel
+                      // className="form__label form__checkbox-container"
+                      htmlFor="username"
+                    >
+                      <TextField
+                        sx={{
+                          width: { sm: 200, md: 300 },
+                          "& .MuiInputBase-root": {
+                            height: 60,
+                            background: "white",
+                          },
+                        }}
+                        className="select"
+                        select
+                        variant="outlined"
+                        id="username"
+                        name="username"
+                        label="ASSIGNED TO"
+                        value={userId}
+                        onChange={onUserIdChanged}
+                      >
+                        {options}
+                      </TextField>
+                    </FormLabel>
+                  </Box>
+                  <div className="form__title-row">
+                    <div className="form__action-buttons">
+                      <button
+                        className="icon-button  main_bt"
+                        title="Save"
+                        disabled={!canSave}
+                      >
+                        <span>Save</span>
+                      </button>
+                    </div>
+                  </div>
 
-          <FormLabel
-            // className="form__label form__checkbox-container"
-            htmlFor="username"
-          >
-            <TextField
-              sx={{
-                width: { sm: 200, md: 300 },
-                "& .MuiInputBase-root": {
-                  height: 60,
-                  background: "white",
-                },
-              }}
-              className="select"
-              select
-              variant="outlined"
-              id="username"
-              name="username"
-              label="ASSIGNED TO"
-              value={userId}
-              onChange={onUserIdChanged}
-            >
-              {options}
-            </TextField>
-          </FormLabel>
-        </Box>
-
-        {/* <label className="form__label" htmlFor="text">
+                  {/* <label className="form__label" htmlFor="text">
           Description
         </label>
         <input
@@ -211,7 +229,13 @@ const NewScheduleForm = ({ users }) => {
           value={description}
           onChange={onTextChanged}
         /> */}
-      </form>
+                </form>
+              </div>
+            </div>
+            {/* end row */}
+          </div>
+        </div>
+      </div>
     </>
   );
 

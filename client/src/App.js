@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import Public from "./components/Public";
 import Login from "./features/auth/Login";
 import DashLayout from "./components/DashLayout";
+import Profile from "./components/Profile";
 import Welcome from "./features/auth/Welcome";
 import NotesList from "./features/notes/NotesList";
 import ScheduleList from "./features/schedules/ScheduleList";
@@ -31,8 +32,9 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* public routes */}
-        <Route index element={<Public />} />
+        <Route index element={<Login />} />
         <Route path="login" element={<Login />} />
+        <Route path="profile" element={<Profile />} />
 
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
@@ -41,7 +43,7 @@ function App() {
           >
             <Route element={<Prefetch />}>
               <Route path="dash" element={<DashLayout />}>
-                <Route index element={<Welcome />} />
+                <Route index element={<ScheduleList />} />
 
                 <Route
                   element={
@@ -52,6 +54,7 @@ function App() {
                     <Route index element={<UsersList />} />
                     <Route path=":id" element={<EditUser />} />
                     <Route path="new" element={<NewUserForm />} />
+
                   </Route>
                 </Route>
 
