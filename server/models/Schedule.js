@@ -29,7 +29,24 @@ const scheduleSchema = new mongoose.Schema(
       // required: true,
     },
 
-    summary: [],
+    summary: [
+      {
+        _id: {
+          type: String,
+        },
+        Value: {
+          type: Number,
+        },
+        name: {
+          type: String,
+        },
+        unit: {
+          type: String,
+        },
+      },
+    ],
+
+    totalRequested: [],
     materials: [
       {
         elementName: {

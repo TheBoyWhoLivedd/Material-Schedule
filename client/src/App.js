@@ -21,6 +21,7 @@ import useTitle from "./hooks/useTitle";
 import SingleSchedulePage from "./features/schedules/SingleSchedulePage";
 import SingleApplicationPage from "./features/schedules/SingleApplicationPage";
 import SummaryPage from "./features/schedules/SummaryPage";
+import RequestedSummaryPage from "./features/schedules/RequestedSummaryPage";
 import AddMaterialsPage from "./features/schedules/AddMaterialsPage";
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
                     element={<SingleApplicationPage />}
                   />
                   <Route path=":id/summary" element={<SummaryPage />} />
+                  <Route path=":id/requested" element={<RequestedSummaryPage />} />
                   <Route path="new" element={<NewSchedule />} />
                   <Route path="add" element={<AddMaterialsPage />} />
                   <Route path="edit/:id" element={<EditSchedule />} />

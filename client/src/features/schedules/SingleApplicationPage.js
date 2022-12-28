@@ -156,7 +156,7 @@ const SingleApplicationPage = () => {
           <ApplicationAddForm id={id} handleClose={handleClose} />
         </ModalComponent>
         <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/summary`}>
+          <Link to={`/dash/schedules/${id}/requested`}>
             <Button variant="outlined">View Summary</Button>
           </Link>
         </div>

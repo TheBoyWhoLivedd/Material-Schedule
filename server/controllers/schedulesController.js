@@ -3,7 +3,10 @@ const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const { v4: uuid } = require("uuid");
-const { aggregatePipeline } = require("../utils/aggregatePipeline");
+const {
+  materialsAggregationPipeline,
+  applicationAggregationPipeline,
+} = require("../utils/aggregatePipeline");
 const { calculateConcreteGivenClass } = require("../utils/calculations");
 
 // @desc Get all schedules
@@ -437,7 +440,7 @@ const addScheduleMaterial = async (req, res) => {
   }
 
   const updatedSchedule = await schedule.save();
-  const summary = await aggregatePipeline(objectId);
+  const summary = await materialsAggregationPipeline(objectId);
   console.log(summary);
 
   // Update the summary field of the Schedule document
@@ -480,7 +483,7 @@ const deleteScheduleMaterial = async (req, res) => {
   await schedule.materials.remove(material);
 
   await schedule.save();
-  const summary = await aggregatePipeline(objectId);
+  const summary = await materialsAggregationPipeline(objectId);
   // Update the summary field of the Schedule document
   await Schedule.updateOne(
     { _id: scheduleId },
@@ -637,7 +640,7 @@ const updateScheduleMaterial = async (req, res) => {
 
   const updatedMaterial = await schedule.save();
 
-  const summary = await aggregatePipeline(objectId);
+  const summary = await materialsAggregationPipeline(objectId);
   // Update the summary field of the Schedule document
   await Schedule.updateOne(
     { _id: scheduleId },
@@ -696,6 +699,7 @@ const getSummary = async (req, res) => {
 const postApplication = async (req, res) => {
   const applications = req.body;
   const scheduleId = req.params.scheduleId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
 
   console.log(applications);
 
@@ -733,10 +737,17 @@ const postApplication = async (req, res) => {
 
   // Add the updated application to the schedule
   schedule.application.push(updatedApplication);
-
   const updatedSchedule = await schedule.save();
+
+  const results = await applicationAggregationPipeline(objectId);
+
+  await Schedule.updateOne(
+    { _id: scheduleId },
+    { $set: { totalRequested: results[0].totalRequested } }
+  ).exec();
+
   res.json({
-    "message ": "Material added successfully",
+    "message ": "Application added successfully",
     schedule: updatedSchedule,
   });
 };
@@ -773,9 +784,18 @@ const updateApplication = async (req, res) => {
       }
     );
     await updatedSchedule.save();
+
+    const results = await applicationAggregationPipeline(objectId);
+    console.log(results);
+
+    await Schedule.updateOne(
+      { _id: scheduleId },
+      { $set: { totalRequested: results[0].totalRequested } }
+    ).exec();
+
     res
       .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule });
+      .send({ message: "Item updated successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error updating item" });
@@ -791,7 +811,14 @@ const deleteApplication = async (req, res) => {
     const schedule = await Schedule.findOne({ _id: objectId });
     schedule.application.pull({ _id: applicationId });
     await schedule.save();
-    res.send({ message: "Application deleted successfully" });
+    const results = await applicationAggregationPipeline(objectId);
+
+    await Schedule.updateOne(
+      { _id: scheduleId },
+      { $set: { totalRequested: results[0].totalRequested } }
+    ).exec();
+
+    res.send({ message: "Application deleted successfully", results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });
@@ -834,9 +861,16 @@ const updateApplicationItem = async (req, res) => {
       { arrayFilters: [{ "elem._id": itemId }], returnOriginal: false }
     );
     await updatedSchedule.save();
+    const results = await applicationAggregationPipeline(objectId);
+
+    await Schedule.updateOne(
+      { _id: scheduleId },
+      { $set: { totalRequested: results[0].totalRequested } }
+    ).exec();
+
     res
       .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule });
+      .send({ message: "Item updated successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error updating item" });
@@ -849,11 +883,23 @@ const deleteApplicationItem = async (req, res) => {
   const itemId = req.params.itemId;
 
   try {
-    const result = await Schedule.updateOne(
+    // Find and update the schedule document with the modified application array
+    const updatedSchedule = await Schedule.findOneAndUpdate(
       { _id: objectId, "date._id": applicationId },
-      { $pull: { "application.$[].items": { _id: itemId } } }
-    );
-    res.status(200).send({ message: "Item deleted successfully" });
+      { $pull: { "application.$[].items": { _id: itemId } } },
+      { new: true } // return the updated document
+    ).exec();
+
+    // Get the updated totalRequested array from the modified application array
+    const results = await applicationAggregationPipeline(objectId);
+
+    // Update the totalRequested field in the schedule document
+    await Schedule.updateOne(
+      { _id: scheduleId },
+      { $set: { totalRequested: results[0].totalRequested } }
+    ).exec();
+
+    res.status(200).send({ message: "Item deleted successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });

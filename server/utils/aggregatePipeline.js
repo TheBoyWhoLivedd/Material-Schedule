@@ -1,8 +1,6 @@
 const Schedule = require("../models/Schedule");
 
-
-
-const aggregatePipeline = async (scheduleId) => {
+const materialsAggregationPipeline = async (scheduleId) => {
   return await Schedule.aggregate([
     { $match: { _id: scheduleId } },
     { $unwind: "$materials" },
@@ -22,8 +20,66 @@ const aggregatePipeline = async (scheduleId) => {
       },
     },
   ]);
-}
+};
+
+const applicationAggregationPipeline = async (scheduleId) => {
+  return await Schedule.aggregate([
+    { $match: { _id: scheduleId } },
+    {
+      $unwind: "$application",
+    },
+    {
+      $unwind: "$application.items",
+    },
+    {
+      $group: {
+        _id: "$application.items.item",
+        amountRequested: {
+          $sum: { $toInt: "$application.items.amountRequested" },
+        },
+        unit: {
+          $first: {
+            $arrayElemAt: [
+              {
+                $filter: {
+                  input: "$summary",
+                  as: "item",
+                  cond: { $eq: ["$$item.name", "$application.items.item"] },
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        name: "$_id",
+        amountRequested: "$amountRequested",
+        unit: { $ifNull: ["$unit.unit", ""] },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalRequested: { $push: "$$ROOT" },
+      },
+    },
+    {
+      $addFields: {
+        totalRequested: "$totalRequested",
+      },
+    },
+    {
+      $sort: {
+        name: 1, // sort by name in ascending order
+      },
+    },
+  ]).exec();
+};
 
 module.exports = {
-  aggregatePipeline
-}
+  materialsAggregationPipeline,
+  applicationAggregationPipeline,
+};
