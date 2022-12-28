@@ -106,85 +106,107 @@ const SingleSchedulePage = () => {
 
   content = (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <ModalComponent
-          open={open}
-          handleOpen={handleOpen}
-          handleClose={handleClose}
-          openModal={
-            <Button variant="outlined">
-              <Plus width={20} />
-              Add Materials
-            </Button>
-          }
-        >
-          <MaterialAddForm
-            id={id}
-            handleClose={handleClose}
-            openSnackbarWithMessage={openSnackbarWithMessage}
-          />
-        </ModalComponent>
+      <div className="midde_cont">
+        <div className="container-fluid">
+          <div className="row column_title">
+            <div className="col-md-12">
+              <div className="page_title">
+                <h2>Schedule</h2>
+              </div>
+            </div>
+          </div>
+          <div className="row column1">
+            <div className="col-md-12">
+              <div className="white_shd full margin_bottom_30">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <ModalComponent
+                    open={open}
+                    handleOpen={handleOpen}
+                    handleClose={handleClose}
+                    openModal={
+                      <Button variant="outlined">
+                        <Plus width={20} />
+                        Add Materials
+                      </Button>
+                    }
+                  >
+                    <MaterialAddForm
+                      id={id}
+                      handleClose={handleClose}
+                      openSnackbarWithMessage={openSnackbarWithMessage}
+                    />
+                  </ModalComponent>
 
-        <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/summary`}>
-            <Button variant="outlined">View Summary</Button>
-          </Link>
+                  <div style={{ marginLeft: "1rem" }}>
+                    <Link to={`/dash/schedules/${id}/summary`}>
+                      <Button variant="outlined">View Summary</Button>
+                    </Link>
+                  </div>
+                </div>
+                <Snackbar
+                  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                  open={openSnackbar}
+                  message={snackbarMessage}
+                  autoHideDuration={3000} // closes after 3 seconds
+                  onClose={closeSnackbar}
+                  style={{
+                    width: "500px",
+                    color: "white !important",
+                  }}
+                />
+                <TableContainer component={Paper}>
+                  <ModalSecondary open={open1} handleClose={closeModal}>
+                    <MaterialAddForm
+                      formData={selectedChild}
+                      id={id}
+                      handleClose={closeModal}
+                      openSnackbarWithMessage={openSnackbarWithMessage}
+                    />
+                  </ModalSecondary>
+                  <Box
+                    sx={{
+                      height: 580,
+                      width: "100%",
+                    }}
+                  >
+                    {schedule && (
+                      <DataGrid
+                        columns={columns}
+                        rows={schedule.materials}
+                        getRowId={(row) => row._id}
+                        rowsPerPageOptions={[5, 10, 20]}
+                        pageSize={pageSize}
+                        onPageSizeChange={(newPageSize) =>
+                          setPageSize(newPageSize)
+                        }
+                        getRowSpacing={(params) => ({
+                          top: params.isFirstVisible ? 0 : 5,
+                          bottom: params.isLastVisible ? 0 : 5,
+                        })}
+                        sx={{
+                          [`& .${gridClasses.row}`]: {
+                            bgcolor: (theme) =>
+                              theme.palette.mode === "light"
+                                ? grey[200]
+                                : grey[900],
+                          },
+                        }}
+                        onCellEditCommit={(params) => setRowId(params.id)}
+                      />
+                    )}
+                  </Box>
+                </TableContainer>
+              </div>
+            </div>
+            {/* end row */}
+          </div>
         </div>
       </div>
-      <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        open={openSnackbar}
-        message={snackbarMessage}
-        autoHideDuration={3000} // closes after 3 seconds
-        onClose={closeSnackbar}
-        style={{
-          width: "500px",
-          color: "white !important",
-        }}
-      />
-      <TableContainer component={Paper}>
-        <ModalSecondary open={open1} handleClose={closeModal}>
-          <MaterialAddForm
-            formData={selectedChild}
-            id={id}
-            handleClose={closeModal}
-            openSnackbarWithMessage={openSnackbarWithMessage}
-          />
-        </ModalSecondary>
-        <Box
-          sx={{
-            height: 580,
-            width: "100%",
-          }}
-        >
-          {schedule && (
-            <DataGrid
-              columns={columns}
-              rows={schedule.materials}
-              getRowId={(row) => row._id}
-              rowsPerPageOptions={[5, 10, 20]}
-              pageSize={pageSize}
-              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              getRowSpacing={(params) => ({
-                top: params.isFirstVisible ? 0 : 5,
-                bottom: params.isLastVisible ? 0 : 5,
-              })}
-              sx={{
-                [`& .${gridClasses.row}`]: {
-                  bgcolor: (theme) =>
-                    theme.palette.mode === "light" ? grey[200] : grey[900],
-                },
-              }}
-              onCellEditCommit={(params) => setRowId(params.id)}
-            />
-          )}
-        </Box>
-      </TableContainer>
     </div>
   );
 
