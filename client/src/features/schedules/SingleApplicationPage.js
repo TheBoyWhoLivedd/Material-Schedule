@@ -218,7 +218,7 @@ const SingleApplicationPage = () => {
                 >
                   <ListItemText
                     primary={item.item}
-                    secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Allowed: ${item.amountAllowed}`}
+                    secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Balance Allowable: ${item.amountAllowed}`}
                   />
                   <ListItemSecondaryAction>
                     {/* Add a button to open the popper when clicked */}

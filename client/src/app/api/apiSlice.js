@@ -6,7 +6,7 @@ const baseQuery = fetchBaseQuery({
   baseUrl:
     process.env.NODE_ENV === "development"
       ? "http://localhost:3500"
-      : "https://material-schedule-api.onrender.com",
+      : "https://materialschedule-api.onrender.com",
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;

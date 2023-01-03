@@ -489,7 +489,7 @@ const deleteScheduleMaterial = async (req, res) => {
     { _id: scheduleId },
     { $set: { summary: summary } }
   ).exec();
-  console.log(summary);
+
 
   res.json({
     "message ": `Material ${material.materialName} deleted successfully`,
@@ -727,39 +727,71 @@ const postApplication = async (req, res) => {
       supplier: application.supplier,
       amountRequested: application.requested,
     });
-    updatedApplication.items = updatedApplication.items.map((item) => {
-      let amountAllowed = 0;
-      schedule.summary.forEach((s) => {
-        if (item.item == s._id) {
-          schedule.totalRequested.forEach((tr) => {
-            if (item.item === tr._id) {
-              amountAllowed = s.Value - Number(tr.amountRequested);
-            }
-          });
-        }
-      });
-      return {
-        ...item,
-        amountAllowed,
-      };
+    // updatedApplication.items = updatedApplication.items.map((item) => {
+    //   let amountAllowed = 0;
+    //   schedule.summary.forEach((s) => {
+    //     if (item.item == s._id) {
+    //       schedule.totalRequested.forEach((tr) => {
+    //         if (item.item === tr._id) {
+    //           amountAllowed = s.Value - Number(tr.amountRequested);
+    //         }
+    //       });
+    //     }
+    //   });
+    //   return {
+    //     ...item,
+    //     amountAllowed,
+    //   };
+    // });
+  });
+
+  try {
+    // Add the updated application to the schedule
+    const schedule = await Schedule.findOneAndUpdate(
+      { _id: objectId },
+      {
+        $push: {
+          application: { $each: [updatedApplication], $sort: { date: -1 } },
+        },
+      },
+      { new: true }
+    );
+
+    // Calculate the totalRequested field
+    const results = await applicationAggregationPipeline(objectId);
+    schedule.totalRequested = results[0].totalRequested;
+
+    // Calculate the amountAllowed value for each item
+    schedule.application[0].items = schedule.application[0].items.map(
+      (item) => {
+        let amountAllowed = 0;
+        schedule.summary.forEach((s) => {
+          if (item.item == s._id) {
+            schedule.totalRequested.forEach((tr) => {
+              if (item.item === tr._id) {
+                amountAllowed = s.Value - Number(tr.amountRequested);
+              }
+            });
+          }
+        });
+        return {
+          ...item,
+          amountAllowed,
+        };
+      }
+    );
+
+    // Save the updated schedule to the database
+    await schedule.save();
+
+    res.json({
+      message: "Application added successfully",
+      schedule: schedule,
     });
-  });
-
-  // Add the updated application to the schedule
-  schedule.application.push(updatedApplication);
-  const updatedSchedule = await schedule.save();
-
-  const results = await applicationAggregationPipeline(objectId);
-
-  await Schedule.updateOne(
-    { _id: scheduleId },
-    { $set: { totalRequested: results[0].totalRequested } }
-  ).exec();
-
-  res.json({
-    "message ": "Application added successfully",
-    schedule: updatedSchedule,
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error adding application" });
+  }
 };
 
 const updateApplication = async (req, res) => {
@@ -768,67 +800,55 @@ const updateApplication = async (req, res) => {
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
 
   const applications = req.body;
-  console.log(applications);
 
-  // Find the updated document and save it to the database
-  let updatedSchedule;
   try {
-    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
-    console.log(updatedSchedule);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Error finding schedule" });
-  }
-
-  // Update the item in the database
-  try {
-    await Schedule.updateOne(
+    const schedule = await Schedule.findOneAndUpdate(
       { _id: objectId, "date._id": applicationId },
-      {
-        $set: {
-          "application.$[elem].items": applications.entries,
-        },
-      },
+      { $set: { "application.$[elem].items": applications.entries } },
       {
         arrayFilters: [{ "elem._id": applicationId }],
+        new: true,
       }
     );
-    await updatedSchedule.save();
 
+    // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
-    console.log(results);
+    schedule.totalRequested = results[0].totalRequested;
 
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
+    // Save the updated schedule to the database
+    await schedule.save();
 
-    res
-      .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule, results });
+    res.status(200).send({
+      message: "Application updated successfully",
+      updatedSchedule: schedule,
+      results,
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Error updating item" });
+    res.status(500).send({ message: "Error updating application" });
   }
 };
+
 const deleteApplication = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
-  console.log(applicationId);
 
   try {
-    const schedule = await Schedule.findOne({ _id: objectId });
-    schedule.application.pull({ _id: applicationId });
-    await schedule.save();
+    const schedule = await Schedule.findOneAndUpdate(
+      { _id: objectId },
+      { $pull: { application: { _id: applicationId } } },
+      { new: true }
+    );
+
+    // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
+    schedule.totalRequested = results[0].totalRequested;
 
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
+    // Save the updated schedule to the database
+    await schedule.save();
 
-    res.send({ message: "Application deleted successfully", results });
+    res.send({ message: "Application deleted successfully", schedule });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });
@@ -838,9 +858,7 @@ const deleteApplication = async (req, res) => {
 const updateApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
-
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
-
   const itemId = req.params.itemId;
 
   // Extract fields from the request body
@@ -850,12 +868,12 @@ const updateApplicationItem = async (req, res) => {
   let updatedSchedule;
   try {
     updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
-    console.log(updatedSchedule);
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error finding schedule" });
+    return;
   }
-  console.log(item, supplier, amountAllowed, amountRequested);
+
   // Update the item in the database
   try {
     await Schedule.updateOne(
@@ -870,22 +888,32 @@ const updateApplicationItem = async (req, res) => {
       },
       { arrayFilters: [{ "elem._id": itemId }], returnOriginal: false }
     );
-    await updatedSchedule.save();
-    const results = await applicationAggregationPipeline(objectId);
-
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
-
-    res
-      .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error updating item" });
+    return;
   }
+
+  // Calculate the totalRequested field
+  const results = await applicationAggregationPipeline(objectId);
+  updatedSchedule.totalRequested = results[0].totalRequested;
+
+  // Save the updated schedule to the database
+  try {
+    await updatedSchedule.save();
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error saving updated schedule" });
+    return;
+  }
+
+  res.status(200).send({
+    message: "Item updated successfully",
+    updatedSchedule,
+    results,
+  });
 };
+
 const deleteApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
