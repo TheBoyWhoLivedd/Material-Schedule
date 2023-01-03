@@ -719,19 +719,29 @@ const postApplication = async (req, res) => {
     items: [],
   };
   applications.forEach((application) => {
-    if (
-      !application.item ||
-      !application.supplier ||
-      !application.requested ||
-      !application.allowed
-    ) {
+    if (!application.item || !application.supplier || !application.requested) {
       throw new Error("Missing required fields");
     }
     updatedApplication.items.push({
       item: application.item,
       supplier: application.supplier,
       amountRequested: application.requested,
-      amountAllowed: application.allowed,
+    });
+    updatedApplication.items = updatedApplication.items.map((item) => {
+      let amountAllowed = 0;
+      schedule.summary.forEach((s) => {
+        if (item.item == s._id) {
+          schedule.totalRequested.forEach((tr) => {
+            if (item.item === tr._id) {
+              amountAllowed = s.Value - Number(tr.amountRequested);
+            }
+          });
+        }
+      });
+      return {
+        ...item,
+        amountAllowed,
+      };
     });
   });
 
@@ -899,7 +909,9 @@ const deleteApplicationItem = async (req, res) => {
       { $set: { totalRequested: results[0].totalRequested } }
     ).exec();
 
-    res.status(200).send({ message: "Item deleted successfully", updatedSchedule, results });
+    res
+      .status(200)
+      .send({ message: "Item deleted successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });

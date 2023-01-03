@@ -8,7 +8,7 @@ export const elementsData = [
 export const materialsData = [
   "Cement",
   "Sand",
-  "Aggregate",
+  "Aggregates",
   "Tiles",
   "Beams",
   "Hardcore",
@@ -21,7 +21,7 @@ export const materialsData = [
 export const applicationItems = [
   "Cement",
   "Sand",
-  "Aggregate",
+  "Aggregates",
   "Tiles",
   "Beams",
   "Hardcore",
