@@ -15,19 +15,19 @@ const { calculateConcreteGivenClass } = require("../utils/calculations");
 
 function calculateBRC(size, area) {
   if (size === "A66" || "A98(30)") {
-    let brcRolls = Math.ceil(Number(area) / 63.9);
+    let brcRolls = Math.ceil(Number(area) / 57.514);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A98(48)" || "A142") {
-    let brcRolls = Math.ceil(Number(area) / 115.2);
+    let brcRolls = Math.ceil(Number(area) / 105.16);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A193" || "A252") {
-    let brcRolls = Math.ceil(Number(area) / 11.52);
+    let brcRolls = Math.ceil(Number(area) / 10.12);
     return {
       brcSize: size,
       brcRolls: brcRolls,
@@ -91,7 +91,7 @@ function calculateBricks(area, bond) {
   if (bond === "Header") {
     let hoopIron = Math.ceil(Number(area) * 0.1);
     let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
+    let sandWeighttTonnes = Number(area) * 0.04;
     let numBricks = Math.ceil(Number(area) * 112);
     return {
       bond: bond,
@@ -103,7 +103,7 @@ function calculateBricks(area, bond) {
   } else if (bond === "Stretcher") {
     let hoopIron = Math.ceil(Number(area) * 0.1);
     let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
+    let sandWeighttTonnes = Number(area) * 0.04;
     let numBricks = Math.ceil(Number(area) * 60);
     return {
       bond: bond,
@@ -117,27 +117,27 @@ function calculateBricks(area, bond) {
 function calculateBlocks(area, bond) {
   if (bond === "Header") {
     let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 112);
+    let numCementBags = Math.ceil(Number(area) * 0.4);
+    let sandWeighttTonnes = Number(area) * 0.04;
+    let numBlocks = Math.ceil(Number(area) * 24);
     return {
       bond: bond,
       hoopIron: hoopIron,
       numCementBags: numCementBags,
       sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
+      numBlocks: numBlocks,
     };
   } else if (bond === "Stretcher") {
     let hoopIron = Math.ceil(Number(area) * 0.1);
     let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 60);
+    let sandWeighttTonnes = Number(area) * 0.04;
+    let numBlocks = Math.ceil(Number(area) * 11);
     return {
       bond: bond,
       hoopIron: hoopIron,
       numCementBags: numCementBags,
       sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
+      numBlocks: numBlocks,
     };
   }
 }
@@ -281,7 +281,7 @@ const addScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
 
-  console.log(req.params);
+  console.log("Request Parametrs", req.params);
   // Confirm data
   if (!elementName || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
@@ -290,7 +290,6 @@ const addScheduleMaterial = async (req, res) => {
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
   const relatedId = uuid();
-  console.log(relatedId);
 
   if (!schedule) {
     return res
@@ -299,11 +298,12 @@ const addScheduleMaterial = async (req, res) => {
   }
   if (elementName === "Concrete") {
     // Calculate here
+    console.log(parameters.concreteClass, parameters.cum);
     const results = calculateConcreteGivenClass(
       parameters.concreteClass,
       parameters.cum
     );
-    console.log(results);
+
     schedule.materials.push({
       elementName: "Concrete",
       materialName: "Cement",
@@ -406,7 +406,7 @@ const addScheduleMaterial = async (req, res) => {
       materialName: "Blocks",
       materialDescription: description,
       materialType: materialType,
-      computedValue: results.numBricks,
+      computedValue: results.numBlocks,
       unit: "Blocks",
       parameters: parameters,
     });
@@ -489,7 +489,6 @@ const deleteScheduleMaterial = async (req, res) => {
     { _id: scheduleId },
     { $set: { summary: summary } }
   ).exec();
-
 
   res.json({
     "message ": `Material ${material.materialName} deleted successfully`,
