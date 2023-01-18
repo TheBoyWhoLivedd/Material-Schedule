@@ -1,20 +1,18 @@
-import { useEffect } from "react";
-
-import ScheduleTable from "./ScheduleTable";
-import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
-import PulseLoader from "react-spinners/PulseLoader";
-import { useGetSummaryQuery,useGetSchedulesQuery } from "./schedulesApiSlice";
-import { useSelector } from "react-redux";
+import {  useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams } from "react-router-dom";
-import { Link, useNavigate } from "react-router-dom";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import {
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Typography,
+} from "@material-ui/core";
+
+import { ChevronDown } from "feather-icons-react";
 
 const SummaryPage = () => {
   useTitle("techNotes: Summary Page");
@@ -31,39 +29,57 @@ const SummaryPage = () => {
 
   console.log(schedule);
 
-
-
   let content;
 
   content = (
     <div>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ITEM</TableCell>
-              <TableCell align="right">UNIT</TableCell>
-              <TableCell align="right">Totals</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {schedule?.summary?.map((child) => (
-              <TableRow
-                key={child._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+      {schedule?.summary?.map((child) => (
+        <ExpansionPanel>
+          <ExpansionPanelSummary
+            expandIcon={
+              <IconButton
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <TableCell component="th" scope="row">
-                  Total {child._id}
-                </TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
-                <TableCell component="th" scope="row" align="right">
-                  {child.Value}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                <ChevronDown />
+              </IconButton>
+            }
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              width: "100%",
+              height: "10px",
+            }}
+          >
+            <Typography style={{ marginRight: "10px" }}>
+              Total {child._id}
+            </Typography>
+            <Typography style={{ marginRight: "10px" }}>
+              {child.Value}
+            </Typography>
+            <Typography>{child.unit}</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <List>
+              {child.details.map((detail) => (
+                <ListItem>
+                  <ListItemText
+                    primary={detail.materialDescription}
+                    style={{ whiteSpace: "nowrap", marginRight: "1rem" }}
+                  />
+                  <ListItemText
+                    primary={detail.computedValue}
+                    style={{ marginRight: "1rem" }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      ))}
     </div>
   );
 

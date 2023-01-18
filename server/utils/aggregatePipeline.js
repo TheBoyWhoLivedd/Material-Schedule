@@ -6,21 +6,28 @@ const materialsAggregationPipeline = async (scheduleId) => {
     { $unwind: "$materials" },
     {
       $group: {
-        //grouping by name
         _id: "$materials.materialName",
-        unit: { $first: "$materials.unit" },
+        unit: { $addToSet: "$materials.unit" },
         Value: { $sum: "$materials.computedValue" },
+        details: {
+          $push: {
+            materialDescription: "$materials.materialDescription",
+            computedValue: "$materials.computedValue",
+          },
+        },
       },
     },
     {
       $project: {
         name: "$_id",
         unit: "$unit",
-        Value: 1,
+        Value: "$Value",
+        details: "$details",
       },
     },
   ]);
 };
+
 
 const applicationAggregationPipeline = async (scheduleId) => {
   return await Schedule.aggregate([
