@@ -88,58 +88,45 @@ function calculateRebar(diameter, weight) {
 }
 
 function calculateBricks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags = Math.ceil(Number(area) * 0.3);
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBricks;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Number(area) * 0.04;
-    let numBricks = Math.ceil(Number(area) * 112);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 112);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Number(area) * 0.04;
-    let numBricks = Math.ceil(Number(area) * 60);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 60);
   }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBricks: numBricks,
+  };
 }
 function calculateBlocks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.4);
-    let sandWeighttTonnes = Number(area) * 0.04;
-    let numBlocks = Math.ceil(Number(area) * 24);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBlocks: numBlocks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.4);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Number(area) * 0.04;
-    let numBlocks = Math.ceil(Number(area) * 11);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBlocks: numBlocks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.2);
   }
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBlocks;
+  if (bond === "Header") {
+    numBlocks = Math.ceil(Number(area) * 24);
+  } else if (bond === "Stretcher") {
+    numBlocks = Math.ceil(Number(area) * 11);
+  }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBlocks: numBlocks,
+  };
 }
 
 const getAllSchedules = async (req, res) => {
@@ -409,6 +396,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.numBlocks,
       unit: "Blocks",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -418,6 +406,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.numCementBags,
       unit: "Bags",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -427,6 +416,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.sandWeighttTonnes,
       unit: "Tonnes",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -436,6 +426,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.hoopIron,
       unit: "Rolls",
       parameters: parameters,
+      relatedId: relatedId,
     });
   }
 
@@ -593,29 +584,58 @@ const updateScheduleMaterial = async (req, res) => {
         },
       }
     ).exec();
-  } else if (elementName === "Walling" && materialType === "Bricks") {
-    const results = calculateBricks(parameters.wallArea, parameters.bondName);
-    //Find out which of the Four Walling constituent materials to update
-    if (materialName == "Cement") {
-      updatedValue = results.numCementBags;
-    } else if (materialName == "Sand") {
-      updatedValue = results.sandWeighttTonnes;
-    } else if (materialName == "Bricks") {
-      updatedValue = results.numBricks;
-    } else if (materialName == "Hoop Iron") {
-      updatedValue = results.hoopIron;
+  }
+  if (elementName === "Walling") {
+    schedule = await Schedule.findOne({ _id: scheduleId }).exec();
+    const materials = schedule?.materials?.filter(
+      (material) => material.relatedId === relatedId
+    );
+    if (materialType === "Bricks") {
+      results = calculateBricks(parameters.wallArea, parameters.bondName);
+    } else if (materialType === "Blocks") {
+      results = calculateBlocks(parameters.wallArea, parameters.bondName);
     }
-    schedule = await Schedule.findOneAndUpdate(
-      { _id: scheduleId, "materials._id": materialId },
-      {
-        $set: {
-          "materials.$.parameters": parameters,
-          "materials.$.elementName": elementName,
-          "materials.$.materialDescription": description,
-          "materials.$.computedValue": updatedValue,
-        },
+
+    for (const material of materials) {
+      if (material.materialName === "Bricks" && materialType === "Blocks") {
+        material.materialName = "Blocks";
+        material.materialType = "Blocks";
+        material.unit = "Blocks";
       }
-    ).exec();
+      if (material.materialName === "Blocks" && materialType === "Bricks") {
+        material.materialName = "Bricks";
+        material.materialType = "Bricks";
+        material.unit = "Bricks";
+      }
+      if (material.materialName == "Cement") {
+        material.computedValue = results.numCementBags;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Sand") {
+        material.computedValue = results.sandWeighttTonnes;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Bricks") {
+        material.computedValue = results.numBricks;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Blocks") {
+        material.computedValue = results.numBlocks;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Hoop Iron") {
+        material.computedValue = results.hoopIron;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      }
+    }
+
+    await schedule.save();
   }
 
   // Confirm schedule exists to update
