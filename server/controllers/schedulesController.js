@@ -673,6 +673,166 @@ const updateScheduleMaterial = async (req, res) => {
   });
 };
 
+// const updateScheduleMaterial2 = async (req, res) => {
+//   const scheduleId = req.params.scheduleId;
+//   const materialId = req.params.materialId;
+//   // Validate update data
+//   const { elementName, materialName, description, parameters, materialType, relatedId } = req.body;
+
+//   // Confirm data
+//   if (!materialName && !description && !parameters && !elementName) {
+//     return res.status(400).json({ message: "Please provide a relevant field" });
+//   }
+
+//   //Run New Parameters through function
+//   let results = {};
+//   let schedule;
+//   switch (elementName) {
+//     case "Concrete":
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].parameters": parameters,
+//             "materials.$[].elementName": elementName,
+//             "materials.$[].materialDescription": description,
+//           },
+//         }
+//       ).exec();
+//       results = calculateConcreteGivenClass(parameters.concreteClass, parameters.cum);
+//       await Schedule.updateMany(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].computedValue": {
+//               $cond: {
+//                 if: { $eq: ["$materialName", "Cement"] },
+//                 then: results.cementBags,
+
+//               else: {
+//                 $cond: {
+//                   if: { $eq: ["$materialName", "Sand"] },
+//                   then: results.amountofSand,
+//                   else: results.amountofAggregates
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+
+//   ).exec();
+//   break;
+// case "Reinforcement":
+//   switch (materialName) {
+//     case "BRC":
+//       results = calculateBRC(parameters.brcSize, parameters.area);
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials._id": materialId },
+//         {
+//           $set: {
+//             "materials.$.parameters": parameters,
+//             "materials.$.elementName": elementName,
+//             "materials.$.materialDescription": description,
+//             "materials.$.computedValue": results.brcRolls,
+//           },
+//         }
+//       ).exec();
+//       break;
+//     case "Rebar":
+//       results = calculateRebar(parameters.rebarSize, parameters.Kgs);
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials._id": materialId },
+//         {
+//           $set: {
+//             "materials.$.parameters": parameters,
+//             "materials.$.elementName": elementName,
+//             "materials.$.materialDescription": description,
+//             "materials.$.computedValue": results.brcRolls,
+//           },
+//         }
+//       ).exec();
+//       break;
+//       default:
+//         break;
+//     }
+//     break;
+//     case "Walling":
+//       if (materialType === "Bricks") {
+//         results = calculateBricks(parameters.wallArea, parameters.bondName);
+//       } else if (materialType === "Blocks") {
+//         results = calculateBlocks(parameters.wallArea, parameters.bondName);
+//       }
+//       schedule = await Schedule.findOne({ _id: scheduleId }).exec();
+//       await Schedule.updateMany(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].materialName": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialType", "Bricks"] },
+//                 then: "Bricks",
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialType", "Blocks"] },
+//                     then: "Blocks",
+//                     else: "$materials.materialName"
+//                   }
+//                 }
+//               }
+//             },
+//             "materials.$[].unit": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialType", "Bricks"] },
+//                 then: "Bricks",
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialType", "Blocks"] },
+//                     then: "Blocks",
+//                     else: "$materials.unit"
+//                   }
+//                 }
+//               }
+//             },
+//             "materials.$[].materialType": materialType,
+//             "materials.$[].parameters": parameters,
+//             "materials.$[].elementName": elementName,
+//             "materials.$[].materialDescription": description,
+//             "materials.$[].computedValue": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialName", "Cement"] },
+//                 then: results.numCementBags,
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialName", "Sand"] },
+//                     then: results.sandWeighttTonnes,
+//                     else: {
+//                       $cond: {
+//                         if: { $eq: ["$materials.materialName", "Bricks"] },
+//                         then: results.numBricks,
+//                         else: {
+//                           $cond: {
+//                             if: { $eq: ["$materials.materialName", "Blocks"] },
+//                             then: results.numBlocks,
+//                             else: results.hoopIron
+//                           }
+//                         }
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       ).exec();
+//       break;
+//     default:
+//       break;
+//   }
+//   res.status(200).json({ message: "Successfully Updated Material" });
+// };
+
 const getSummary = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   console.log(req.params);
@@ -776,6 +936,7 @@ const postApplication = async (req, res) => {
       { new: true }
     );
 
+    
     // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
     schedule.totalRequested = results[0].totalRequested;
