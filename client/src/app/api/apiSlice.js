@@ -2,18 +2,20 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setCredentials } from "../../features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
-
   baseUrl:
     process.env.NODE_ENV === "development"
       ? "http://localhost:3500"
-      : "https://materialschedule-api.onrender.com",
+
+      : "https://hitajitech.site/server-deemedvat",
+
+  // "https://materialschedule-api.onrender.com"
+
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;
 
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
-
     }
     return headers;
   },
@@ -51,9 +53,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 };
 
 export const apiSlice = createApi({
-
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Note", "User"],
   endpoints: (builder) => ({}),
 });
-

@@ -1,65 +1,30 @@
 function calculateConcreteGivenClass(concreteClass, cum) {
-  if (concreteClass === "C30") {
-    let cementKgs = Number(cum) * 540;
-    let sandWeightkgs = Number(cum) * 400;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 850;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C25") {
-    let cementKgs = Number(cum) * 393;
-    let sandWeightkgs = Number(cum) * 435;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 928;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C20") {
-    let cementKgs = Number(cum) * 309;
-    let sandWeightkgs = Number(cum) * 456;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 972;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C15") {
-    let cementKgs = Number(cum) * 216;
-    let sandWeightkgs = Number(cum) * 479;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 1020;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  } else if (concreteClass === "C10") {
-    let cementKgs = Number(cum) * 166;
-    let sandWeightkgs = Number(cum) * 491;
-    let sandWeighttTonnes = Math.ceil(Number(sandWeightkgs) / 1000);
-    let aggregateWeightkgs = Number(cum) * 1046;
-    let aggregateWeightTonnes = Math.ceil(Number(aggregateWeightkgs) / 1000);
-    let numCementBags = Math.ceil(Number(cementKgs) / 50);
-    return {
-      cementBags: numCementBags,
-      amountofSand: sandWeighttTonnes,
-      amountofAggregates: aggregateWeightTonnes,
-    };
-  }
+  console.log(concreteClass, cum);
+  const ratios = {
+    C30: [540, 400, 850],
+    C25: [393, 435, 928],
+    C20: [309, 456, 972],
+    C15: [216, 479, 1020],
+    C10: [166, 491, 1046],
+  };
+
+  let [cementKgs, sandWeightkgs, aggregateWeightkgs] = ratios[
+    concreteClass
+  ].map((x) => Number.parseFloat((x * cum).toFixed(4)));
+
+  let sandWeighttTonnes = parseFloat((sandWeightkgs / 1000).toFixed(4));
+  console.log(sandWeighttTonnes);
+  let aggregateWeightTonnes = parseFloat(
+    (aggregateWeightkgs / 1000).toFixed(4)
+  );
+  console.log(aggregateWeightTonnes);
+  let numCementBags = Math.ceil(cementKgs / 50);
+
+  return {
+    cementBags: numCementBags,
+    amountofSand: sandWeighttTonnes,
+    amountofAggregates: aggregateWeightTonnes,
+  };
 }
 
 function calculateBRC(size, area) {

@@ -41,8 +41,18 @@ const scheduleSchema = new mongoose.Schema(
           type: String,
         },
         unit: {
-          type: String,
+          type: [String],
         },
+        details: [
+          {
+            materialDescription: {
+              type: String,
+            },
+            computedValue: {
+              type: Number,
+            },
+          },
+        ],
       },
     ],
 
@@ -101,6 +111,52 @@ const scheduleSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+scheduleSchema.post("updateOne", function (doc, next) {
+  // Check if the summary array was updated
+  if (this._update.$set.summary) {
+    // Retrieve the updated summary array
+    const summary = this._update.$set.summary;
+    console.log(summary);
+
+    // Find the schedule document
+    mongoose
+      .model("Schedule")
+      .findById(this._conditions._id)
+      .then((schedule) => {
+        // Recalculate the amountAllowed value for each item in all application objects
+        schedule.application = schedule.application.map((app) => {
+          app.items = app.items.map((item) => {
+            let amountAllowed = 0;
+            schedule.summary.forEach((s) => {
+              if (item.item == s._id) {
+                schedule.totalRequested.forEach((tr) => {
+                  if (item.item === tr._id) {
+                    console.log(s.Value, tr.amountRequested);
+                    amountAllowed = s.Value - Number(tr.amountRequested);
+                  }
+                });
+              }
+            });
+            return {
+              ...item,
+              amountAllowed,
+            };
+          });
+          return app;
+        });
+
+        // Save the updated schedule document
+        schedule.save().then(() => {
+          // Call the next function with no arguments
+          next();
+        });
+      });
+  } else {
+    // Call the next function with no arguments
+    next();
+  }
+});
 
 scheduleSchema.plugin(AutoIncrement, {
   inc_field: "ticket",

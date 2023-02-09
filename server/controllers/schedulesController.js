@@ -15,19 +15,19 @@ const { calculateConcreteGivenClass } = require("../utils/calculations");
 
 function calculateBRC(size, area) {
   if (size === "A66" || "A98(30)") {
-    let brcRolls = Math.ceil(Number(area) / 63.9);
+    let brcRolls = Math.ceil(Number(area) / 57.514);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A98(48)" || "A142") {
-    let brcRolls = Math.ceil(Number(area) / 115.2);
+    let brcRolls = Math.ceil(Number(area) / 105.16);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A193" || "A252") {
-    let brcRolls = Math.ceil(Number(area) / 11.52);
+    let brcRolls = Math.ceil(Number(area) / 10.12);
     return {
       brcSize: size,
       brcRolls: brcRolls,
@@ -88,58 +88,45 @@ function calculateRebar(diameter, weight) {
 }
 
 function calculateBricks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags = Math.ceil(Number(area) * 0.3);
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBricks;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 112);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 112);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 60);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 60);
   }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBricks: numBricks,
+  };
 }
 function calculateBlocks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 112);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.4);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 60);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.2);
   }
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBlocks;
+  if (bond === "Header") {
+    numBlocks = Math.ceil(Number(area) * 24);
+  } else if (bond === "Stretcher") {
+    numBlocks = Math.ceil(Number(area) * 11);
+  }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBlocks: numBlocks,
+  };
 }
 
 const getAllSchedules = async (req, res) => {
@@ -281,7 +268,7 @@ const addScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
 
-  console.log(req.params);
+  console.log("Request Parametrs", req.params);
   // Confirm data
   if (!elementName || !description || !parameters) {
     return res.status(400).json({ message: "Please provide a relevant field" });
@@ -290,7 +277,6 @@ const addScheduleMaterial = async (req, res) => {
   // Confirm schedule exists to update
   const schedule = await Schedule.findById(scheduleId).exec();
   const relatedId = uuid();
-  console.log(relatedId);
 
   if (!schedule) {
     return res
@@ -299,11 +285,12 @@ const addScheduleMaterial = async (req, res) => {
   }
   if (elementName === "Concrete") {
     // Calculate here
+    console.log(parameters.concreteClass, parameters.cum);
     const results = calculateConcreteGivenClass(
       parameters.concreteClass,
       parameters.cum
     );
-    console.log(results);
+
     schedule.materials.push({
       elementName: "Concrete",
       materialName: "Cement",
@@ -406,9 +393,10 @@ const addScheduleMaterial = async (req, res) => {
       materialName: "Blocks",
       materialDescription: description,
       materialType: materialType,
-      computedValue: results.numBricks,
+      computedValue: results.numBlocks,
       unit: "Blocks",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -418,6 +406,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.numCementBags,
       unit: "Bags",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -427,6 +416,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.sandWeighttTonnes,
       unit: "Tonnes",
       parameters: parameters,
+      relatedId: relatedId,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -436,6 +426,7 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.hoopIron,
       unit: "Rolls",
       parameters: parameters,
+      relatedId: relatedId,
     });
   }
 
@@ -489,7 +480,6 @@ const deleteScheduleMaterial = async (req, res) => {
     { _id: scheduleId },
     { $set: { summary: summary } }
   ).exec();
-  console.log(summary);
 
   res.json({
     "message ": `Material ${material.materialName} deleted successfully`,
@@ -594,29 +584,58 @@ const updateScheduleMaterial = async (req, res) => {
         },
       }
     ).exec();
-  } else if (elementName === "Walling" && materialType === "Bricks") {
-    const results = calculateBricks(parameters.wallArea, parameters.bondName);
-    //Find out which of the Four Walling constituent materials to update
-    if (materialName == "Cement") {
-      updatedValue = results.numCementBags;
-    } else if (materialName == "Sand") {
-      updatedValue = results.sandWeighttTonnes;
-    } else if (materialName == "Bricks") {
-      updatedValue = results.numBricks;
-    } else if (materialName == "Hoop Iron") {
-      updatedValue = results.hoopIron;
+  }
+  if (elementName === "Walling") {
+    schedule = await Schedule.findOne({ _id: scheduleId }).exec();
+    const materials = schedule?.materials?.filter(
+      (material) => material.relatedId === relatedId
+    );
+    if (materialType === "Bricks") {
+      results = calculateBricks(parameters.wallArea, parameters.bondName);
+    } else if (materialType === "Blocks") {
+      results = calculateBlocks(parameters.wallArea, parameters.bondName);
     }
-    schedule = await Schedule.findOneAndUpdate(
-      { _id: scheduleId, "materials._id": materialId },
-      {
-        $set: {
-          "materials.$.parameters": parameters,
-          "materials.$.elementName": elementName,
-          "materials.$.materialDescription": description,
-          "materials.$.computedValue": updatedValue,
-        },
+
+    for (const material of materials) {
+      if (material.materialName === "Bricks" && materialType === "Blocks") {
+        material.materialName = "Blocks";
+        material.materialType = "Blocks";
+        material.unit = "Blocks";
       }
-    ).exec();
+      if (material.materialName === "Blocks" && materialType === "Bricks") {
+        material.materialName = "Bricks";
+        material.materialType = "Bricks";
+        material.unit = "Bricks";
+      }
+      if (material.materialName == "Cement") {
+        material.computedValue = results.numCementBags;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Sand") {
+        material.computedValue = results.sandWeighttTonnes;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Bricks") {
+        material.computedValue = results.numBricks;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Blocks") {
+        material.computedValue = results.numBlocks;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      } else if (material.materialName == "Hoop Iron") {
+        material.computedValue = results.hoopIron;
+        material.parameters = parameters;
+        material.materialDescription = description;
+        material.materialType = materialType;
+      }
+    }
+
+    await schedule.save();
   }
 
   // Confirm schedule exists to update
@@ -653,6 +672,166 @@ const updateScheduleMaterial = async (req, res) => {
     material: updatedMaterial,
   });
 };
+
+// const updateScheduleMaterial2 = async (req, res) => {
+//   const scheduleId = req.params.scheduleId;
+//   const materialId = req.params.materialId;
+//   // Validate update data
+//   const { elementName, materialName, description, parameters, materialType, relatedId } = req.body;
+
+//   // Confirm data
+//   if (!materialName && !description && !parameters && !elementName) {
+//     return res.status(400).json({ message: "Please provide a relevant field" });
+//   }
+
+//   //Run New Parameters through function
+//   let results = {};
+//   let schedule;
+//   switch (elementName) {
+//     case "Concrete":
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].parameters": parameters,
+//             "materials.$[].elementName": elementName,
+//             "materials.$[].materialDescription": description,
+//           },
+//         }
+//       ).exec();
+//       results = calculateConcreteGivenClass(parameters.concreteClass, parameters.cum);
+//       await Schedule.updateMany(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].computedValue": {
+//               $cond: {
+//                 if: { $eq: ["$materialName", "Cement"] },
+//                 then: results.cementBags,
+
+//               else: {
+//                 $cond: {
+//                   if: { $eq: ["$materialName", "Sand"] },
+//                   then: results.amountofSand,
+//                   else: results.amountofAggregates
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+
+//   ).exec();
+//   break;
+// case "Reinforcement":
+//   switch (materialName) {
+//     case "BRC":
+//       results = calculateBRC(parameters.brcSize, parameters.area);
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials._id": materialId },
+//         {
+//           $set: {
+//             "materials.$.parameters": parameters,
+//             "materials.$.elementName": elementName,
+//             "materials.$.materialDescription": description,
+//             "materials.$.computedValue": results.brcRolls,
+//           },
+//         }
+//       ).exec();
+//       break;
+//     case "Rebar":
+//       results = calculateRebar(parameters.rebarSize, parameters.Kgs);
+//       schedule = await Schedule.findOneAndUpdate(
+//         { _id: scheduleId, "materials._id": materialId },
+//         {
+//           $set: {
+//             "materials.$.parameters": parameters,
+//             "materials.$.elementName": elementName,
+//             "materials.$.materialDescription": description,
+//             "materials.$.computedValue": results.brcRolls,
+//           },
+//         }
+//       ).exec();
+//       break;
+//       default:
+//         break;
+//     }
+//     break;
+//     case "Walling":
+//       if (materialType === "Bricks") {
+//         results = calculateBricks(parameters.wallArea, parameters.bondName);
+//       } else if (materialType === "Blocks") {
+//         results = calculateBlocks(parameters.wallArea, parameters.bondName);
+//       }
+//       schedule = await Schedule.findOne({ _id: scheduleId }).exec();
+//       await Schedule.updateMany(
+//         { _id: scheduleId, "materials.relatedId": relatedId },
+//         {
+//           $set: {
+//             "materials.$[].materialName": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialType", "Bricks"] },
+//                 then: "Bricks",
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialType", "Blocks"] },
+//                     then: "Blocks",
+//                     else: "$materials.materialName"
+//                   }
+//                 }
+//               }
+//             },
+//             "materials.$[].unit": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialType", "Bricks"] },
+//                 then: "Bricks",
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialType", "Blocks"] },
+//                     then: "Blocks",
+//                     else: "$materials.unit"
+//                   }
+//                 }
+//               }
+//             },
+//             "materials.$[].materialType": materialType,
+//             "materials.$[].parameters": parameters,
+//             "materials.$[].elementName": elementName,
+//             "materials.$[].materialDescription": description,
+//             "materials.$[].computedValue": {
+//               $cond: {
+//                 if: { $eq: ["$materials.materialName", "Cement"] },
+//                 then: results.numCementBags,
+//                 else: {
+//                   $cond: {
+//                     if: { $eq: ["$materials.materialName", "Sand"] },
+//                     then: results.sandWeighttTonnes,
+//                     else: {
+//                       $cond: {
+//                         if: { $eq: ["$materials.materialName", "Bricks"] },
+//                         then: results.numBricks,
+//                         else: {
+//                           $cond: {
+//                             if: { $eq: ["$materials.materialName", "Blocks"] },
+//                             then: results.numBlocks,
+//                             else: results.hoopIron
+//                           }
+//                         }
+//                       }
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       ).exec();
+//       break;
+//     default:
+//       break;
+//   }
+//   res.status(200).json({ message: "Successfully Updated Material" });
+// };
 
 const getSummary = async (req, res) => {
   const scheduleId = req.params.scheduleId;
@@ -719,37 +898,80 @@ const postApplication = async (req, res) => {
     items: [],
   };
   applications.forEach((application) => {
-    if (
-      !application.item ||
-      !application.supplier ||
-      !application.requested ||
-      !application.allowed
-    ) {
+    if (!application.item || !application.supplier || !application.requested) {
       throw new Error("Missing required fields");
     }
     updatedApplication.items.push({
       item: application.item,
       supplier: application.supplier,
       amountRequested: application.requested,
-      amountAllowed: application.allowed,
     });
+    // updatedApplication.items = updatedApplication.items.map((item) => {
+    //   let amountAllowed = 0;
+    //   schedule.summary.forEach((s) => {
+    //     if (item.item == s._id) {
+    //       schedule.totalRequested.forEach((tr) => {
+    //         if (item.item === tr._id) {
+    //           amountAllowed = s.Value - Number(tr.amountRequested);
+    //         }
+    //       });
+    //     }
+    //   });
+    //   return {
+    //     ...item,
+    //     amountAllowed,
+    //   };
+    // });
   });
 
-  // Add the updated application to the schedule
-  schedule.application.push(updatedApplication);
-  const updatedSchedule = await schedule.save();
+  try {
+    // Add the updated application to the schedule
+    const schedule = await Schedule.findOneAndUpdate(
+      { _id: objectId },
+      {
+        $push: {
+          application: { $each: [updatedApplication], $sort: { date: -1 } },
+        },
+      },
+      { new: true }
+    );
 
-  const results = await applicationAggregationPipeline(objectId);
+    
+    // Calculate the totalRequested field
+    const results = await applicationAggregationPipeline(objectId);
+    schedule.totalRequested = results[0].totalRequested;
 
-  await Schedule.updateOne(
-    { _id: scheduleId },
-    { $set: { totalRequested: results[0].totalRequested } }
-  ).exec();
+    // Calculate the amountAllowed value for each item
+    schedule.application[0].items = schedule.application[0].items.map(
+      (item) => {
+        let amountAllowed = 0;
+        schedule.summary.forEach((s) => {
+          if (item.item == s._id) {
+            schedule.totalRequested.forEach((tr) => {
+              if (item.item === tr._id) {
+                amountAllowed = s.Value - Number(tr.amountRequested);
+              }
+            });
+          }
+        });
+        return {
+          ...item,
+          amountAllowed,
+        };
+      }
+    );
 
-  res.json({
-    "message ": "Application added successfully",
-    schedule: updatedSchedule,
-  });
+    // Save the updated schedule to the database
+    await schedule.save();
+
+    res.json({
+      message: "Application added successfully",
+      schedule: schedule,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error adding application" });
+  }
 };
 
 const updateApplication = async (req, res) => {
@@ -758,67 +980,55 @@ const updateApplication = async (req, res) => {
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
 
   const applications = req.body;
-  console.log(applications);
 
-  // Find the updated document and save it to the database
-  let updatedSchedule;
   try {
-    updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
-    console.log(updatedSchedule);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Error finding schedule" });
-  }
-
-  // Update the item in the database
-  try {
-    await Schedule.updateOne(
+    const schedule = await Schedule.findOneAndUpdate(
       { _id: objectId, "date._id": applicationId },
-      {
-        $set: {
-          "application.$[elem].items": applications.entries,
-        },
-      },
+      { $set: { "application.$[elem].items": applications.entries } },
       {
         arrayFilters: [{ "elem._id": applicationId }],
+        new: true,
       }
     );
-    await updatedSchedule.save();
 
+    // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
-    console.log(results);
+    schedule.totalRequested = results[0].totalRequested;
 
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
+    // Save the updated schedule to the database
+    await schedule.save();
 
-    res
-      .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule, results });
+    res.status(200).send({
+      message: "Application updated successfully",
+      updatedSchedule: schedule,
+      results,
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Error updating item" });
+    res.status(500).send({ message: "Error updating application" });
   }
 };
+
 const deleteApplication = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
-  console.log(applicationId);
 
   try {
-    const schedule = await Schedule.findOne({ _id: objectId });
-    schedule.application.pull({ _id: applicationId });
-    await schedule.save();
+    const schedule = await Schedule.findOneAndUpdate(
+      { _id: objectId },
+      { $pull: { application: { _id: applicationId } } },
+      { new: true }
+    );
+
+    // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
+    schedule.totalRequested = results[0].totalRequested;
 
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
+    // Save the updated schedule to the database
+    await schedule.save();
 
-    res.send({ message: "Application deleted successfully", results });
+    res.send({ message: "Application deleted successfully", schedule });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });
@@ -828,9 +1038,7 @@ const deleteApplication = async (req, res) => {
 const updateApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
-
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
-
   const itemId = req.params.itemId;
 
   // Extract fields from the request body
@@ -840,12 +1048,12 @@ const updateApplicationItem = async (req, res) => {
   let updatedSchedule;
   try {
     updatedSchedule = await Schedule.findOne({ _id: objectId }).exec();
-    console.log(updatedSchedule);
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error finding schedule" });
+    return;
   }
-  console.log(item, supplier, amountAllowed, amountRequested);
+
   // Update the item in the database
   try {
     await Schedule.updateOne(
@@ -860,22 +1068,32 @@ const updateApplicationItem = async (req, res) => {
       },
       { arrayFilters: [{ "elem._id": itemId }], returnOriginal: false }
     );
-    await updatedSchedule.save();
-    const results = await applicationAggregationPipeline(objectId);
-
-    await Schedule.updateOne(
-      { _id: scheduleId },
-      { $set: { totalRequested: results[0].totalRequested } }
-    ).exec();
-
-    res
-      .status(200)
-      .send({ message: "Item updated successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error updating item" });
+    return;
   }
+
+  // Calculate the totalRequested field
+  const results = await applicationAggregationPipeline(objectId);
+  updatedSchedule.totalRequested = results[0].totalRequested;
+
+  // Save the updated schedule to the database
+  try {
+    await updatedSchedule.save();
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Error saving updated schedule" });
+    return;
+  }
+
+  res.status(200).send({
+    message: "Item updated successfully",
+    updatedSchedule,
+    results,
+  });
 };
+
 const deleteApplicationItem = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
@@ -899,7 +1117,9 @@ const deleteApplicationItem = async (req, res) => {
       { $set: { totalRequested: results[0].totalRequested } }
     ).exec();
 
-    res.status(200).send({ message: "Item deleted successfully", updatedSchedule, results });
+    res
+      .status(200)
+      .send({ message: "Item deleted successfully", updatedSchedule, results });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });

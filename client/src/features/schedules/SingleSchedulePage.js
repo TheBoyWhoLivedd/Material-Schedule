@@ -66,15 +66,15 @@ const SingleSchedulePage = () => {
   const onDeleteMaterialClicked = async (materialId) => {
     await deleteMaterial({ id: schedule.id, _id: materialId });
   };
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(20);
   const [rowId, setRowId] = useState(null);
 
   const columns = useMemo(() => [
     { field: "materialName", headerName: "Item", width: 170 },
     { field: "elementName", headerName: "Element", width: 200 },
-    { field: "materialDescription", headerName: "Description", width: 200 },
-    { field: "unit", headerName: "Unit", width: 200 },
-    { field: "computedValue", headerName: "Quantity", width: 200 },
+    { field: "materialDescription", headerName: "Description", width: 400 },
+    { field: "unit", headerName: "Unit", width: 100 },
+    { field: "computedValue", headerName: "Quantity", width: 100 },
     {
       field: "actions",
       headerName: "Edit",
@@ -167,7 +167,7 @@ const SingleSchedulePage = () => {
               columns={columns}
               rows={schedule.materials}
               getRowId={(row) => row._id}
-              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPageOptions={[20, 40, 60]}
               pageSize={pageSize}
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
               getRowSpacing={(params) => ({

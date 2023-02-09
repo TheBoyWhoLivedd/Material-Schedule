@@ -280,22 +280,5 @@ async function updateScheduleMaterial(req, res) {
   }
 }
 
-db.collection.aggregate([
-   {
-      $group:
-         {
-            _id: "$materialName",
-            totalQuantity: { $sum: "$quantity" },
-            unit: { $first: "$unit" }
-         }
-   },
-   {
-      $project: {
-         _id: 0,
-         materialName: "$_id",
-         totalQuantity: 1,
-         unit: 1
-      }
-   }
-])
+
 
