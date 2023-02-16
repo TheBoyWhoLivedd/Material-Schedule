@@ -939,32 +939,35 @@ const postApplication = async (req, res) => {
     // Update the balanceAllowable array based on the difference between the summary and totalRequested array
     const totalRequested = schedule.totalRequested;
     const summary = schedule.summary;
-    const balanceAllowable = schedule.balanceAllowable;
+
+    // Create a map from the balanceAllowable array for faster lookup
+    const balanceAllowableMap = new Map(
+      schedule.balanceAllowable.map((item) => [item._id, item.Value])
+    );
+
     for (const { _id: requestedId, amountRequested } of totalRequested) {
       const summaryItem = summary.find(
         ({ _id: summaryId }) => summaryId === requestedId
       );
+
       if (summaryItem) {
-        const balanceAllowableItem = balanceAllowable.find(
-          ({ _id: allowableId }) => allowableId === requestedId
+        const currentAllowableValue = balanceAllowableMap.get(requestedId) || 0;
+        const newAllowableValue = summaryItem.Value - amountRequested;
+
+        // Update the value in the map
+        balanceAllowableMap.set(requestedId, newAllowableValue);
+
+        // Update the value in the database
+        await Schedule.updateMany(
+          { _id: objectId, "balanceAllowable._id": requestedId },
+          { $set: { "balanceAllowable.$.Value": newAllowableValue } }
         );
-        if (balanceAllowableItem) {
-          const filter = { "balanceAllowable._id": requestedId };
-          const update = {
-            $set: {
-              "balanceAllowable.$[elem].Value":
-                summaryItem.Value - amountRequested,
-            },
-          };
-          const options = {
-            arrayFilters: [{ "elem._id": requestedId }],
-          };
-          await Schedule.updateMany({ _id: objectId }, update, options);
-        } else {
-          // No balanceAllowable item exists for this requested item, so add a new item with the calculated value
+
+        // If there was no previous balanceAllowable item, add a new one
+        if (!currentAllowableValue) {
           const newBalanceAllowableItem = {
             _id: requestedId,
-            Value: summaryItem.Value - amountRequested,
+            Value: newAllowableValue,
           };
           await Schedule.updateMany(
             { _id: objectId },
