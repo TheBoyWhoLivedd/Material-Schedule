@@ -6,7 +6,13 @@ const materialsAggregationPipeline = async (scheduleId) => {
     { $unwind: "$materials" },
     {
       $group: {
-        _id: "$materials.materialName",
+        _id: {
+          $cond: [
+            "$materials.groupByFirstProp",
+            "$materials.materialDetail",
+            "$materials.materialName",
+          ],
+        },
         unit: { $addToSet: "$materials.unit" },
         Value: { $sum: "$materials.computedValue" },
         details: {
@@ -28,6 +34,33 @@ const materialsAggregationPipeline = async (scheduleId) => {
   ]);
 };
 
+// const materialsAggregationPipeline = async (scheduleId) => {
+//   return await Schedule.aggregate([
+//     { $match: { _id: scheduleId } },
+//     { $unwind: "$materials" },
+//     {
+//       $group: {
+//         _id: "$materials.materialName",
+//         unit: { $addToSet: "$materials.unit" },
+//         Value: { $sum: "$materials.computedValue" },
+//         details: {
+//           $push: {
+//             materialDescription: "$materials.materialDescription",
+//             computedValue: "$materials.computedValue",
+//           },
+//         },
+//       },
+//     },
+//     {
+//       $project: {
+//         name: "$_id",
+//         unit: "$unit",
+//         Value: "$Value",
+//         details: "$details",
+//       },
+//     },
+//   ]);
+// };
 
 const applicationAggregationPipeline = async (scheduleId) => {
   return await Schedule.aggregate([

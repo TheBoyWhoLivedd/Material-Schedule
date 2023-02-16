@@ -299,6 +299,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Bags",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
     schedule.materials.push({
       elementName: "Concrete",
@@ -308,6 +309,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Tonnes",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
     schedule.materials.push({
       elementName: "Concrete",
@@ -317,6 +319,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Tonnes",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
   } else if (elementName === "Reinforcement" && materialName === "BRC") {
     const results = calculateBRC(parameters.brcSize, parameters.area);
@@ -325,10 +328,11 @@ const addScheduleMaterial = async (req, res) => {
       elementName: "Reinforcement",
       materialName: "BRC",
       materialDescription: description,
-
       computedValue: results.brcRolls,
       unit: "Rolls",
       parameters: parameters,
+      materialDetail: `${materialName}(${parameters.brcSize})`,
+      groupByFirstProp: true,
     });
   } else if (elementName === "Reinforcement" && materialName === "Rebar") {
     const results = calculateRebar(parameters.rebarSize, parameters.Kgs);
@@ -340,6 +344,8 @@ const addScheduleMaterial = async (req, res) => {
       computedValue: results.rebarPieces,
       unit: "Pieces",
       parameters: parameters,
+      materialDetail: `${materialName}(${parameters.rebarSize})`,
+      groupByFirstProp: true,
     });
   } else if (elementName === "Walling" && materialType === "Bricks") {
     const results = calculateBricks(parameters.wallArea, parameters.bondName);
@@ -353,6 +359,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Bricks",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -363,6 +370,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Bags",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
 
     schedule.materials.push({
@@ -374,6 +382,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Tonnes",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
     schedule.materials.push({
       elementName: "Walling",
@@ -384,6 +393,7 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Rolls",
       parameters: parameters,
       relatedId: relatedId,
+      groupByFirstProp: false,
     });
   } else if (elementName === "Walling" && materialType === "Blocks") {
     const results = calculateBlocks(parameters.wallArea, parameters.bondName);
@@ -568,6 +578,7 @@ const updateScheduleMaterial = async (req, res) => {
           "materials.$.elementName": elementName,
           "materials.$.materialDescription": description,
           "materials.$.computedValue": results.brcRolls,
+          "materials.$.materialDetail": `${materialName}(${parameters.brcSize})`,
         },
       }
     ).exec();
@@ -580,6 +591,7 @@ const updateScheduleMaterial = async (req, res) => {
           "materials.$.parameters": parameters,
           "materials.$.elementName": elementName,
           "materials.$.materialDescription": description,
+          "materials.$.materialDetail": `${materialName}(${parameters.rebarSize})`,
           "materials.$.computedValue": results.rebarPieces,
         },
       }
@@ -906,22 +918,6 @@ const postApplication = async (req, res) => {
       supplier: application.supplier,
       amountRequested: application.requested,
     });
-    // updatedApplication.items = updatedApplication.items.map((item) => {
-    //   let amountAllowed = 0;
-    //   schedule.summary.forEach((s) => {
-    //     if (item.item == s._id) {
-    //       schedule.totalRequested.forEach((tr) => {
-    //         if (item.item === tr._id) {
-    //           amountAllowed = s.Value - Number(tr.amountRequested);
-    //         }
-    //       });
-    //     }
-    //   });
-    //   return {
-    //     ...item,
-    //     amountAllowed,
-    //   };
-    // });
   });
 
   try {
@@ -936,30 +932,47 @@ const postApplication = async (req, res) => {
       { new: true }
     );
 
-    
     // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
     schedule.totalRequested = results[0].totalRequested;
 
-    // Calculate the amountAllowed value for each item
-    schedule.application[0].items = schedule.application[0].items.map(
-      (item) => {
-        let amountAllowed = 0;
-        schedule.summary.forEach((s) => {
-          if (item.item == s._id) {
-            schedule.totalRequested.forEach((tr) => {
-              if (item.item === tr._id) {
-                amountAllowed = s.Value - Number(tr.amountRequested);
-              }
-            });
-          }
-        });
-        return {
-          ...item,
-          amountAllowed,
-        };
+    // Update the balanceAllowable array based on the difference between the summary and totalRequested array
+    const totalRequested = schedule.totalRequested;
+    const summary = schedule.summary;
+    const balanceAllowable = schedule.balanceAllowable;
+    for (const { _id: requestedId, amountRequested } of totalRequested) {
+      const summaryItem = summary.find(
+        ({ _id: summaryId }) => summaryId === requestedId
+      );
+      if (summaryItem) {
+        const balanceAllowableItem = balanceAllowable.find(
+          ({ _id: allowableId }) => allowableId === requestedId
+        );
+        if (balanceAllowableItem) {
+          const filter = { "balanceAllowable._id": requestedId };
+          const update = {
+            $set: {
+              "balanceAllowable.$[elem].Value":
+                summaryItem.Value - amountRequested,
+            },
+          };
+          const options = {
+            arrayFilters: [{ "elem._id": requestedId }],
+          };
+          await Schedule.updateMany({ _id: objectId }, update, options);
+        } else {
+          // No balanceAllowable item exists for this requested item, so add a new item with the calculated value
+          const newBalanceAllowableItem = {
+            _id: requestedId,
+            Value: summaryItem.Value - amountRequested,
+          };
+          await Schedule.updateMany(
+            { _id: objectId },
+            { $push: { balanceAllowable: newBalanceAllowableItem } }
+          );
+        }
       }
-    );
+    }
 
     // Save the updated schedule to the database
     await schedule.save();
@@ -974,11 +987,30 @@ const postApplication = async (req, res) => {
   }
 };
 
+// schedule.application[0].items = schedule.application[0].items.map(
+//   (item) => {
+//     let amountAllowed = 0;
+//     schedule.summary.forEach((s) => {
+//       if (item.item == s._id) {
+//         schedule.totalRequested.forEach((tr) => {
+//           if (item.item === tr._id) {
+//             amountAllowed = s.Value - Number(tr.amountRequested);
+//           }
+//         });
+//       }
+//     });
+//     return {
+//       ...item,
+//       amountAllowed,
+//     };
+//   }
+// );
+
 const updateApplication = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
-
+  console.log(applicationId);
   const applications = req.body;
 
   try {
@@ -990,6 +1022,28 @@ const updateApplication = async (req, res) => {
         new: true,
       }
     );
+    console.log(schedule);
+
+    // Find the updated application and calculate the amountAllowed for each item
+    const updatedApplication = schedule.application.find(
+      (app) => app._id.toString() === applicationId.toString()
+    );
+    updatedApplication.items = updatedApplication.items.map((item) => {
+      let amountAllowed = 0;
+      schedule.summary.forEach((s) => {
+        if (item.item == s._id) {
+          schedule.totalRequested.forEach((tr) => {
+            if (item.item === tr._id) {
+              amountAllowed = s.Value - Number(tr.amountRequested);
+            }
+          });
+        }
+      });
+      return {
+        ...item,
+        amountAllowed,
+      };
+    });
 
     // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
@@ -1023,7 +1077,16 @@ const deleteApplication = async (req, res) => {
 
     // Calculate the totalRequested field
     const results = await applicationAggregationPipeline(objectId);
-    schedule.totalRequested = results[0].totalRequested;
+
+    if (results && results.length > 0) {
+      // Use a conditional operator to check if totalRequested is undefined and set schedule.totalRequested accordingly
+      schedule.totalRequested =
+        results[0].totalRequested === undefined
+          ? []
+          : results[0].totalRequested;
+    } else {
+      schedule.totalRequested = [];
+    }
 
     // Save the updated schedule to the database
     await schedule.save();

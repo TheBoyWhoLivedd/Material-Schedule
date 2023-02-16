@@ -30,8 +30,13 @@ export const applicationItems = [
   "Curbstones",
   "Granite",
   "Concrete",
+  "BRC(A193)",
+  "BRC(A98(30))",
+  "BRC(A142)",
+  "Rebar(8)",
+  "Rebar(10)",
+  "Rebar(12)",
 ];
-
 
 export const concreteMaterialsData = ["Cement"];
 export const wallingMaterialsData = ["Bricks", "Blocks"];
@@ -57,7 +62,7 @@ export const beamSizeOptions = [
 
 export const brcSizeOptions = [
   { size: "A66" },
-  { size: "A98(30) " },
+  { size: "A98(30)" },
   { size: "A98(48)" },
   { size: "A142" },
   { size: "A193" },
