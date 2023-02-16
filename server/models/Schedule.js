@@ -56,13 +56,41 @@ const scheduleSchema = new mongoose.Schema(
       },
     ],
 
-    totalRequested: [],
+    totalRequested: [
+      {
+        _id: {
+          type: String,
+        },
+        name: {
+          type: String,
+        },
+        amountRequested: {
+          type: Number,
+        },
+        unit: {
+          type: [String],
+        },
+      },
+    ],
+    balanceAllowable: [
+      {
+        _id: {
+          type: String,
+        },
+        Value: {
+          type: Number,
+        },
+      },
+    ],
     materials: [
       {
         elementName: {
           type: String,
         },
         materialName: {
+          type: String,
+        },
+        materialDetail: {
           type: String,
         },
         materialType: {
@@ -79,6 +107,9 @@ const scheduleSchema = new mongoose.Schema(
         },
         relatedId: {
           type: String,
+        },
+        groupByFirstProp: {
+          type: Boolean,
         },
         parameters: {},
       },
@@ -154,6 +185,60 @@ scheduleSchema.post("updateOne", function (doc, next) {
       });
   } else {
     // Call the next function with no arguments
+    next();
+  }
+});
+
+scheduleSchema.methods.updateAmountAllowed = function () {
+  const totalRequested = this.totalRequested;
+  this.application = this.application.map((app) => {
+    app.items = app.items.map((item) => {
+      let amountAllowed = 0;
+      this.summary.forEach((s) => {
+        if (item.item == s._id) {
+          totalRequested.forEach((tr) => {
+            if (item.item === tr._id) {
+              amountAllowed = s.Value - Number(tr.amountRequested);
+            }
+          });
+        }
+      });
+      return {
+        ...item,
+        amountAllowed,
+      };
+    });
+    return app;
+  });
+};
+
+scheduleSchema.post("updateOne", function (doc, next) {
+  if (this._update.$set.totalRequested) {
+    mongoose
+      .model("Schedule")
+      .findById(this._conditions._id)
+      .then((schedule) => {
+        schedule.updateAmountAllowed();
+        schedule.save().then(() => {
+          next();
+        });
+      });
+  } else {
+    next();
+  }
+});
+scheduleSchema.post("findOneAndUpdate", function (doc, next) {
+  if (this._update.$set.totalRequested) {
+    mongoose
+      .model("Schedule")
+      .findById(this._conditions._id)
+      .then((schedule) => {
+        schedule.updateAmountAllowed();
+        schedule.save().then(() => {
+          next();
+        });
+      });
+  } else {
     next();
   }
 });
