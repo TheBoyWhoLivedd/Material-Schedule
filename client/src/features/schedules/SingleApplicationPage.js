@@ -207,56 +207,67 @@ const SingleApplicationPage = () => {
 
           <ExpansionPanelDetails style={{ display: "block" }}>
             <List>
-              {application.items.map((item) => (
-                <ListItem
-                  key={item._id}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <ListItemText
-                    primary={item.item}
-                    secondary={`Supplier: ${item.supplier} | Requested: ${item.amountRequested} | Balance Allowable: ${item.amountAllowed}`}
-                  />
-                  <ListItemSecondaryAction>
-                    {/* Add a button to open the popper when clicked */}
-                    <div
-                      style={{
-                        display: "flex",
-                      }}
-                    >
-                      <Button
-                        className="edit-button"
-                        variant="outlined"
-                        color="primary"
-                        onClick={(e) =>
-                          handleEditClick(e, item, application._id)
-                        }
-                        style={{ border: "none" }}
+              {application.items.map((item) => {
+                // Find the corresponding item in the balanceAllowable array
+                const balanceItem = schedule.balanceAllowable.find(
+                  (bItem) => bItem._id === item.item
+                );
+
+                return (
+                  <ListItem
+                    key={item._id}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <ListItemText
+                      primary={item.item}
+                      secondary={`Supplier: ${item.supplier} | Requested: ${
+                        item.amountRequested
+                      } | Balance Allowable: ${
+                        balanceItem ? balanceItem.Value : ""
+                      }`}
+                    />
+                    <ListItemSecondaryAction>
+                      {/* Add a button to open the popper when clicked */}
+                      <div
+                        style={{
+                          display: "flex",
+                        }}
                       >
-                        <Edit />
-                      </Button>
-                      {/* <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={(e) =>
-                          onDeleteitemClicked(application._id, item._id)
-                        }
-                      >
-                        <Trash />
-                      </Button> */}
-                      <DeleteModal
-                        handleDelete={(e) =>
-                          onDeleteitemClicked(application._id, item._id)
-                        }
-                        element="icon"
-                      />
-                    </div>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
+                        <Button
+                          className="edit-button"
+                          variant="outlined"
+                          color="primary"
+                          onClick={(e) =>
+                            handleEditClick(e, item, application._id)
+                          }
+                          style={{ border: "none" }}
+                        >
+                          <Edit />
+                        </Button>
+                        {/* <Button
+                variant="contained"
+                color="secondary"
+                onClick={(e) =>
+                  onDeleteitemClicked(application._id, item._id)
+                }
+              >
+                <Trash />
+              </Button> */}
+                        <DeleteModal
+                          handleDelete={(e) =>
+                            onDeleteitemClicked(application._id, item._id)
+                          }
+                          element="icon"
+                        />
+                      </div>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })}
             </List>
           </ExpansionPanelDetails>
         </ExpansionPanel>
