@@ -1,4 +1,4 @@
-import { Box, Button, Modal } from "@mui/material";
+import { Box, Button, Modal, useTheme } from "@mui/material";
 import { autoBatchEnhancer } from "@reduxjs/toolkit";
 import React from "react";
 
@@ -9,22 +9,19 @@ export default function ModalComponent({
   openModal = false,
   children,
 }) {
-  // const dispatch = useDispatch();
-  // const open = useSelector((state) => state.modal.open);
-  // const handleOpen = () => dispatch(close());
-  // const handleClose = () => dispatch(close());
 
+  const theme = useTheme();
   const style = {
     position: "absolute",
     top: "50%",
     left: "50%",
 
     transform: "translate(-50%, -50%)",
-    bgcolor: "background.paper",
+    bgcolor: theme.palette.background.paper,
     border: "2px solid #000",
     boxShadow: 24,
     p: 2,
-    color: "#000",
+    color: theme.palette.text.primary,
     borderRadius: "10px",
     overflow: "scroll",
     height: "auto",
