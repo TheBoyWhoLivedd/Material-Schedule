@@ -1,10 +1,4 @@
-import {
-  ChevronLeft,
-  Dashboard,
-  Logout,
-
-  PeopleAlt,
-} from "@mui/icons-material";
+import { ChevronLeft, Dashboard, Logout, PeopleAlt } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -21,8 +15,8 @@ import {
 } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { useState } from "react";
-import {  useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth"
+import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const drawerWidth = 240;
 
@@ -77,7 +71,7 @@ const Drawer = styled(MuiDrawer, {
 const SideList = ({ open, setOpen, sendLogout }) => {
   const [selectedLink, setSelectedLink] = useState("");
 
-  const { username, status } = useAuth()
+  const { username, status, isManager, isAdmin } = useAuth();
 
   const list = [
     {
@@ -85,22 +79,26 @@ const SideList = ({ open, setOpen, sendLogout }) => {
       icon: <Dashboard />,
       link: "/dash/schedules",
     },
-    {
-      title: "Add New Project",
-      icon: <Dashboard />,
-      link: "/dash/schedules/new",
-    },
+    ...(isAdmin || isManager
+      ? [
+          {
+            title: "Add New Project",
+            icon: <Dashboard />,
+            link: "/dash/schedules/new",
+          },
 
-    {
-      title: "View User Settings",
-      icon: <PeopleAlt />,
-      link: "/dash/users",
-    },
-    {
-      title: "Add New User",
-      icon: <PeopleAlt />,
-      link: "/dash/users/new",
-    },
+          {
+            title: "View User Settings",
+            icon: <PeopleAlt />,
+            link: "/dash/users",
+          },
+          {
+            title: "Add New User",
+            icon: <PeopleAlt />,
+            link: "/dash/users/new",
+          },
+        ]
+      : []),
   ];
   const navigate = useNavigate();
 
@@ -151,7 +149,7 @@ const SideList = ({ open, setOpen, sendLogout }) => {
         <Box sx={{ textAlign: "center" }}>
           {open && <Typography>{status}</Typography>}
           <Typography variant="body2">{username}</Typography>
-         
+
           <Tooltip title="Logout" sx={{ mt: 1 }}>
             <IconButton onClick={sendLogout}>
               <Logout />
