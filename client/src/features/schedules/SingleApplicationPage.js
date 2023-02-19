@@ -16,9 +16,9 @@ import ModalSecondary from "../../components/ModalSecondary";
 import ApplicationAddForm from "../../components/ApplicationAddForm";
 import ApplicationEditForm from "../../components/ApplicationAddForm/ApplicationEditForm";
 import {
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   List,
   ListItem,
   ListItemText,
@@ -27,7 +27,7 @@ import {
   ClickAwayListener,
   Button,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
 import DeleteModal from "../../components/DeleteModal";
@@ -162,10 +162,10 @@ const SingleApplicationPage = () => {
         </div>
       </div>
       {schedule?.application?.map((application) => (
-        <ExpansionPanel key={application._id}>
-          <ExpansionPanelSummary>
+        <Accordion key={application._id}>
+          <AccordionSummary>
             {moment(application.date).format("MMMM DD, YYYY")}
-          </ExpansionPanelSummary>
+          </AccordionSummary>
           <div
             style={{
               display: "flex",
@@ -205,7 +205,7 @@ const SingleApplicationPage = () => {
             </div>
           </div>
 
-          <ExpansionPanelDetails style={{ display: "block" }}>
+          <AccordionDetails style={{ display: "block" }}>
             <List>
               {application.items.map((item) => {
                 // Find the corresponding item in the balanceAllowable array
@@ -269,8 +269,8 @@ const SingleApplicationPage = () => {
                 );
               })}
             </List>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
+          </AccordionDetails>
+        </Accordion>
       ))}
       <ModalSecondary open={open1} handleClose={closeModal}>
         <ApplicationEditForm
