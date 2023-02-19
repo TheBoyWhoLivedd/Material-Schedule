@@ -2,15 +2,15 @@ import useTitle from "../../hooks/useTitle";
 import {  useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams } from "react-router-dom";
 import {
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   List,
   ListItem,
   ListItemText,
   IconButton,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 
 import { ChevronDown } from "feather-icons-react";
 
@@ -34,8 +34,8 @@ const SummaryPage = () => {
   content = (
     <div>
       {schedule?.summary?.map((child) => (
-        <ExpansionPanel>
-          <ExpansionPanelSummary
+        <Accordion>
+          <AccordionSummary
             expandIcon={
               <IconButton
                 style={{
@@ -61,8 +61,8 @@ const SummaryPage = () => {
               {child.Value}
             </Typography>
             <Typography>{child.unit}</Typography>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
+          </AccordionSummary>
+          <AccordionDetails>
             <List>
               {child.details.map((detail) => (
                 <ListItem>
@@ -77,8 +77,8 @@ const SummaryPage = () => {
                 </ListItem>
               ))}
             </List>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
+          </AccordionDetails>
+        </Accordion>
       ))}
     </div>
   );

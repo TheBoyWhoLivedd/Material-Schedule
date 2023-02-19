@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-} from "@material-ui/core";
+} from "@mui/material";
 
 export function validateBodmasString(bodmasString) {
   // Check if the string is empty

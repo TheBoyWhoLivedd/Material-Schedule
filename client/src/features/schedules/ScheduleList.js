@@ -26,7 +26,7 @@ const ScheduleList = () => {
   });
 
   let content;
-  const theme = createTheme();
+
 
   if (isLoading) content = <PulseLoader color={"#FFF"} />;
 
@@ -55,13 +55,13 @@ const ScheduleList = () => {
       ));
 
     return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <>
+        <p>{content}</p>
         <Container sx={{ py: 2 }} maxWidth="md"></Container>
         <Grid container spacing={4}>
           {ScheduleContent}
         </Grid>
-      </ThemeProvider>
+      </>
     );
   }
 };
