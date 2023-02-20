@@ -1,5 +1,4 @@
 .inputsForm {
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -8,7 +7,25 @@
   width: 40rem;
 }
 
+@media (max-width: 600px) {
+  .inputsForm {
+    width: 50%;
+  }
+}
+
+@media (max-width: 601px) and (min-width: 900px) {
+  .inputsForm {
+    width: 75%;
+  }
+}
+
+@media (max-width: 901px) {
+  .inputsForm {
+    width: 100%;
+  }
+}
+
 .inputsForm input,
 .inputsForm button {
-  width: 100%;
+  width: auto;
 }

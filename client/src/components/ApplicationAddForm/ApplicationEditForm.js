@@ -57,7 +57,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
     // console.log(newEntry);
   };
   const handleDelete = (id) => {
-    const entryItems = entries.filter((entry) => entry.id !== id);
+    const entryItems = entries.filter((entry) => entry.changeId !== id);
     setEntries(entryItems);
   };
   const handleEntryChange = (e, changeId) => {
@@ -72,6 +72,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
   };
   const style = {
     boxShadow: "none",
+    padding:"2rem"
   };
   return (
     <div>
@@ -83,7 +84,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                 <div key={entry._id || entry.changeId}>
                   <form>
                     <Grid container spacing={3} mt={0.5}>
-                      <Grid item md={3}>
+                      <Grid item md={4}>
                         <Autocomplete
                           options={applicationItems.map((option) => option)}
                           name="item"
@@ -102,7 +103,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                           )}
                         />
                       </Grid>
-                      <Grid item md={3}>
+                      <Grid item md={4}>
                         <TextField
                           label="Supplier"
                           name="supplier"
@@ -114,7 +115,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                           disabled={entry._id !== undefined}
                         />
                       </Grid>
-                      <Grid item md={2}>
+                      <Grid item md={3}>
                         <TextField
                           label="Requested"
                           name="amountRequested"
@@ -126,27 +127,17 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                           disabled={entry._id !== undefined}
                         />
                       </Grid>
-                      <Grid item md={2}>
-                        <TextField
-                          label="Allowed"
-                          name="amountAllowed"
-                          placeholder="Enter Quantity Allowed"
-                          variant="outlined"
-                          value={entry?.amountAllowed}
-                          onChange={(e) => handleEntryChange(e, entry.changeId)}
-                          fullWidth
-                          disabled={entry._id !== undefined}
-                        />
-                      </Grid>
+
                       {entry._id === undefined && (
                         <Grid item md={1}>
                           <Button
                             sx={{
                               variant: "primary",
                               size: "small",
-                              p: 0,
+                              pt: 1.5,
+                              pl:0
                             }}
-                            onClick={() => handleDelete(entry._id)}
+                            onClick={() => handleDelete(entry.changeId)}
                           >
                             <Trash />
                           </Button>
@@ -160,9 +151,9 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
           ) : (
             <p style={{ marginTop: "2rem" }}>Your list is empty.</p>
           )}
-          <form>
+          <form className="inputsForm">
             <Grid container spacing={3} mt={0.5}>
-              <Grid item md={3}>
+              <Grid item md={4}>
                 <Autocomplete
                   options={applicationItems.map((option) => option)}
                   name="item"
@@ -180,7 +171,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                   )}
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={4}>
                 <TextField
                   label="Supplier"
                   name="supplier"
@@ -191,7 +182,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={4}>
                 <TextField
                   label="Requested"
                   name="amountRequested"
@@ -202,17 +193,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
-                <TextField
-                  label="Allowed"
-                  name="amountAllowed"
-                  placeholder="Enter Quantity Allowed"
-                  variant="outlined"
-                  value={newEntry?.amountAllowed}
-                  onChange={handleOnChange}
-                  fullWidth
-                />
-              </Grid>
+
               <Grid item md={1}>
                 <Button
                   variant="contained"

@@ -77,9 +77,10 @@ const ApplicationAddForm = ({ id, handleClose, content }) => {
   };
   const style = {
     boxShadow: "none",
+    padding:"1rem"
   };
   return (
-    <div>
+
       <Container>
         <Paper component={Box} sx={style}>
           <Content
@@ -96,7 +97,7 @@ const ApplicationAddForm = ({ id, handleClose, content }) => {
           />
         </Paper>
       </Container>
-    </div>
+
   );
 };
 

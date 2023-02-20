@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import BackgroundAnimation from "../../components/BackgroundAnimation";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
 
@@ -19,31 +20,9 @@ const Welcome = () => {
 
       <h1>Welcome {username}!</h1>
 
-      <p>
-        <Link to="/dash/schedules">View Projects</Link>
-      </p>
-      {/* <p>
-        <Link to="/dash/notes">View Notes</Link>
-      </p> */}
-
-      {/* <p>
-        <Link to="/dash/notes/new">Add New Note</Link>
-      </p> */}
-      <p>
-        <Link to="/dash/schedules/new">Add New Project</Link>
-      </p>
-
-      {(isManager || isAdmin) && (
-        <p>
-          <Link to="/dash/users">View User Settings</Link>
-        </p>
-      )}
-
-      {(isManager || isAdmin) && (
-        <p>
-          <Link to="/dash/users/new">Add New User</Link>
-        </p>
-      )}
+      <div className="background">
+        <BackgroundAnimation />
+      </div>
     </section>
   );
 

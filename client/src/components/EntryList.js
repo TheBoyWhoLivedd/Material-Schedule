@@ -13,11 +13,11 @@ import React from "react";
 
 const EntryList = ({ entries, handleDelete, handleChange }) => {
   return (
-    <div>
+    <div >
       {entries?.map((entry) => (
-        <div key={entry.id}>
-          <form>
-            <Grid container spacing={3} mt={0.5}>
+        <div key={entry.id} >
+          <form >
+            <Grid container spacing={3} mt={0.5} mr={0.5} >
               <Grid item md={3}>
                 <TextField
                   label="Item"
