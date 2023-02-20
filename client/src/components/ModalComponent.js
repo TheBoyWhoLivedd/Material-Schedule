@@ -9,7 +9,6 @@ export default function ModalComponent({
   openModal = false,
   children,
 }) {
-
   const theme = useTheme();
   const style = {
     position: "absolute",
@@ -49,6 +48,17 @@ export default function ModalComponent({
   const styles = {
     scrollbarWidth: "none",
   };
+
+  const mediaQueries = {
+    [theme.breakpoints.down("sm")]: {
+      width: "90%",
+    },
+    [theme.breakpoints.between("sm", "md")]: {
+      width: "70%",
+    },
+  };
+
+  const modalStyles = { ...style, ...mediaQueries };
   return (
     <div>
       <div onClick={handleOpen}>
@@ -65,7 +75,7 @@ export default function ModalComponent({
         aria-describedby="modal-modal-description"
         sx={styles}
       >
-        <Box sx={style}>{children}</Box>
+        <Box sx={modalStyles}>{children}</Box>
       </Modal>
     </div>
   );

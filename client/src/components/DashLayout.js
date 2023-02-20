@@ -2,30 +2,16 @@ import { Outlet } from "react-router-dom";
 import DashHeader from "./DashHeader";
 import { useMemo, useState } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
+import { Container } from "@mui/material";
 
 const DashLayout = () => {
   const [dark, setDark] = useState(true);
-
-  const customColors = {
-    primary: {
-      main: "#123456",
-      light: "#789abc",
-      dark: "#def123",
-    },
-    secondary: {
-      main: "#fedcba",
-      light: "#987654",
-      dark: "#3210fe",
-    },
-  };
 
   const darkTheme = useMemo(
     () =>
       createTheme({
         palette: {
           mode: dark ? "dark" : "light",
-          // primary: customColors.primary,
-          // secondary: customColors.secondary,
         },
       }),
     [dark]
@@ -42,10 +28,13 @@ const DashLayout = () => {
         }}
       >
         <DashHeader dark={dark} setDark={setDark} />
-
-        <div className="dash-container">
+        <Container maxWidth="1500px">
           <Outlet />
-        </div>
+        </Container>
+
+        {/* <div className="dash-container">
+          <Outlet />
+        </div> */}
       </div>
     </ThemeProvider>
   );

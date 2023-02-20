@@ -57,7 +57,7 @@ const ScheduleList = () => {
     return (
       <>
         <p>{content}</p>
-        <Container sx={{ py: 2 }} maxWidth="md"></Container>
+        <Container sx={{ p: 2 }} maxWidth="md"></Container>
         <Grid container spacing={4}>
           {ScheduleContent}
         </Grid>

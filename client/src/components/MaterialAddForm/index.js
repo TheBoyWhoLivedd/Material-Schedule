@@ -4,7 +4,7 @@ import {
   useUpdateMaterialMutation,
 } from "../../features/schedules/schedulesApiSlice";
 import Autocomplete from "@mui/material/Autocomplete";
-import { Button, TextField } from "@mui/material";
+import { Button, TextField, useTheme } from "@mui/material";
 import "./MaterialAddForm.css";
 import {
   concreteClassOptions,
@@ -18,7 +18,13 @@ import {
 } from "../../assets/data";
 import { evaluate } from "mathjs";
 
-const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessage }) => {
+const MaterialAddForm = ({
+  formData = {},
+  id,
+  handleClose,
+  openSnackbarWithMessage,
+}) => {
+  const theme = useTheme();
   const [addNewMaterial, { isSuccess: isAddSuccess }] =
     useAddNewMaterialMutation();
 
@@ -28,7 +34,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
   useEffect(() => {
     if (isSuccess || isAddSuccess) {
       //Set the state that closes the modals
-      openSnackbarWithMessage('Material Updated Successfully');
+      openSnackbarWithMessage("Material Updated Successfully");
     }
   }, [isSuccess, isAddSuccess]);
 
@@ -125,7 +131,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
       materialType: options?.materialType,
     }).then(() => {
       handleClose();
-      openSnackbarWithMessage('Material Added Successfully');
+      openSnackbarWithMessage("Material Added Successfully");
     });
   };
 
@@ -142,14 +148,16 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
       relatedId: options?.relatedId,
     }).then(() => {
       handleClose();
-      
     });
   };
-
   // Update Material
 
   return (
-    <div>
+    <div
+      style={{
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <form className="inputsForm">
         <Autocomplete
           id="elements_id"
@@ -163,22 +171,11 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
           )}
+
         />
 
         {options?.elementName === "Concrete" && (
           <>
-            {/* <Autocomplete
-              id="concreteMaterials_id"
-              options={concreteMaterialsData.map((option) => option)}
-              name="materialName"
-              placeholder="Enter Material"
-              onSelect={(e) => handleOnSelect(e, "materialName")}
-              value={options?.materialName}
-              required={true}
-              renderInput={(params) => (
-                <TextField {...params} label="Materials" required />
-              )}
-            /> */}
             <Autocomplete
               id="concreteClassOptions_id"
               options={concreteClassOptions.map((option) => option.class)}
@@ -190,6 +187,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               renderInput={(params) => (
                 <TextField {...params} label="Concrete Class" required />
               )}
+
             />
             <TextField
               type="string"
@@ -201,6 +199,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               required
               error={Boolean(error)}
               helperText={error}
+
             />
           </>
         )}
@@ -217,6 +216,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
+
             />
             <Autocomplete
               id="bond_id"
@@ -229,19 +229,8 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               renderInput={(params) => (
                 <TextField {...params} label="Bond Type" required />
               )}
+
             />
-            {/* <Autocomplete
-              id="mortarOptions_id"
-              options={mortarOptions.map((option) => option.ratio)}
-              name="mortarRatio"
-              value={options?.parameters?.ratio}
-              placeholder="Choose Mortar Ratio"
-              onSelect={(e) => handleOnParamSelect(e, "mortarRatio")}
-              required={true}
-              renderInput={(params) => (
-                <TextField {...params} label="Mortar Ratio" required />
-              )}
-            /> */}
             <TextField
               type="text"
               name="wallArea"
@@ -251,6 +240,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               onChange={handleOnCalcParamChange}
               error={Boolean(error)}
               helperText={error}
+
             />
           </>
         )}
@@ -267,6 +257,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
+
             />
             {options?.materialName === "BRC" && (
               <>
@@ -281,6 +272,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
                   renderInput={(params) => (
                     <TextField {...params} label="BRC Size" required />
                   )}
+
                 />
                 <TextField
                   type="text"
@@ -291,6 +283,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
                   onChange={handleOnCalcParamChange}
                   error={Boolean(error)}
                   helperText={error}
+
                 />
               </>
             )}
@@ -311,6 +304,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
                       required
                     />
                   )}
+
                 />
                 <TextField
                   type="text"
@@ -321,6 +315,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
                   onChange={handleOnCalcParamChange}
                   error={Boolean(error)}
                   helperText={error}
+
                 />
               </>
             )}
@@ -333,6 +328,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
           placeholder="Enter Description"
           onChange={handleOnChange}
           value={options?.materialDescription}
+
         />
 
         {Object.keys(formData).length === 0 ? (
@@ -342,6 +338,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
             type="submit"
             className="button"
             disabled={error}
+
           >
             Generate
           </Button>
@@ -352,6 +349,7 @@ const MaterialAddForm = ({ formData = {}, id, handleClose, openSnackbarWithMessa
             type="submit"
             className="button"
             disabled={!canSave || error}
+
           >
             Update
           </Button>

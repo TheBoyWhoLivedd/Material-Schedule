@@ -8,10 +8,14 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
+import { useMediaQuery } from "@mui/material";
 
 import { Edit } from "feather-icons-react";
 
 const Schedule = ({ scheduleId }) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[scheduleId],
@@ -32,7 +36,7 @@ const Schedule = ({ scheduleId }) => {
 
     return (
       <>
-        <Grid item key={schedule.id} xs={12} sm={6} md={4}>
+        <Grid item key={schedule.id} xs={12} sm={6} md={4} styles={{paddingRight:"32px"}}>
           <Card
             sx={{
               height: "100%",
@@ -42,17 +46,70 @@ const Schedule = ({ scheduleId }) => {
                 transform: "scale(1.06)",
                 transition: "transform 0.5s ease",
               },
+              [theme.breakpoints.down("sm")]: {
+                height: "auto",
+                
+              },
             }}
           >
             <CardContent sx={{ flexGrow: 1 }}>
-              <Typography gutterBottom variant="h5" component="h2">
+              <Typography
+                gutterBottom
+                variant="h5"
+                component="h2"
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "1.2rem",
+                  },
+                }}
+              >
                 {schedule.title}
               </Typography>
-              <Typography> Funded By {schedule.funder}</Typography>
-              <Typography> Contractor: {schedule.contractor}</Typography>
-              <Typography>Contractor's TIN: {schedule.tin}</Typography>
-              <Typography>By {schedule.username}</Typography>
-              <Typography>{created}</Typography>
+              <Typography
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "0.8rem",
+                  },
+                }}
+              >
+                Funded By {schedule.funder}
+              </Typography>
+              <Typography
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "0.8rem",
+                  },
+                }}
+              >
+                Contractor: {schedule.contractor}
+              </Typography>
+              <Typography
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "0.8rem",
+                  },
+                }}
+              >
+                Contractor's TIN: {schedule.tin}
+              </Typography>
+              <Typography
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "0.8rem",
+                  },
+                }}
+              >
+                By {schedule.username}
+              </Typography>
+              <Typography
+                sx={{
+                  [theme.breakpoints.down("sm")]: {
+                    fontSize: "0.8rem",
+                  },
+                }}
+              >
+                {created}
+              </Typography>
             </CardContent>
             <CardActions>
               <Link to={`/dash/schedules/${schedule.id}`}>
@@ -72,6 +129,11 @@ const Schedule = ({ scheduleId }) => {
                     "&:hover": {
                       background: "transparent",
                       color: "black",
+                    },
+                    [theme.breakpoints.down("sm")]: {
+                      position: "relative",
+                      top: 0,
+                      right: 0,
                     },
                   }}
                 >
