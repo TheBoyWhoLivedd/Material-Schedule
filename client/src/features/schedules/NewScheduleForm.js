@@ -45,7 +45,8 @@ const NewScheduleForm = ({ users }) => {
   const onUserIdChanged = (e) => setUserId(e.target.value);
 
   const canSave =
-    [title, userId, program, funder, contractor,tin].every(Boolean) && !isLoading;
+    [title, userId, program, funder, contractor, tin].every(Boolean) &&
+    !isLoading;
 
   const onSaveProjectClicked = async (e) => {
     e.preventDefault();
@@ -56,7 +57,7 @@ const NewScheduleForm = ({ users }) => {
         program,
         funder,
         contractor,
-        tin
+        tin,
       });
     }
   };
@@ -133,14 +134,7 @@ const NewScheduleForm = ({ users }) => {
             margin="normal"
           />
           <TextField
-            sx={{
-              width: { sm: 200, md: 640 },
-              "& .MuiInputBase-root": {
-                height: 60,
-                background: "white",
-              },
-            }}
-            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
+            className={`form__input ${validTitleClass}`}
             style={{ color: "white" }}
             id="contractor"
             name="contractor"
@@ -154,14 +148,7 @@ const NewScheduleForm = ({ users }) => {
             margin="normal"
           />
           <TextField
-            sx={{
-              width: { sm: 200, md: 640 },
-              "& .MuiInputBase-root": {
-                height: 60,
-                background: "white",
-              },
-            }}
-            inputProps={{ style: { fontFamily: "Arial", color: "black" } }}
+            className={`form__input ${validTitleClass}`}
             style={{ color: "white" }}
             id="tin"
             name="tin"
@@ -181,13 +168,12 @@ const NewScheduleForm = ({ users }) => {
           >
             <TextField
               sx={{
-                width: { sm: 200, md: 300 },
+                width: "100%",
                 "& .MuiInputBase-root": {
                   height: 60,
-                  background: "white",
                 },
               }}
-              className="select"
+              className={`select`}
               select
               variant="outlined"
               id="username"
