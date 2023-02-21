@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from "@fortawesome/free-solid-svg-icons"
 import { ROLES } from "../../config/roles"
 import useTitle from "../../hooks/useTitle"
+import { Select, TextField } from "@mui/material"
 
 const USER_REGEX = /^[A-z]{3,20}$/
 const PWD_REGEX = /^[A-z0-9!@#$%]{4,12}$/
@@ -99,7 +100,7 @@ const NewUserForm = () => {
                 </div>
                 <label className="form__label" htmlFor="username">
                     Username: <span className="nowrap">[3-20 letters]</span></label>
-                <input
+                <TextField
                     className={`form__input ${validUserClass}`}
                     id="username"
                     name="username"
@@ -107,17 +108,19 @@ const NewUserForm = () => {
                     autoComplete="off"
                     value={username}
                     onChange={onUsernameChanged}
+                    label="Username"
                 />
 
                 <label className="form__label" htmlFor="password">
                     Password: <span className="nowrap">[4-12 chars incl. !@#$%]</span></label>
-                <input
+                <TextField
                     className={`form__input ${validPwdClass}`}
                     id="password"
                     name="password"
                     type="password"
                     value={password}
                     onChange={onPasswordChanged}
+                    label="Password"
                 />
 
                 <label className="form__label" htmlFor="roles">

@@ -23,7 +23,6 @@
   --TABLE-BGCOLOR: #fff;
   --TABLE-COLOR: #000;
   --INPUT-INVALID: #f00;
-
 }
 
 /* || UTILITY CLASSES */
@@ -91,7 +90,6 @@ select {
   display: flex;
   flex-flow: column nowrap;
   /* background-color: gray; */
-
 }
 
 a {
@@ -278,8 +276,36 @@ tr {
   display: flex;
   flex-flow: column nowrap;
   gap: 0.75em;
-  /* max-width: 800px; */
-  
+  max-width: 800px;
+  padding-right: 2rem;
+}
+
+@media (min-width: 320px) and (max-width: 600px) {
+  .form__input {
+    width: 400px;
+  }
+
+  .form__input--incomplete {
+    width: 400px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .form__input {
+    width: 60%;
+  }
+  .form__input--incomplete {
+    width: 60%;
+  }
+}
+
+@media (max-width: 901px) {
+  .form__input {
+    width: 100%;
+  }
+  .form__input--incomplete {
+    width: 100%;
+  }
 }
 
 .form__checkbox-container {
@@ -312,7 +338,7 @@ tr {
   gap: 1rem;
   padding: 1rem;
   border-radius: 10px;
-  width: 40rem;
+  width: 100%;
 }
 
 .form__input--text {
@@ -337,7 +363,7 @@ tr {
   font-size: 1rem;
   line-height: 1.5;
   color: #495057;
-  background-color: #fff;
+  /* background-color: #fff; */
   background-clip: padding-box;
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
@@ -541,16 +567,15 @@ input {
   border-radius: 0.5rem;
 }
 
-.select{
-  min-width: '200px';
-  background-color: 'white';
-  color: rgb(223, 217, 217);
-  border-color: 'grey';
-  border-style:'solid';
-  border-width: '2px';
-  border-radius: '4px';
-  padding-left : '24px';
-  padding-top: '14px';
-  padding-bottom: '15px';
-
+.select {
+  min-width: "200px";
+  /* background-color: 'white'; */
+  /* color: rgb(223, 217, 217); */
+  border-color: "grey";
+  border-style: "solid";
+  border-width: "2px";
+  border-radius: "4px";
+  padding-left: "24px";
+  padding-top: "14px";
+  padding-bottom: "15px";
 }
