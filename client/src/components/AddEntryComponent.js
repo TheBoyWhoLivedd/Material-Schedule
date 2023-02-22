@@ -14,9 +14,9 @@ const AddEntryComponent = ({
 }) => {
   return (
     <div>
-      <form>
+      <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Grid container spacing={3} mt={0.5}>
-          <Grid item md={3}>
+          <Grid item md={4}>
             <Autocomplete
               options={applicationItems.map((option) => option)}
               name="item"
@@ -24,6 +24,8 @@ const AddEntryComponent = ({
               onSelect={(e) => handleOnItemSelect(e, "item")}
               value={newEntry?.item}
               required
+
+              className="autocomplete"
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -34,7 +36,7 @@ const AddEntryComponent = ({
               )}
             />
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={4}>
             <TextField
               label="Supplier"
               name="supplier"
@@ -56,17 +58,7 @@ const AddEntryComponent = ({
               fullWidth
             />
           </Grid>
-          <Grid item md={3}>
-            <TextField
-              label="Allowed"
-              name="allowed"
-              placeholder="Enter Quantity Allowed"
-              variant="outlined"
-              value={newEntry?.allowed}
-              onChange={handleChange}
-              fullWidth
-            />
-          </Grid>
+
           <Grid item md={1}>
             <Button
               variant="contained"

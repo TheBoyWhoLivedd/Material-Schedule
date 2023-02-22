@@ -23,7 +23,7 @@ const ApplicationAddForm = ({ id, handleClose, content }) => {
   };
   const [newEntry, setNewEntry] = useState(initialState);
 
-  const [addApplication, { isSuccess: isAddSuccess }] =
+  const [addApplication, { isSuccess: isAddSuccess, isLoading }] =
     useAddApplicationMutation();
 
   const addEntry = (entry) => {
@@ -77,27 +77,25 @@ const ApplicationAddForm = ({ id, handleClose, content }) => {
   };
   const style = {
     boxShadow: "none",
-    padding:"1rem"
+    padding: "1rem",
   };
   return (
-
-      <Container>
-        <Paper component={Box} sx={style}>
-          <Content
-            entries={entries}
-            handleDelete={handleDelete}
-            handleChange={handleEntryChange}
-          />
-          <AddEntryComponent
-            newEntry={newEntry}
-            handleChange={handleOnChange}
-            handleSubmit={handleSubmit}
-            handleFormSubmit={handleFormSubmit}
-            handleOnItemSelect={handleOnItemSelect}
-          />
-        </Paper>
-      </Container>
-
+    <Container>
+      <Paper component={Box} sx={style}>
+        <Content
+          entries={entries}
+          handleDelete={handleDelete}
+          handleChange={handleEntryChange}
+        />
+        <AddEntryComponent
+          newEntry={newEntry}
+          handleChange={handleOnChange}
+          handleSubmit={handleSubmit}
+          handleFormSubmit={handleFormSubmit}
+          handleOnItemSelect={handleOnItemSelect}
+        />
+      </Paper>
+    </Container>
   );
 };
 

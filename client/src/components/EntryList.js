@@ -18,7 +18,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
         <div key={entry.id} >
           <form >
             <Grid container spacing={3} mt={0.5} mr={0.5} >
-              <Grid item md={3}>
+              <Grid item md={4}>
                 <TextField
                   label="Item"
                   name="item"
@@ -29,7 +29,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={4}>
                 <TextField
                   label="Supplier"
                   name="supplier"
@@ -40,7 +40,7 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={2}>
+              <Grid item md={3}>
                 <TextField
                   label="Requested"
                   name="requested"
@@ -51,19 +51,8 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   fullWidth
                 />
               </Grid>
-              <Grid item md={2}>
-                <TextField
-                  label="Allowed"
-                  name="allowed"
-                  placeholder="Enter Quantity Allowed"
-                  variant="outlined"
-                  value={entry?.allowed}
-                  onChange={(e) => handleChange(e, entry.id)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={2}>
-                <Button onClick={() => handleDelete(entry.id)}>
+              <Grid item md={1} >
+                <Button onClick={() => handleDelete(entry.id)} >
                   <Trash size={20} />
                 </Button>
               </Grid>

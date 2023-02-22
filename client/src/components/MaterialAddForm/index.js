@@ -110,11 +110,18 @@ const MaterialAddForm = ({
   //validating that all object keys have values before sending update request
   let canSave;
   if ("parameters" in options) {
-    canSave =
-      Object.values(options?.parameters).every((value) => value) &&
-      !isLoading &&
-      Object.values(options).every((value) => value);
+    const allPropsWithValue = Object.keys(options).every(
+      (key) => options[key] !== undefined && options[key] !== null
+    );
+    const allParamPropsWithValue = Object.keys(options.parameters).every(
+      (key) =>
+        options.parameters[key] !== undefined &&
+        options.parameters[key] !== null
+    );
+    canSave = allPropsWithValue && allParamPropsWithValue && !isLoading;
+    console.log(canSave);
   }
+
   //preventing edit of elementName property if calculation from backend has already been made
   const canEdit = "_id" in options;
 
@@ -171,7 +178,6 @@ const MaterialAddForm = ({
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
           )}
-
         />
 
         {options?.elementName === "Concrete" && (
@@ -187,7 +193,6 @@ const MaterialAddForm = ({
               renderInput={(params) => (
                 <TextField {...params} label="Concrete Class" required />
               )}
-
             />
             <TextField
               type="string"
@@ -199,7 +204,6 @@ const MaterialAddForm = ({
               required
               error={Boolean(error)}
               helperText={error}
-
             />
           </>
         )}
@@ -216,7 +220,6 @@ const MaterialAddForm = ({
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
-
             />
             <Autocomplete
               id="bond_id"
@@ -229,7 +232,6 @@ const MaterialAddForm = ({
               renderInput={(params) => (
                 <TextField {...params} label="Bond Type" required />
               )}
-
             />
             <TextField
               type="text"
@@ -240,7 +242,6 @@ const MaterialAddForm = ({
               onChange={handleOnCalcParamChange}
               error={Boolean(error)}
               helperText={error}
-
             />
           </>
         )}
@@ -254,10 +255,10 @@ const MaterialAddForm = ({
               onSelect={(e) => handleOnSelect(e, "materialName")}
               value={options?.materialName}
               required={true}
+              disabled={canEdit}
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
-
             />
             {options?.materialName === "BRC" && (
               <>
@@ -272,7 +273,6 @@ const MaterialAddForm = ({
                   renderInput={(params) => (
                     <TextField {...params} label="BRC Size" required />
                   )}
-
                 />
                 <TextField
                   type="text"
@@ -283,7 +283,6 @@ const MaterialAddForm = ({
                   onChange={handleOnCalcParamChange}
                   error={Boolean(error)}
                   helperText={error}
-
                 />
               </>
             )}
@@ -304,7 +303,6 @@ const MaterialAddForm = ({
                       required
                     />
                   )}
-
                 />
                 <TextField
                   type="text"
@@ -315,7 +313,6 @@ const MaterialAddForm = ({
                   onChange={handleOnCalcParamChange}
                   error={Boolean(error)}
                   helperText={error}
-
                 />
               </>
             )}
@@ -328,7 +325,6 @@ const MaterialAddForm = ({
           placeholder="Enter Description"
           onChange={handleOnChange}
           value={options?.materialDescription}
-
         />
 
         {Object.keys(formData).length === 0 ? (
@@ -338,7 +334,6 @@ const MaterialAddForm = ({
             type="submit"
             className="button"
             disabled={error}
-
           >
             Generate
           </Button>
@@ -349,7 +344,6 @@ const MaterialAddForm = ({
             type="submit"
             className="button"
             disabled={!canSave || error}
-
           >
             Update
           </Button>
