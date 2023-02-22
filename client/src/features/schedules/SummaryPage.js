@@ -1,5 +1,5 @@
 import useTitle from "../../hooks/useTitle";
-import {  useGetSchedulesQuery } from "./schedulesApiSlice";
+import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams } from "react-router-dom";
 import {
   Accordion,
@@ -65,10 +65,17 @@ const SummaryPage = () => {
           <AccordionDetails>
             <List>
               {child.details.map((detail) => (
-                <ListItem>
+                <ListItem
+                  style={{ display: "flex"}}
+                >
                   <ListItemText
                     primary={detail.materialDescription}
-                    style={{ whiteSpace: "nowrap", marginRight: "1rem" }}
+                    classes={{ primary: "material-description" }}
+                    style={{
+                      whiteSpace: "nowrap",
+                      marginRight: "1rem",
+                      
+                    }}
                   />
                   <ListItemText
                     primary={detail.computedValue}

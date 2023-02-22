@@ -4,7 +4,7 @@ import ScheduleTable from "./ScheduleTable";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
-import { useGetSummaryQuery,useGetSchedulesQuery } from "./schedulesApiSlice";
+import { useGetSummaryQuery, useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -15,13 +15,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { Grid } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 const RequestedSummaryPage = () => {
+  const theme = useTheme();
   useTitle("techNotes: Summary Page");
 
   const { id } = useParams();
-
-  console.log(id);
 
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
@@ -29,14 +30,25 @@ const RequestedSummaryPage = () => {
     }),
   });
 
-  console.log(schedule);
+  const renderTableRows = () => {
+    return schedule?.totalRequested?.map((child) => (
+      <TableRow
+        key={child._id}
+        sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+      >
+        <TableCell component="th" scope="row">
+          Total {child._id} Requested
+        </TableCell>
+        <TableCell align="right">{child.unit}</TableCell>
+        <TableCell component="th" scope="row" align="right">
+          {child.amountRequested}
+        </TableCell>
+      </TableRow>
+    ));
+  };
 
-
-
-  let content;
-
-  content = (
-    <div>
+  const renderTable = () => {
+    return (
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
           <TableHead>
@@ -46,27 +58,26 @@ const RequestedSummaryPage = () => {
               <TableCell align="right">Totals</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {schedule?.totalRequested?.map((child) => (
-              <TableRow
-                key={child._id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  Total {child._id} Requested
-                </TableCell>
-                <TableCell align="right">{child.unit}</TableCell>
-                <TableCell component="th" scope="row" align="right">
-                  {child.amountRequested}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+          <TableBody>{renderTableRows()}</TableBody>
         </Table>
       </TableContainer>
+    );
+  };
+
+  return (
+    <div className="container">
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          {renderTable()}
+        </Grid>
+      </Grid>
+      <style jsx>{`
+        .container {
+          padding: ${theme.spacing(2)};
+        }
+      `}</style>
     </div>
   );
-
-  return content;
 };
+
 export default RequestedSummaryPage;
