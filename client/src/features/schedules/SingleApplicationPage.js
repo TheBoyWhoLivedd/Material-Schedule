@@ -232,11 +232,7 @@ const SingleApplicationPage = () => {
                     />
                     <ListItemSecondaryAction>
                       {/* Add a button to open the popper when clicked */}
-                      <div
-                        style={{
-                          display: "flex",
-                        }}
-                      >
+                      <div className="button-container">
                         <Button
                           className="edit-button"
                           variant="outlined"
@@ -248,20 +244,12 @@ const SingleApplicationPage = () => {
                         >
                           <Edit />
                         </Button>
-                        {/* <Button
-                variant="contained"
-                color="secondary"
-                onClick={(e) =>
-                  onDeleteitemClicked(application._id, item._id)
-                }
-              >
-                <Trash />
-              </Button> */}
                         <DeleteModal
                           handleDelete={(e) =>
                             onDeleteitemClicked(application._id, item._id)
                           }
                           element="icon"
+                          className="delete-button"
                         />
                       </div>
                     </ListItemSecondaryAction>
@@ -293,6 +281,7 @@ const SingleApplicationPage = () => {
               onChange={(e) =>
                 setEditItem({ ...editItem, supplier: e.target.value })
               }
+              style={{ flex: 2 }}
             />
             <Autocomplete
               id="items_id"
@@ -301,8 +290,9 @@ const SingleApplicationPage = () => {
               placeholder="Choose Element"
               onSelect={(e) => handleOnItemSelect(e, "item")}
               value={editItem.item}
-              style={{ width: 200 }}
+              style={{ flex: 1.25 }}
               required
+              className="autocomplete"
               renderInput={(params) => (
                 <TextField {...params} label="Item" required />
               )}
@@ -317,22 +307,33 @@ const SingleApplicationPage = () => {
                   amountRequested: e.target.value,
                 })
               }
-            />
-            <TextField
-              label="Amount Allowed"
-              value={editItem.amountAllowed}
-              onChange={(e) =>
-                setEditItem({ ...editItem, amountAllowed: e.target.value })
-              }
+              style={{ flex: 0.5 }}
             />
             <Button
               variant="contained"
               color="primary"
               onClick={() => updateItem(editItem)}
+              style={{ flex: 0.25 }}
             >
               Update
             </Button>
           </form>
+          <style>
+            {`
+        @media screen and (max-width: 600px) {
+          form {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap:6px
+            
+          }
+          .autocomplete {
+            width:100%
+          }
+        }
+      `}
+          </style>
         </MyPopper>
       )}
     </div>
