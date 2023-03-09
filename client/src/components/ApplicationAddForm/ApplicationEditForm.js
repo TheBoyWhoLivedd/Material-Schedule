@@ -18,7 +18,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
   };
   const [newEntry, setNewEntry] = useState(initialState);
 
-  const [updateApplication, { isSuccess: isAddSuccess }] =
+  const [updateApplication, { isSuccess: isAddSuccess, isLoading }] =
     useUpdateApplicationMutation();
 
   const addEntry = (entry) => {
@@ -43,9 +43,9 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
     e.preventDefault();
     await updateApplication({
       id: id,
-      appId:content._id,
-      body: {entries}
-    });
+      appId: content._id,
+      body: { entries },
+    }).then(() => handleClose());
   };
 
   const handleOnChange = (e) => {
@@ -72,7 +72,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
   };
   const style = {
     boxShadow: "none",
-    padding:"2rem"
+    padding: "2rem",
   };
   return (
     <div>
@@ -135,7 +135,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                               variant: "primary",
                               size: "small",
                               pt: 1.5,
-                              pl:0
+                              pl: 0,
                             }}
                             onClick={() => handleDelete(entry.changeId)}
                           >
@@ -217,7 +217,7 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
                 variant="contained"
                 type="submit"
               >
-                Add items
+                {isLoading ? "Adding..." : "Add Items"}
               </Button>
             </div>
           </form>

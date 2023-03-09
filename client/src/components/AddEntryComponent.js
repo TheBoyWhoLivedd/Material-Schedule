@@ -1,4 +1,4 @@
-import { React, useRef } from "react";
+import { React, useRef, useState, useEffect } from "react";
 import { Button, TextField, Grid } from "@mui/material";
 import { Trash, Plus } from "feather-icons-react";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -11,12 +11,29 @@ const AddEntryComponent = ({
   handleChange,
   handleFormSubmit,
   handleOnItemSelect,
+  schedule,
 }) => {
+  const [amountAllowed, setAmountAllowed] = useState("");
+
+  useEffect(() => {
+    if (newEntry?.item && schedule?.balanceAllowable) {
+      const item = schedule.balanceAllowable.find(
+        (item) => item._id === newEntry.item
+      );
+      if (item) {
+        setAmountAllowed(item.Value);
+      } else {
+        setAmountAllowed("null");
+      }
+    } else {
+      setAmountAllowed("null");
+    }
+  }, [newEntry?.item, schedule?.balanceAllowable]);
   return (
     <div>
-      <form>
+      <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Grid container spacing={3} mt={0.5}>
-          <Grid item md={3}>
+          <Grid item md={4}>
             <Autocomplete
               options={applicationItems.map((option) => option)}
               name="item"
@@ -24,6 +41,7 @@ const AddEntryComponent = ({
               onSelect={(e) => handleOnItemSelect(e, "item")}
               value={newEntry?.item}
               required
+              className="autocomplete"
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -45,7 +63,7 @@ const AddEntryComponent = ({
               fullWidth
             />
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={2}>
             <TextField
               label="Requested"
               name="requested"
@@ -56,17 +74,18 @@ const AddEntryComponent = ({
               fullWidth
             />
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={2}>
             <TextField
               label="Allowed"
               name="allowed"
-              placeholder="Enter Quantity Allowed"
               variant="outlined"
-              value={newEntry?.allowed}
-              onChange={handleChange}
+              value={amountAllowed || null}
+              InputProps={{ readOnly: true }}
+              InputLabelProps={{ shrink: !!amountAllowed }}
               fullWidth
             />
           </Grid>
+
           <Grid item md={1}>
             <Button
               variant="contained"

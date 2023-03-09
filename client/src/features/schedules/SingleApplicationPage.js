@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useTitle from "../../hooks/useTitle";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams, Link } from "react-router-dom";
@@ -76,10 +76,12 @@ const SingleApplicationPage = () => {
   };
 
   // RTK Query mutations for updating and deleting items
-  const [updateApplicationItem, { isSuccess }] =
+  const [updateApplicationItem, { isSuccess, isLoading }] =
     useUpdateApplicationItemMutation();
-  const [deleteApplicationItem, { isSuccess: isDelSuccess }] =
-    useDeleteApplicationItemMutation();
+  const [
+    deleteApplicationItem,
+    { isSuccess: isDelSuccess, isLoading: isDelLoading },
+  ] = useDeleteApplicationItemMutation();
   const [deleteApplication, { isSuccess: isDelAppSuccess }] =
     useDeleteApplicationMutation();
 
@@ -90,6 +92,8 @@ const SingleApplicationPage = () => {
       appId: appId,
       itemId: itemId,
       editItem: editItem,
+    }).then(() => {
+      setIsPopperOpen(false);
     });
   };
   // Function to delete the item
@@ -97,6 +101,7 @@ const SingleApplicationPage = () => {
     console.log(appId, itemId);
     await deleteApplicationItem({ id: id, appId: applId, itemId: itemlId });
   };
+
   // Function to delete the whole Application
   const onDeleteApplicationClicked = async (applId) => {
     console.log(appId);
@@ -153,7 +158,7 @@ const SingleApplicationPage = () => {
             </Button>
           }
         >
-          <ApplicationAddForm id={id} handleClose={handleClose} />
+          <ApplicationAddForm id={id} handleClose={handleClose} schedule={schedule} />
         </ModalComponent>
         <div style={{ marginLeft: "1rem" }}>
           <Link to={`/dash/schedules/${id}/requested`}>
@@ -248,6 +253,8 @@ const SingleApplicationPage = () => {
                           handleDelete={(e) =>
                             onDeleteitemClicked(application._id, item._id)
                           }
+                          isLoading={isDelLoading}
+                          isSuccess={isDelSuccess}
                           element="icon"
                           className="delete-button"
                         />
@@ -263,7 +270,7 @@ const SingleApplicationPage = () => {
       <ModalSecondary open={open1} handleClose={closeModal}>
         <ApplicationEditForm
           id={id}
-          handleClose={handleClose}
+          handleClose={closeModal}
           content={selectedChild}
         />
       </ModalSecondary>
@@ -309,13 +316,25 @@ const SingleApplicationPage = () => {
               }
               style={{ flex: 0.5 }}
             />
+
+            {/* <TextField
+              label="Amount Requested"
+              value={editItem.amountRequested}
+              onChange={(e) =>
+                setEditItem({
+                  ...editItem,
+                  amountRequested: e.target.value,
+                })
+              }
+              style={{ flex: 0.5 }}
+            /> */}
             <Button
               variant="contained"
               color="primary"
               onClick={() => updateItem(editItem)}
-              style={{ flex: 0.25 }}
+              style={{ flex: 0.35 }}
             >
-              Update
+              {isLoading ? "Updating..." : "Update"}
             </Button>
           </form>
           <style>
