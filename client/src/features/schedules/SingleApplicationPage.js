@@ -158,7 +158,7 @@ const SingleApplicationPage = () => {
             </Button>
           }
         >
-          <ApplicationAddForm id={id} handleClose={handleClose} />
+          <ApplicationAddForm id={id} handleClose={handleClose} schedule={schedule} />
         </ModalComponent>
         <div style={{ marginLeft: "1rem" }}>
           <Link to={`/dash/schedules/${id}/requested`}>
@@ -316,6 +316,18 @@ const SingleApplicationPage = () => {
               }
               style={{ flex: 0.5 }}
             />
+
+            {/* <TextField
+              label="Amount Requested"
+              value={editItem.amountRequested}
+              onChange={(e) =>
+                setEditItem({
+                  ...editItem,
+                  amountRequested: e.target.value,
+                })
+              }
+              style={{ flex: 0.5 }}
+            /> */}
             <Button
               variant="contained"
               color="primary"

@@ -169,6 +169,16 @@ const updateBalanceAllowable = async (schedule, objectId) => {
       }
     }
   }
+
+  // Remove any items in balanceAllowable that are not in totalRequested or summary
+  for (const { _id } of schedule.balanceAllowable) {
+    if (!totalRequested.some(({ _id: requestedId }) => requestedId === _id)) {
+      await Schedule.updateMany(
+        { _id: objectId },
+        { $pull: { balanceAllowable: { _id } } }
+      );
+    }
+  }
 };
 
 const getAllSchedules = async (req, res) => {

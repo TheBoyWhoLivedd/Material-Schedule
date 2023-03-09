@@ -10,7 +10,7 @@ import AddEntryComponent from "../AddEntryComponent";
 import "./ApplicationAddForm.css";
 import Content from "../Content";
 
-const ApplicationAddForm = ({ id, handleClose, content }) => {
+const ApplicationAddForm = ({ id, handleClose, content, schedule }) => {
   const [entries, setEntries] = useState([]);
   if (content) {
     setEntries(content);
@@ -93,6 +93,7 @@ const ApplicationAddForm = ({ id, handleClose, content }) => {
           handleSubmit={handleSubmit}
           handleFormSubmit={handleFormSubmit}
           handleOnItemSelect={handleOnItemSelect}
+          schedule={schedule}
         />
       </Paper>
     </Container>
