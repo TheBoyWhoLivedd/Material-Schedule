@@ -27,6 +27,7 @@ import {
   ClickAwayListener,
   Button,
   TextField,
+  Snackbar,
 } from "@mui/material";
 import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
@@ -47,6 +48,19 @@ const SingleApplicationPage = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  //State for the snackbar
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const openSnackbarWithMessage = (message) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
+
+  const closeSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const { id } = useParams();
 
@@ -158,7 +172,12 @@ const SingleApplicationPage = () => {
             </Button>
           }
         >
-          <ApplicationAddForm id={id} handleClose={handleClose} schedule={schedule} />
+          <ApplicationAddForm
+            id={id}
+            handleClose={handleClose}
+            schedule={schedule}
+            openSnackbarWithMessage={openSnackbarWithMessage}
+          />
         </ModalComponent>
         <div style={{ marginLeft: "1rem" }}>
           <Link to={`/dash/schedules/${id}/requested`}>
@@ -267,11 +286,23 @@ const SingleApplicationPage = () => {
           </AccordionDetails>
         </Accordion>
       ))}
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={openSnackbar}
+        message={snackbarMessage}
+        autoHideDuration={3000} // closes after 3 seconds
+        onClose={closeSnackbar}
+        style={{
+          width: "500px",
+          color: "white !important",
+        }}
+      />
       <ModalSecondary open={open1} handleClose={closeModal}>
         <ApplicationEditForm
           id={id}
           handleClose={closeModal}
           content={selectedChild}
+          openSnackbarWithMessage={openSnackbarWithMessage}
         />
       </ModalSecondary>
       {/* Render the popper component */}

@@ -42,7 +42,9 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         body: {
           ...initialSchedule,
         },
+
       }),
+
       invalidatesTags: [{ type: "Schedule", id: "LIST" }],
     }),
     updateSchedule: builder.mutation({

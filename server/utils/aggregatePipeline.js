@@ -75,7 +75,7 @@ const applicationAggregationPipeline = async (scheduleId) => {
       $group: {
         _id: "$application.items.item",
         amountRequested: {
-          $sum: { $toInt: "$application.items.amountRequested" },
+          $sum: { $toDouble: "$application.items.amountRequested" },
         },
         unit: {
           $first: {

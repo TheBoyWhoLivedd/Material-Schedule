@@ -1,4 +1,6 @@
+//why isnt the required prop working on the textfields?
 import React, { useState, useEffect } from "react";
+
 import {
   useAddNewMaterialMutation,
   useUpdateMaterialMutation,
@@ -31,12 +33,6 @@ const MaterialAddForm = ({
   const [updateMaterial, { isLoading, isSuccess }] =
     useUpdateMaterialMutation();
 
-  useEffect(() => {
-    if (isSuccess || isAddSuccess) {
-      //Set the state that closes the modals
-      openSnackbarWithMessage("Material Updated Successfully");
-    }
-  }, [isSuccess, isAddSuccess]);
 
   const [options, setOptions] = useState(formData);
   const [error, setError] = React.useState("");
@@ -120,8 +116,17 @@ const MaterialAddForm = ({
     );
     canSave = allPropsWithValue && allParamPropsWithValue && !isLoading;
     console.log(canSave);
+  } else {
+    const allPropsWithValue = Object.keys(options).every(
+      (key) =>
+        options[key] !== undefined &&
+        options[key] !== null &&
+        options[key] !== ""
+    );
+    canSave = allPropsWithValue;
   }
 
+  
   //preventing edit of elementName property if calculation from backend has already been made
   const canEdit = "_id" in options;
 
@@ -129,21 +134,34 @@ const MaterialAddForm = ({
   const onSaveMaterialClicked = async (e) => {
     e.preventDefault();
     console.log(options);
-    await addNewMaterial({
-      id: id,
-      elementName: options.elementName,
-      description: options.materialDescription,
-      materialName: options.materialName,
-      parameters: options.parameters,
-      materialType: options?.materialType,
-    }).then(() => {
-      handleClose();
-      openSnackbarWithMessage("Material Added Successfully");
-    });
-  };
+    try {
+      const response = await addNewMaterial({
+        id: id,
+        elementName: options.elementName,
+        description: options.materialDescription,
+        materialName: options.materialName,
+        parameters: options.parameters,
+        materialType: options?.materialType,
+        computedValue: options?.computedValue,
+        materialUnit: options?.materialUnit,
+      });
 
-  const onUpdateMaterialClicked = async (e) => {
-    e.preventDefault();
+      if (response.data.isError) {
+        console.log(`Error: ${response.message}`);  
+        openSnackbarWithMessage(`Error: ${response.data.message}`);
+      } else {
+        handleClose();
+        openSnackbarWithMessage(`Material Added Successfully`);
+      }
+    } catch (error) {
+      openSnackbarWithMessage(`Error: ${error.message}`);
+    }
+  };
+  
+
+const onUpdateMaterialClicked = async (e) => {
+  e.preventDefault();
+  try {
     await updateMaterial({
       id: id,
       _id: options._id,
@@ -153,10 +171,15 @@ const MaterialAddForm = ({
       parameters: options.parameters,
       materialType: options?.materialType,
       relatedId: options?.relatedId,
+      computedValue: options?.computedValue,
+      materialUnit: options?.materialUnit,
     }).then(() => {
       handleClose();
     });
-  };
+  } catch (error) {
+    openSnackbarWithMessage(`Error: ${error.message}`);
+  }
+};
   // Update Material
 
   return (
@@ -174,9 +197,9 @@ const MaterialAddForm = ({
           onSelect={(e) => handleOnElementSelect(e, "elementName")}
           value={options?.elementName}
           disabled={canEdit}
-          required
+          // required
           renderInput={(params) => (
-            <TextField {...params} label="Choose Element" required />
+            <TextField {...params} label="Choose Element" required  />
           )}
         />
 
@@ -318,6 +341,45 @@ const MaterialAddForm = ({
             )}
           </>
         )}
+        {options?.elementName === "Other" && (
+          <>
+            <TextField
+              type="text"
+              name="materialName"
+              label="Material Name"
+              placeholder="Enter Material Name"
+              onChange={handleOnChange}
+              value={options?.materialName}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+
+            <TextField
+              type="text"
+              name="unit"
+              label="Material Unit"
+              placeholder="Enter Unit"
+              onChange={handleOnChange}
+              value={options?.unit}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+
+            <TextField
+              type="number"
+              name="computedValue"
+              label="Computed Value"
+              placeholder="Enter Computed Value"
+              onChange={handleOnChange}
+              value={options?.computedValue}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
         <TextField
           type="text"
           name="materialDescription"
@@ -325,11 +387,13 @@ const MaterialAddForm = ({
           placeholder="Enter Description"
           onChange={handleOnChange}
           value={options?.materialDescription}
+ 
         />
 
         {Object.keys(formData).length === 0 ? (
           <Button
             onClick={onSaveMaterialClicked}
+            name="submit"
             variant="outlined"
             type="submit"
             className="button"
