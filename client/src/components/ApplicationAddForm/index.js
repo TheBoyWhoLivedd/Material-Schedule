@@ -10,7 +10,7 @@ import AddEntryComponent from "../AddEntryComponent";
 import "./ApplicationAddForm.css";
 import Content from "../Content";
 
-const ApplicationAddForm = ({ id, handleClose, content, schedule }) => {
+const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWithMessage }) => {
   const [entries, setEntries] = useState([]);
   if (content) {
     setEntries(content);
@@ -19,7 +19,7 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule }) => {
     item: "",
     supplier: "",
     requested: "",
-    allowed: "",
+   
   };
   const [newEntry, setNewEntry] = useState(initialState);
 
@@ -47,10 +47,17 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    await addApplication({
+    const response = await addApplication({
       body: entries,
       id: id,
     });
+    if (response.data.isError) {
+      console.log(`Error: ${response.message}`);  
+      openSnackbarWithMessage(`Error: ${response.data.message}`);
+    } else {
+      handleClose();
+      openSnackbarWithMessage(`Materials Added Successfully`);
+    }
   };
 
   const handleOnChange = (e) => {

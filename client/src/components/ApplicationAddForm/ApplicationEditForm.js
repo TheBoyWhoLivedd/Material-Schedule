@@ -7,7 +7,12 @@ import { Plus, Trash } from "feather-icons-react";
 import "./ApplicationAddForm.css";
 import { v4 as uuidv4 } from "uuid";
 
-const ApplicationEditForm = ({ id, handleClose, content }) => {
+const ApplicationEditForm = ({
+  id,
+  handleClose,
+  content,
+  openSnackbarWithMessage,
+}) => {
   const [entries, setEntries] = useState(content.items);
 
   const initialState = {
@@ -41,11 +46,18 @@ const ApplicationEditForm = ({ id, handleClose, content }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    await updateApplication({
+    const response = await updateApplication({
       id: id,
       appId: content._id,
       body: { entries },
-    }).then(() => handleClose());
+    });
+    if (response.data.isError) {
+      console.log(`Error: ${response.message}`);
+      openSnackbarWithMessage(`Error: ${response.data.message}`);
+    } else {
+      handleClose();
+      openSnackbarWithMessage(`Materials Added Successfully`);
+    }
   };
 
   const handleOnChange = (e) => {

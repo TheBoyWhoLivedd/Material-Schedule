@@ -133,6 +133,9 @@ const updateBalanceAllowable = async (schedule, objectId) => {
   const totalRequested = schedule.totalRequested;
   const summary = schedule.summary;
 
+  console.log("totalRequested", totalRequested);
+  console.log("summary", summary);
+
   // Create a map from the balanceAllowable array for faster lookup
   const balanceAllowableMap = new Map(
     schedule.balanceAllowable.map((item) => [item._id, item.Value])
@@ -145,7 +148,7 @@ const updateBalanceAllowable = async (schedule, objectId) => {
 
     if (summaryItem) {
       const currentAllowableValue = balanceAllowableMap.get(requestedId) || 0;
-      const newAllowableValue = summaryItem.Value - amountRequested;
+      const newAllowableValue = summaryItem.Value - parseFloat(amountRequested);
 
       // Update the value in the map
       balanceAllowableMap.set(requestedId, newAllowableValue);
@@ -315,15 +318,22 @@ const deleteSchedule = async (req, res) => {
 };
 
 const addScheduleMaterial = async (req, res) => {
-  const { materialName, elementName, description, parameters, materialType } =
-    req.body;
+  const {
+    materialName,
+    elementName,
+    description,
+    parameters,
+    materialType,
+    unit,
+    computedValue, //when the user chooses the "Other" to add a material
+  } = req.body;
   const scheduleId = req.params.scheduleId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
 
   console.log("Request Parametrs", req.params);
   // Confirm data
-  if (!elementName || !description || !parameters) {
-    return res.status(400).json({ message: "Please provide a relevant field" });
+  if (!elementName || !description) {
+    throw new Error("Please provide values for elementName and description");
   }
 
   // Confirm schedule exists to update
@@ -336,6 +346,9 @@ const addScheduleMaterial = async (req, res) => {
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
   if (elementName === "Concrete") {
+    if (!parameters.concreteClass || !parameters.cum) {
+      throw new Error("Please provide values for concreteClass and cum");
+    }
     // Calculate here
     console.log(parameters.concreteClass, parameters.cum);
     const results = calculateConcreteGivenClass(
@@ -374,6 +387,10 @@ const addScheduleMaterial = async (req, res) => {
       groupByFirstProp: false,
     });
   } else if (elementName === "Reinforcement" && materialName === "BRC") {
+    if (!parameters.brcSize || !parameters.area) {
+      throw new Error("Please provide values for brcSize and area");
+    }
+
     const results = calculateBRC(parameters.brcSize, parameters.area);
     console.log(results);
     schedule.materials.push({
@@ -387,6 +404,9 @@ const addScheduleMaterial = async (req, res) => {
       groupByFirstProp: true,
     });
   } else if (elementName === "Reinforcement" && materialName === "Rebar") {
+    if (!parameters.rebarSize || !parameters.Kgs) {
+      throw new Error("Please provide values for Rebar Diamter and Kgs");
+    }
     const results = calculateRebar(parameters.rebarSize, parameters.Kgs);
     console.log(results);
     schedule.materials.push({
@@ -399,7 +419,12 @@ const addScheduleMaterial = async (req, res) => {
       materialDetail: `${materialName}(${parameters.rebarSize})`,
       groupByFirstProp: true,
     });
+  } else if (elementName === "Reinforcement" && materialName === "") {
+    throw new Error("Please Provide a Material Type");
   } else if (elementName === "Walling" && materialType === "Bricks") {
+    if (!parameters.wallArea || !parameters.bondName) {
+      throw new Error("Please provide values for wallArea and bondName");
+    }
     const results = calculateBricks(parameters.wallArea, parameters.bondName);
     console.log(results);
     schedule.materials.push({
@@ -448,6 +473,9 @@ const addScheduleMaterial = async (req, res) => {
       groupByFirstProp: false,
     });
   } else if (elementName === "Walling" && materialType === "Blocks") {
+    if (!parameters.wallArea || !parameters.bondName) {
+      throw new Error("Please provide values for wallArea and bondName");
+    }
     const results = calculateBlocks(parameters.wallArea, parameters.bondName);
     console.log(results);
     schedule.materials.push({
@@ -489,6 +517,17 @@ const addScheduleMaterial = async (req, res) => {
       unit: "Rolls",
       parameters: parameters,
       relatedId: relatedId,
+    });
+  } else if (elementName === "Other") {
+    if (!computedValue || !unit || !materialName || !description) {
+      throw new Error("Please Provide all required values");
+    }
+    schedule.materials.push({
+      elementName: elementName,
+      materialName: materialName,
+      materialDescription: description,
+      computedValue: computedValue,
+      unit: unit,
     });
   }
 
@@ -532,8 +571,18 @@ const deleteScheduleMaterial = async (req, res) => {
     });
   }
 
-  // delete material
-  await schedule.materials.remove(material);
+  // Check if the material has a relatedId property
+  const relatedId = material.relatedId;
+  if (relatedId) {
+    // Find all materials with the same relatedId value
+    const relatedMaterials = schedule.materials.filter(
+      (m) => m.relatedId === relatedId
+    );
+    // Delete all related materials as well
+    relatedMaterials.forEach((relatedMaterial) => {
+      schedule.materials.remove(relatedMaterial);
+    });
+  }
 
   await schedule.save();
   const summary = await materialsAggregationPipeline(objectId);
@@ -1000,7 +1049,7 @@ const postApplication = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Error adding application" });
+    res.status(500).send({ message: error.message });
   }
 };
 
@@ -1009,6 +1058,12 @@ const updateApplication = async (req, res) => {
   const objectId = mongoose.Types.ObjectId(scheduleId);
   const applicationId = mongoose.Types.ObjectId(req.params.appId);
   const applications = req.body;
+
+  for (const item of applications.entries) {
+    if (item.item === "" || item.supplier === "" || item.amountRequested === "") {
+        throw new Error("One or more fields in the item array is empty");
+    }
+}
 
   try {
     const schedule = await Schedule.findOneAndUpdate(

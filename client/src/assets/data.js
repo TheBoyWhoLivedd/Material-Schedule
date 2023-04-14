@@ -3,6 +3,7 @@ export const elementsData = [
   "Walling",
   "Reinforcement",
   "Steel Work",
+  "Other"
 ];
 
 export const materialsData = [
