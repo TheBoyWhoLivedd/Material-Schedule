@@ -6,10 +6,10 @@ import Paper from "@mui/material/Paper";
 // import { Button, TextField } from "@mui/material";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import {
-  useDeleteMaterialMutation,
   useUpdateApplicationItemMutation,
   useDeleteApplicationItemMutation,
   useDeleteApplicationMutation,
+  useDownloadApplicationMutation,
 } from "./schedulesApiSlice";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
@@ -33,6 +33,9 @@ import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
 import DeleteModal from "../../components/DeleteModal";
 import moment from "moment";
+import FileSaver from "file-saver";
+import { useSelector } from "react-redux";
+import { selectCurrentToken } from "../auth/authSlice";
 
 // Custom Popper component that also handles closing when user clicks away
 const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
@@ -89,7 +92,7 @@ const SingleApplicationPage = () => {
     console.log(appId, itemId);
   };
 
-  // RTK Query mutations for updating and deleting items
+  // RTK Query mutations for updating deleting and downloading applications or items
   const [updateApplicationItem, { isSuccess, isLoading }] =
     useUpdateApplicationItemMutation();
   const [
@@ -98,6 +101,7 @@ const SingleApplicationPage = () => {
   ] = useDeleteApplicationItemMutation();
   const [deleteApplication, { isSuccess: isDelAppSuccess }] =
     useDeleteApplicationMutation();
+  const [downloadApplication] = useDownloadApplicationMutation();
 
   // Function to update the individual item
   const updateItem = async () => {
@@ -122,6 +126,33 @@ const SingleApplicationPage = () => {
     await deleteApplication({ id: id, appId: applId });
   };
 
+  //function to download application.
+  const accessToken = useSelector(selectCurrentToken);
+  const onDownloadApplicatonClicked = async (applId) => {
+    console.log(`Schedule id is ${id} and Application id is ${applId}`);
+    try {
+      const response = await fetch(
+        `http://localhost:3500/schedules/${id}/applications/${applId}/download`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          method: "POST",
+        }
+      );
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "applications.xlsx");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Query to get the schedule from the API
   const { schedule } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
@@ -135,8 +166,6 @@ const SingleApplicationPage = () => {
     setEditItem({ ...editItem, [name]: e.target.value });
     console.log(editItem);
   };
-
-  const [deleteMaterial] = useDeleteMaterialMutation();
 
   // Handling Secondary Modal
   const [open1, setOpen1] = useState(false);
@@ -201,7 +230,9 @@ const SingleApplicationPage = () => {
             <Button
               variant="outlined"
               color="primary"
-              onClick={""}
+              onClick={() => {
+                onDownloadApplicatonClicked(application._id);
+              }}
               style={{ marginLeft: "2rem" }}
             >
               Print

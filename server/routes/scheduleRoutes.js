@@ -40,5 +40,9 @@ router
   .route("/:scheduleId/applications/:appId")
   .patch(schedulesController.updateApplication)
   .delete(schedulesController.deleteApplication);
+router
+  .route("/:scheduleId/applications/:appId/download")
+  .post(schedulesController.downloadApplication)
+
 
 module.exports = router;

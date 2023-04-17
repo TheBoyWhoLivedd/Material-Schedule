@@ -42,7 +42,6 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         body: {
           ...initialSchedule,
         },
-
       }),
 
       invalidatesTags: [{ type: "Schedule", id: "LIST" }],
@@ -138,6 +137,15 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
         { type: "Schedule", id: arg.id, appId: arg.appId },
       ],
     }),
+    downloadApplication: builder.mutation({
+      query: ({ id, appId }) => ({
+        url: `/schedules/${id}/applications/${appId}/download`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Schedule", id: arg.id, appId: arg.appId },
+      ],
+    }),
     updateApplicationItem: builder.mutation({
       query: ({ id, appId, itemId, editItem }) => ({
         url: `/schedules/${id}/applications/${appId}/${itemId}`,
@@ -176,6 +184,7 @@ export const {
   useUpdateApplicationMutation,
   useDeleteApplicationItemMutation,
   useDeleteApplicationMutation,
+  useDownloadApplicationMutation,
 } = schedulesApiSlice;
 
 // returns the query result object
