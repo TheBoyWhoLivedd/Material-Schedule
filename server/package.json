@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server",
     "dev": "nodemon server",
-    "build":"node build"
+    "build": "node build"
   },
   "keywords": [],
   "author": "",
@@ -21,9 +21,11 @@
     "express-async-errors": "^3.1.1",
     "express-rate-limit": "^6.5.1",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.4",
     "mongoose": "^6.5.0",
     "mongoose-sequence": "^5.3.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.19"

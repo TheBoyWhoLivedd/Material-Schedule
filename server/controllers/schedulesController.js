@@ -2,6 +2,9 @@
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const XLSX = require("xlsx");
+const moment = require("moment");
+const fs = require("fs");
 const { v4: uuid } = require("uuid");
 const {
   materialsAggregationPipeline,
@@ -1014,9 +1017,17 @@ const postApplication = async (req, res) => {
     if (!application.item || !application.supplier || !application.requested) {
       throw new Error("Missing required fields");
     }
+
+    // Find matching summary item and pick unit if found, otherwise use an empty string
+    const summaryItem = schedule.summary.find(
+      (item) => item._id === application.item
+    );
+    const unit = summaryItem ? summaryItem.unit[0] : "";
+
     updatedApplication.items.push({
       item: application.item,
       supplier: application.supplier,
+      unit: unit,
       amountRequested: application.requested,
     });
   });
@@ -1060,10 +1071,14 @@ const updateApplication = async (req, res) => {
   const applications = req.body;
 
   for (const item of applications.entries) {
-    if (item.item === "" || item.supplier === "" || item.amountRequested === "") {
-        throw new Error("One or more fields in the item array is empty");
+    if (
+      item.item === "" ||
+      item.supplier === "" ||
+      item.amountRequested === ""
+    ) {
+      throw new Error("One or more fields in the item array is empty");
     }
-}
+  }
 
   try {
     const schedule = await Schedule.findOneAndUpdate(
@@ -1131,6 +1146,87 @@ const deleteApplication = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Error deleting item" });
+  }
+};
+
+// Function to generate the Excel workbook
+async function generateExcel(app, username) {
+  const { application } = app;
+  console.log("Application received", application);
+  const workbook = XLSX.readFile("./template.xlsx");
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  sheet["C11"] = { t: "s", v: ` ${moment().format("DD-MMM-YYYY")}` };
+
+  XLSX.utils.sheet_add_aoa(
+    sheet,
+    [
+      ...application
+        .map((app) =>
+          app.items.map((item, index) => [
+            index + 1,
+            item.item,
+            item.supplier,
+            item.unit,
+            item.amountRequested,
+          ])
+        )
+        .flat(),
+      [username],
+    ],
+    { origin: "A20" }
+  );
+
+  // Generate the Excel file and send it to the user for download
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "buffer",
+  });
+  return excelBuffer;
+}
+
+const downloadApplication = async (req, res) => {
+  const scheduleId = req.params.scheduleId;
+  const applId = req.params.appId;
+  const objectId = mongoose.Types.ObjectId(scheduleId);
+  const applicationId = mongoose.Types.ObjectId(applId);
+  const schedule = await Schedule.findOne({ _id: objectId });
+  const { title, funder, contractor } = schedule;
+  const user = await User.findOne({ _id: schedule.user });
+  const username = user.username;
+  // console.log(`By ${user?.username}`);
+  const application = await Schedule.findOne(
+    {
+      _id: objectId,
+      application: {
+        $elemMatch: { _id: applicationId },
+      },
+    },
+    {
+      "application.$": 1, // returns only the matching element
+    }
+  );
+  console.log(`${applicationId} and the ${application.application}`);
+  try {
+    // Generate the Excel buffer
+    const excelBuffer = await generateExcel(application, username);
+
+    // Set the response headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=applications.xlsx"
+    );
+
+    // Send the Excel buffer to the client for download
+    res.send(excelBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generating Excel file");
   }
 };
 
@@ -1245,4 +1341,5 @@ module.exports = {
   deleteApplicationItem,
   updateApplication,
   deleteApplication,
+  downloadApplication,
 };

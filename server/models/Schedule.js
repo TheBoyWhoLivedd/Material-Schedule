@@ -124,6 +124,9 @@ const scheduleSchema = new mongoose.Schema(
             item: {
               type: String,
             },
+            unit: {
+              type: [String],
+            },
             supplier: {
               type: String,
             },
