@@ -357,11 +357,11 @@ const onUpdateMaterialClicked = async (e) => {
 
             <TextField
               type="text"
-              name="unit"
+              name="materialUnit"
               label="Material Unit"
               placeholder="Enter Unit"
               onChange={handleOnChange}
-              value={options?.unit}
+              value={options?.materialUnit}
               required
               error={Boolean(error)}
               helperText={error}

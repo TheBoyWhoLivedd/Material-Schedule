@@ -1,136 +1,85 @@
-// const { calculateConcreteGivenClass } = require("./Calculations");
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const mongoose = require("mongoose");
-const XLSX = require("xlsx");
+const ExcelJS = require("exceljs");
 const moment = require("moment");
-const fs = require("fs");
 const { v4: uuid } = require("uuid");
 const {
   materialsAggregationPipeline,
   applicationAggregationPipeline,
 } = require("../utils/aggregatePipeline");
-const { calculateConcreteGivenClass } = require("../utils/calculations");
+
+const {
+  handleConcrete,
+  handleReinforcementBRC,
+  handleReinforcementRebar,
+  handleWallingBricks,
+  handleWallingBlocks,
+  handleOther,
+  updateConcrete,
+  updateBRC,
+  updateRebar,
+  updateWalling,
+} = require("../utils/helpers.js");
 
 // @desc Get all schedules
 // @route GET /schedules
 // @access Private
 
-function calculateBRC(size, area) {
-  if (size === "A66" || "A98(30)") {
-    let brcRolls = Math.ceil(Number(area) / 57.514);
-    return {
-      brcSize: size,
-      brcRolls: brcRolls,
-    };
-  } else if (size === "A98(48)" || "A142") {
-    let brcRolls = Math.ceil(Number(area) / 105.16);
-    return {
-      brcSize: size,
-      brcRolls: brcRolls,
-    };
-  } else if (size === "A193" || "A252") {
-    let brcRolls = Math.ceil(Number(area) / 10.12);
-    return {
-      brcSize: size,
-      brcRolls: brcRolls,
-    };
-  }
-}
+// const updateBalanceAllowable = async (schedule, objectId) => {
+//   const totalRequested = schedule.totalRequested;
+//   const summary = schedule.summary;
 
-function calculateRebar(diameter, weight) {
-  if (diameter === "8") {
-    let pieces = Math.ceil(Number(weight) / 4.8);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "10") {
-    let pieces = Math.ceil(Number(weight) / 7.44);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "12") {
-    let pieces = Math.ceil(Number(weight) / 10.68);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "16") {
-    let pieces = Math.ceil(Number(weight) / 18.96);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "20") {
-    let pieces = Math.ceil(Number(weight) / 29.64);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "25") {
-    let pieces = Math.ceil(Number(weight) / 46.32);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "32") {
-    let pieces = Math.ceil(Number(weight) / 75.84);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  } else if (diameter === "40") {
-    let pieces = Math.ceil(Number(weight) / 118.32);
-    return {
-      rebarDiameter: diameter,
-      rebarPieces: pieces,
-    };
-  }
-}
+//   console.log("totalRequested", totalRequested);
+//   console.log("summary", summary);
 
-function calculateBricks(area, bond) {
-  let hoopIron = Math.ceil(Number(area) * 0.1);
-  let numCementBags = Math.ceil(Number(area) * 0.3);
-  let sandWeighttTonnes = Number(area) * 0.04;
-  let numBricks;
-  if (bond === "Header") {
-    numBricks = Math.ceil(Number(area) * 112);
-  } else if (bond === "Stretcher") {
-    numBricks = Math.ceil(Number(area) * 60);
-  }
-  return {
-    bond: bond,
-    hoopIron: hoopIron,
-    numCementBags: numCementBags,
-    sandWeighttTonnes: sandWeighttTonnes,
-    numBricks: numBricks,
-  };
-}
-function calculateBlocks(area, bond) {
-  let hoopIron = Math.ceil(Number(area) * 0.1);
-  let numCementBags;
-  if (bond === "Header") {
-    numCementBags = Math.ceil(Number(area) * 0.4);
-  } else if (bond === "Stretcher") {
-    numCementBags = Math.ceil(Number(area) * 0.2);
-  }
-  let sandWeighttTonnes = Number(area) * 0.04;
-  let numBlocks;
-  if (bond === "Header") {
-    numBlocks = Math.ceil(Number(area) * 24);
-  } else if (bond === "Stretcher") {
-    numBlocks = Math.ceil(Number(area) * 11);
-  }
-  return {
-    bond: bond,
-    hoopIron: hoopIron,
-    numCementBags: numCementBags,
-    sandWeighttTonnes: sandWeighttTonnes,
-    numBlocks: numBlocks,
-  };
-}
+//   // Create a map from the balanceAllowable array for faster lookup
+//   const balanceAllowableMap = new Map(
+//     schedule.balanceAllowable.map((item) => [item._id, item.Value])
+//   );
+
+//   for (const { _id: requestedId, amountRequested } of totalRequested) {
+//     const summaryItem = summary.find(
+//       ({ _id: summaryId }) => summaryId === requestedId
+//     );
+
+//     if (summaryItem) {
+//       const currentAllowableValue = balanceAllowableMap.get(requestedId) || 0;
+//       const newAllowableValue = summaryItem.Value - parseFloat(amountRequested);
+
+//       // Update the value in the map
+//       balanceAllowableMap.set(requestedId, newAllowableValue);
+
+//       // Update the value in the database
+//       await Schedule.updateMany(
+//         { _id: objectId, "balanceAllowable._id": requestedId },
+//         { $set: { "balanceAllowable.$.Value": newAllowableValue } }
+//       );
+
+//       // If there was no previous balanceAllowable item, add a new one
+//       if (!currentAllowableValue) {
+//         const newBalanceAllowableItem = {
+//           _id: requestedId,
+//           Value: newAllowableValue,
+//         };
+//         await Schedule.updateMany(
+//           { _id: objectId },
+//           { $push: { balanceAllowable: newBalanceAllowableItem } }
+//         );
+//       }
+//     }
+//   }
+
+//   // Remove any items in balanceAllowable that are not in totalRequested or summary
+//   for (const { _id } of schedule.balanceAllowable) {
+//     if (!totalRequested.some(({ _id: requestedId }) => requestedId === _id)) {
+//       await Schedule.updateMany(
+//         { _id: objectId },
+//         { $pull: { balanceAllowable: { _id } } }
+//       );
+//     }
+//   }
+// };
 
 const updateBalanceAllowable = async (schedule, objectId) => {
   const totalRequested = schedule.totalRequested;
@@ -139,51 +88,58 @@ const updateBalanceAllowable = async (schedule, objectId) => {
   console.log("totalRequested", totalRequested);
   console.log("summary", summary);
 
-  // Create a map from the balanceAllowable array for faster lookup
   const balanceAllowableMap = new Map(
     schedule.balanceAllowable.map((item) => [item._id, item.Value])
   );
+  const summaryMap = new Map(summary.map((item) => [item._id, item]));
+
+  const bulkUpdates = [];
 
   for (const { _id: requestedId, amountRequested } of totalRequested) {
-    const summaryItem = summary.find(
-      ({ _id: summaryId }) => summaryId === requestedId
-    );
+    const summaryItem = summaryMap.get(requestedId);
 
     if (summaryItem) {
       const currentAllowableValue = balanceAllowableMap.get(requestedId) || 0;
       const newAllowableValue = summaryItem.Value - parseFloat(amountRequested);
 
-      // Update the value in the map
       balanceAllowableMap.set(requestedId, newAllowableValue);
 
-      // Update the value in the database
-      await Schedule.updateMany(
-        { _id: objectId, "balanceAllowable._id": requestedId },
-        { $set: { "balanceAllowable.$.Value": newAllowableValue } }
-      );
+      bulkUpdates.push({
+        updateOne: {
+          filter: { _id: objectId, "balanceAllowable._id": requestedId },
+          update: { $set: { "balanceAllowable.$.Value": newAllowableValue } },
+        },
+      });
 
-      // If there was no previous balanceAllowable item, add a new one
       if (!currentAllowableValue) {
         const newBalanceAllowableItem = {
           _id: requestedId,
           Value: newAllowableValue,
         };
-        await Schedule.updateMany(
-          { _id: objectId },
-          { $push: { balanceAllowable: newBalanceAllowableItem } }
-        );
+
+        bulkUpdates.push({
+          updateOne: {
+            filter: { _id: objectId },
+            update: { $push: { balanceAllowable: newBalanceAllowableItem } },
+          },
+        });
       }
     }
   }
 
-  // Remove any items in balanceAllowable that are not in totalRequested or summary
   for (const { _id } of schedule.balanceAllowable) {
     if (!totalRequested.some(({ _id: requestedId }) => requestedId === _id)) {
-      await Schedule.updateMany(
-        { _id: objectId },
-        { $pull: { balanceAllowable: { _id } } }
-      );
+      bulkUpdates.push({
+        updateOne: {
+          filter: { _id: objectId },
+          update: { $pull: { balanceAllowable: { _id } } },
+        },
+      });
     }
+  }
+
+  if (bulkUpdates.length) {
+    await Schedule.bulkWrite(bulkUpdates);
   }
 };
 
@@ -327,7 +283,7 @@ const addScheduleMaterial = async (req, res) => {
     description,
     parameters,
     materialType,
-    unit,
+    materialUnit,
     computedValue, //when the user chooses the "Other" to add a material
   } = req.body;
   const scheduleId = req.params.scheduleId;
@@ -348,192 +304,77 @@ const addScheduleMaterial = async (req, res) => {
       .status(400)
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
-  if (elementName === "Concrete") {
-    if (!parameters.concreteClass || !parameters.cum) {
-      throw new Error("Please provide values for concreteClass and cum");
-    }
-    // Calculate here
-    console.log(parameters.concreteClass, parameters.cum);
-    const results = calculateConcreteGivenClass(
-      parameters.concreteClass,
-      parameters.cum
-    );
 
-    schedule.materials.push({
-      elementName: "Concrete",
-      materialName: "Cement",
-      materialDescription: description,
-      computedValue: results.cementBags,
-      unit: "Bags",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-    schedule.materials.push({
-      elementName: "Concrete",
-      materialName: "Sand",
-      materialDescription: description,
-      computedValue: results.amountofSand,
-      unit: "Tonnes",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-    schedule.materials.push({
-      elementName: "Concrete",
-      materialName: "Aggregates",
-      materialDescription: description,
-      computedValue: results.amountofAggregates,
-      unit: "Tonnes",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-  } else if (elementName === "Reinforcement" && materialName === "BRC") {
-    if (!parameters.brcSize || !parameters.area) {
-      throw new Error("Please provide values for brcSize and area");
-    }
-
-    const results = calculateBRC(parameters.brcSize, parameters.area);
-    console.log(results);
-    schedule.materials.push({
-      elementName: "Reinforcement",
-      materialName: "BRC",
-      materialDescription: description,
-      computedValue: results.brcRolls,
-      unit: "Rolls",
-      parameters: parameters,
-      materialDetail: `${materialName}(${parameters.brcSize})`,
-      groupByFirstProp: true,
-    });
-  } else if (elementName === "Reinforcement" && materialName === "Rebar") {
-    if (!parameters.rebarSize || !parameters.Kgs) {
-      throw new Error("Please provide values for Rebar Diamter and Kgs");
-    }
-    const results = calculateRebar(parameters.rebarSize, parameters.Kgs);
-    console.log(results);
-    schedule.materials.push({
-      elementName: "Reinforcement",
-      materialName: "Rebar",
-      materialDescription: description,
-      computedValue: results.rebarPieces,
-      unit: "Pieces",
-      parameters: parameters,
-      materialDetail: `${materialName}(${parameters.rebarSize})`,
-      groupByFirstProp: true,
-    });
-  } else if (elementName === "Reinforcement" && materialName === "") {
-    throw new Error("Please Provide a Material Type");
-  } else if (elementName === "Walling" && materialType === "Bricks") {
-    if (!parameters.wallArea || !parameters.bondName) {
-      throw new Error("Please provide values for wallArea and bondName");
-    }
-    const results = calculateBricks(parameters.wallArea, parameters.bondName);
-    console.log(results);
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Bricks",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.numBricks,
-      unit: "Bricks",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Cement",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.numCementBags,
-      unit: "Bags",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Sand",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.sandWeighttTonnes,
-      unit: "Tonnes",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Hoop Iron",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.hoopIron,
-      unit: "Rolls",
-      parameters: parameters,
-      relatedId: relatedId,
-      groupByFirstProp: false,
-    });
-  } else if (elementName === "Walling" && materialType === "Blocks") {
-    if (!parameters.wallArea || !parameters.bondName) {
-      throw new Error("Please provide values for wallArea and bondName");
-    }
-    const results = calculateBlocks(parameters.wallArea, parameters.bondName);
-    console.log(results);
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Blocks",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.numBlocks,
-      unit: "Blocks",
-      parameters: parameters,
-      relatedId: relatedId,
-    });
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Cement",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.numCementBags,
-      unit: "Bags",
-      parameters: parameters,
-      relatedId: relatedId,
-    });
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Sand",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.sandWeighttTonnes,
-      unit: "Tonnes",
-      parameters: parameters,
-      relatedId: relatedId,
-    });
-    schedule.materials.push({
-      elementName: "Walling",
-      materialName: "Hoop Iron",
-      materialDescription: description,
-      materialType: materialType,
-      computedValue: results.hoopIron,
-      unit: "Rolls",
-      parameters: parameters,
-      relatedId: relatedId,
-    });
-  } else if (elementName === "Other") {
-    if (!computedValue || !unit || !materialName || !description) {
-      throw new Error("Please Provide all required values");
-    }
-    schedule.materials.push({
-      elementName: elementName,
-      materialName: materialName,
-      materialDescription: description,
-      computedValue: computedValue,
-      unit: unit,
-    });
+  switch (elementName) {
+    case "Concrete":
+      if (!parameters.concreteClass || !parameters.cum) {
+        throw new Error("Please provide values for concreteClass and cum");
+      }
+      handleConcrete(schedule, parameters, description, relatedId);
+      break;
+    case "Reinforcement":
+      switch (materialName) {
+        case "BRC":
+          if (!parameters.brcSize || !parameters.area) {
+            throw new Error("Please provide values for brcSize and area");
+          }
+          handleReinforcementBRC(schedule, parameters, description);
+          break;
+        case "Rebar":
+          if (!parameters.rebarSize || !parameters.Kgs) {
+            throw new Error("Please provide values for Rebar Diamter and Kgs");
+          }
+          handleReinforcementRebar(schedule, parameters, description);
+          break;
+        default:
+          throw new Error("Please Provide a Material Type");
+      }
+      break;
+    case "Walling":
+      switch (materialType) {
+        case "Bricks":
+          if (!parameters.wallArea || !parameters.bondName) {
+            throw new Error("Please provide values for wallArea and bondName");
+          }
+          handleWallingBricks(
+            schedule,
+            parameters,
+            description,
+            relatedId,
+            materialType
+          );
+          break;
+        case "Blocks":
+          if (!parameters.wallArea || !parameters.bondName) {
+            throw new Error("Please provide values for wallArea and bondName");
+          }
+          handleWallingBlocks(
+            schedule,
+            parameters,
+            description,
+            relatedId,
+            materialType
+          );
+          break;
+        default:
+          throw new Error("Please Provide a Material Type");
+      }
+      break;
+    case "Other":
+      if (!computedValue || !materialUnit || !materialName || !description) {
+        throw new Error("Please Provide all required values");
+      }
+      handleOther(
+        schedule,
+        materialName,
+        description,
+        computedValue,
+        materialUnit
+      );
+      break;
+    default:
+      throw new Error("Invalid elementName");
   }
-
   const updatedSchedule = await schedule.save();
   const summary = await materialsAggregationPipeline(objectId);
   console.log(summary);
@@ -555,8 +396,12 @@ const deleteScheduleMaterial = async (req, res) => {
   const scheduleId = req.params.scheduleId;
   const materialId = req.params.materialId;
   const objectId = mongoose.Types.ObjectId(scheduleId);
-  // Confirm schedule exists to update
-  const schedule = await Schedule.findById(scheduleId).exec();
+
+  // Find the schedule with the materialId
+  const schedule = await Schedule.findOne(
+    { _id: scheduleId, "materials._id": materialId },
+    { "materials.$": 1 }
+  ).exec();
 
   if (!schedule) {
     return res
@@ -564,30 +409,21 @@ const deleteScheduleMaterial = async (req, res) => {
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
 
-  // Find material with id
-  const material = schedule.materials.id(materialId);
-
-  if (!material) {
-    return res.status(404).json({
-      status: "fail",
-      message: `Material with id ${materialId} not found`,
-    });
-  }
+  // Get the material from the schedule
+  const material = schedule.materials[0];
 
   // Check if the material has a relatedId property
   const relatedId = material.relatedId;
-  if (relatedId) {
-    // Find all materials with the same relatedId value
-    const relatedMaterials = schedule.materials.filter(
-      (m) => m.relatedId === relatedId
-    );
-    // Delete all related materials as well
-    relatedMaterials.forEach((relatedMaterial) => {
-      schedule.materials.remove(relatedMaterial);
-    });
-  }
+  const pullQuery = relatedId
+    ? { materials: { relatedId } }
+    : { materials: { _id: materialId } };
 
-  await schedule.save();
+  // Use findOneAndUpdate to remove the material or related materials in one query
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId },
+    { $pull: pullQuery }
+  ).exec();
+
   const summary = await materialsAggregationPipeline(objectId);
   // Update the summary field of the Schedule document
   await Schedule.updateOne(
@@ -596,7 +432,7 @@ const deleteScheduleMaterial = async (req, res) => {
   ).exec();
 
   res.json({
-    "message ": `Material ${material.materialName} deleted successfully`,
+    message: `Material ${material.materialName} deleted successfully`,
   });
 };
 
@@ -638,124 +474,7 @@ const updateScheduleMaterial = async (req, res) => {
     return res.status(400).json({ message: "Please provide a relevant field" });
   }
 
-  //Run New Parameters through function
-  let results = {};
-  let updatedValue = 1;
-  let schedule;
-  if (elementName === "Concrete") {
-    // Find objects that have the relatedId in the request body
-    schedule = await Schedule.findOne({
-      _id: scheduleId,
-    }).exec();
-
-    const materials = schedule?.materials?.filter(
-      (material) => material.relatedId === relatedId
-    );
-    results = calculateConcreteGivenClass(
-      parameters.concreteClass,
-      parameters.cum
-    );
-    for (const material of materials) {
-      //Find out which of the three concrete constituent materials to update
-      if (material.materialName == "Cement") {
-        material.computedValue = results.cementBags;
-        material.parameters = parameters;
-        material.materialDescription = description;
-      } else if (material.materialName == "Sand") {
-        material.computedValue = results.amountofSand;
-        material.parameters = parameters;
-        material.materialDescription = description;
-      } else if (material.materialName == "Aggregates") {
-        material.computedValue = results.amountofAggregates;
-        material.parameters = parameters;
-        material.materialDescription = description;
-      }
-    }
-    await schedule.save();
-  } else if (elementName === "Reinforcement" && materialName === "BRC") {
-    const results = calculateBRC(parameters.brcSize, parameters.area);
-    schedule = await Schedule.findOneAndUpdate(
-      { _id: scheduleId, "materials._id": materialId },
-      {
-        $set: {
-          "materials.$.parameters": parameters,
-          "materials.$.elementName": elementName,
-          "materials.$.materialDescription": description,
-          "materials.$.computedValue": results.brcRolls,
-          "materials.$.materialDetail": `${materialName}(${parameters.brcSize})`,
-        },
-      }
-    ).exec();
-  } else if (elementName === "Reinforcement" && materialName === "Rebar") {
-    const results = calculateRebar(parameters.rebarSize, parameters.Kgs);
-    schedule = await Schedule.findOneAndUpdate(
-      { _id: scheduleId, "materials._id": materialId },
-      {
-        $set: {
-          "materials.$.parameters": parameters,
-          "materials.$.elementName": elementName,
-          "materials.$.materialDescription": description,
-          "materials.$.materialDetail": `${materialName}(${parameters.rebarSize})`,
-          "materials.$.computedValue": results.rebarPieces,
-        },
-      }
-    ).exec();
-  }
-  if (elementName === "Walling") {
-    schedule = await Schedule.findOne({ _id: scheduleId }).exec();
-    const materials = schedule?.materials?.filter(
-      (material) => material.relatedId === relatedId
-    );
-    if (materialType === "Bricks") {
-      results = calculateBricks(parameters.wallArea, parameters.bondName);
-    } else if (materialType === "Blocks") {
-      results = calculateBlocks(parameters.wallArea, parameters.bondName);
-    }
-
-    for (const material of materials) {
-      if (material.materialName === "Bricks" && materialType === "Blocks") {
-        material.materialName = "Blocks";
-        material.materialType = "Blocks";
-        material.unit = "Blocks";
-      }
-      if (material.materialName === "Blocks" && materialType === "Bricks") {
-        material.materialName = "Bricks";
-        material.materialType = "Bricks";
-        material.unit = "Bricks";
-      }
-      if (material.materialName == "Cement") {
-        material.computedValue = results.numCementBags;
-        material.parameters = parameters;
-        material.materialDescription = description;
-        material.materialType = materialType;
-      } else if (material.materialName == "Sand") {
-        material.computedValue = results.sandWeighttTonnes;
-        material.parameters = parameters;
-        material.materialDescription = description;
-        material.materialType = materialType;
-      } else if (material.materialName == "Bricks") {
-        material.computedValue = results.numBricks;
-        material.parameters = parameters;
-        material.materialDescription = description;
-        material.materialType = materialType;
-      } else if (material.materialName == "Blocks") {
-        material.computedValue = results.numBlocks;
-        material.parameters = parameters;
-        material.materialDescription = description;
-        material.materialType = materialType;
-      } else if (material.materialName == "Hoop Iron") {
-        material.computedValue = results.hoopIron;
-        material.parameters = parameters;
-        material.materialDescription = description;
-        material.materialType = materialType;
-      }
-    }
-
-    await schedule.save();
-  }
-
-  // Confirm schedule exists to update
-  // const schedule = await Schedule.findById(scheduleId).exec();
+  const schedule = await Schedule.findById(scheduleId).exec();
 
   if (!schedule) {
     return res
@@ -763,14 +482,33 @@ const updateScheduleMaterial = async (req, res) => {
       .json({ message: `Schedule with id ${scheduleId} not found` });
   }
 
-  // Find material with id
-  const material = schedule.materials.id(materialId);
+  //Run New Parameters through function
 
-  if (!material) {
-    return res.status(404).json({
-      status: "fail",
-      message: `Material with id ${materialId} not found`,
-    });
+  switch (elementName) {
+    case "Concrete":
+      await updateConcrete(schedule, relatedId, description, parameters);
+      break;
+
+    case "Reinforcement":
+      switch (materialName) {
+        case "BRC":
+          await updateBRC(scheduleId, materialId, description, parameters);
+          break;
+        case "Rebar":
+          await updateRebar(scheduleId, materialId, description, parameters);
+          break;
+      }
+      break;
+
+    case "Walling":
+      await updateWalling(
+        schedule,
+        relatedId,
+        description,
+        parameters,
+        materialType
+      );
+      break;
   }
 
   const updatedMaterial = await schedule.save();
@@ -781,173 +519,13 @@ const updateScheduleMaterial = async (req, res) => {
     { _id: scheduleId },
     { $set: { summary: summary } }
   ).exec();
-  console.log(summary);
+  // console.log(summary);
 
   res.json({
     "message ": "Material updated successfully",
     material: updatedMaterial,
   });
 };
-
-// const updateScheduleMaterial2 = async (req, res) => {
-//   const scheduleId = req.params.scheduleId;
-//   const materialId = req.params.materialId;
-//   // Validate update data
-//   const { elementName, materialName, description, parameters, materialType, relatedId } = req.body;
-
-//   // Confirm data
-//   if (!materialName && !description && !parameters && !elementName) {
-//     return res.status(400).json({ message: "Please provide a relevant field" });
-//   }
-
-//   //Run New Parameters through function
-//   let results = {};
-//   let schedule;
-//   switch (elementName) {
-//     case "Concrete":
-//       schedule = await Schedule.findOneAndUpdate(
-//         { _id: scheduleId, "materials.relatedId": relatedId },
-//         {
-//           $set: {
-//             "materials.$[].parameters": parameters,
-//             "materials.$[].elementName": elementName,
-//             "materials.$[].materialDescription": description,
-//           },
-//         }
-//       ).exec();
-//       results = calculateConcreteGivenClass(parameters.concreteClass, parameters.cum);
-//       await Schedule.updateMany(
-//         { _id: scheduleId, "materials.relatedId": relatedId },
-//         {
-//           $set: {
-//             "materials.$[].computedValue": {
-//               $cond: {
-//                 if: { $eq: ["$materialName", "Cement"] },
-//                 then: results.cementBags,
-
-//               else: {
-//                 $cond: {
-//                   if: { $eq: ["$materialName", "Sand"] },
-//                   then: results.amountofSand,
-//                   else: results.amountofAggregates
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-
-//   ).exec();
-//   break;
-// case "Reinforcement":
-//   switch (materialName) {
-//     case "BRC":
-//       results = calculateBRC(parameters.brcSize, parameters.area);
-//       schedule = await Schedule.findOneAndUpdate(
-//         { _id: scheduleId, "materials._id": materialId },
-//         {
-//           $set: {
-//             "materials.$.parameters": parameters,
-//             "materials.$.elementName": elementName,
-//             "materials.$.materialDescription": description,
-//             "materials.$.computedValue": results.brcRolls,
-//           },
-//         }
-//       ).exec();
-//       break;
-//     case "Rebar":
-//       results = calculateRebar(parameters.rebarSize, parameters.Kgs);
-//       schedule = await Schedule.findOneAndUpdate(
-//         { _id: scheduleId, "materials._id": materialId },
-//         {
-//           $set: {
-//             "materials.$.parameters": parameters,
-//             "materials.$.elementName": elementName,
-//             "materials.$.materialDescription": description,
-//             "materials.$.computedValue": results.brcRolls,
-//           },
-//         }
-//       ).exec();
-//       break;
-//       default:
-//         break;
-//     }
-//     break;
-//     case "Walling":
-//       if (materialType === "Bricks") {
-//         results = calculateBricks(parameters.wallArea, parameters.bondName);
-//       } else if (materialType === "Blocks") {
-//         results = calculateBlocks(parameters.wallArea, parameters.bondName);
-//       }
-//       schedule = await Schedule.findOne({ _id: scheduleId }).exec();
-//       await Schedule.updateMany(
-//         { _id: scheduleId, "materials.relatedId": relatedId },
-//         {
-//           $set: {
-//             "materials.$[].materialName": {
-//               $cond: {
-//                 if: { $eq: ["$materials.materialType", "Bricks"] },
-//                 then: "Bricks",
-//                 else: {
-//                   $cond: {
-//                     if: { $eq: ["$materials.materialType", "Blocks"] },
-//                     then: "Blocks",
-//                     else: "$materials.materialName"
-//                   }
-//                 }
-//               }
-//             },
-//             "materials.$[].unit": {
-//               $cond: {
-//                 if: { $eq: ["$materials.materialType", "Bricks"] },
-//                 then: "Bricks",
-//                 else: {
-//                   $cond: {
-//                     if: { $eq: ["$materials.materialType", "Blocks"] },
-//                     then: "Blocks",
-//                     else: "$materials.unit"
-//                   }
-//                 }
-//               }
-//             },
-//             "materials.$[].materialType": materialType,
-//             "materials.$[].parameters": parameters,
-//             "materials.$[].elementName": elementName,
-//             "materials.$[].materialDescription": description,
-//             "materials.$[].computedValue": {
-//               $cond: {
-//                 if: { $eq: ["$materials.materialName", "Cement"] },
-//                 then: results.numCementBags,
-//                 else: {
-//                   $cond: {
-//                     if: { $eq: ["$materials.materialName", "Sand"] },
-//                     then: results.sandWeighttTonnes,
-//                     else: {
-//                       $cond: {
-//                         if: { $eq: ["$materials.materialName", "Bricks"] },
-//                         then: results.numBricks,
-//                         else: {
-//                           $cond: {
-//                             if: { $eq: ["$materials.materialName", "Blocks"] },
-//                             then: results.numBlocks,
-//                             else: results.hoopIron
-//                           }
-//                         }
-//                       }
-//                     }
-//                   }
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       ).exec();
-//       break;
-//     default:
-//       break;
-//   }
-//   res.status(200).json({ message: "Successfully Updated Material" });
-// };
 
 const getSummary = async (req, res) => {
   const scheduleId = req.params.scheduleId;
@@ -1150,39 +728,69 @@ const deleteApplication = async (req, res) => {
 };
 
 // Function to generate the Excel workbook
-async function generateExcel(app, username) {
+async function generateExcel(app, username, title, funder, contractor) {
   const { application } = app;
   console.log("Application received", application);
-  const workbook = XLSX.readFile("./template.xlsx");
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile("./template.xlsx");
+  const sheet = workbook.getWorksheet(1);
 
-  sheet["C11"] = { t: "s", v: ` ${moment().format("DD-MMM-YYYY")}` };
+  const style = {
+    font: { name: "Bookman Old Style", size: 13 },
+    alignment: { horizontal: "center", vertical: "center" },
+    wrapText: true,
+  };
 
-  XLSX.utils.sheet_add_aoa(
-    sheet,
-    [
-      ...application
-        .map((app) =>
-          app.items.map((item, index) => [
-            index + 1,
-            item.item,
-            item.supplier,
-            item.unit,
-            item.amountRequested,
-          ])
-        )
-        .flat(),
-      [username],
-    ],
-    { origin: "A20" }
-  );
+  sheet.getCell("C11").value = ` ${moment().format("DD-MMM-YYYY")}`;
+  sheet.getCell("C11").style = style;
+  sheet.getCell("C15").value = ` ${title}`;
+  sheet.getCell("C15").style = {
+    ...style,
+    font: { ...style.font, bold: true },
+  };
+  sheet.getCell(
+    "A17"
+  ).value = ` Reference is made to the letter  from Arrow Centre (Uganda) Limited received on 27th March 2023 requesting for confirmation that the VAT payable on taxable supplies to ${contractor} for the purposes of the above project is  deemed to have been paid by the Ministry for purposes of the above project. Our findings are as tabled below:`;
+  sheet.getCell("A17").style = style;
+
+  let currentRow = 20;
+  let rowIndex = 1;
+  application.forEach((app) => {
+    app.items.forEach((item) => {
+      // Merge cells B and C for the item name
+      sheet.mergeCells(`B${currentRow}`, `C${currentRow}`);
+
+      // Add new row with data
+      const newRow = sheet.addRow([
+        rowIndex,
+        item.item, // Write the item name to the merged cell
+        "",
+        item.supplier,
+        item.unit.toString(),
+        item.amountRequested,
+      ]);
+
+      // Apply style to each cell in the newRow
+      newRow.eachCell((cell) => {
+        cell.style = style;
+      });
+
+      // Increment the row number and rowIndex for the next item
+      currentRow++;
+      rowIndex++;
+    });
+  });
+
+  // Apply style to the username cell
+  sheet.getCell(`A${currentRow + 4}`).value = username;
+  sheet.getCell(`A${currentRow + 4}`).style = {
+    font: { name: "Bookman Old Style", size: 13, bold: true },
+    alignment: { horizontal: "left", vertical: "center" },
+    wrapText: true,
+  };
 
   // Generate the Excel file and send it to the user for download
-  const excelBuffer = XLSX.write(workbook, {
-    bookType: "xlsx",
-    type: "buffer",
-  });
+  const excelBuffer = await workbook.xlsx.writeBuffer();
   return excelBuffer;
 }
 
@@ -1195,7 +803,6 @@ const downloadApplication = async (req, res) => {
   const { title, funder, contractor } = schedule;
   const user = await User.findOne({ _id: schedule.user });
   const username = user.username;
-  // console.log(`By ${user?.username}`);
   const application = await Schedule.findOne(
     {
       _id: objectId,
@@ -1207,16 +814,19 @@ const downloadApplication = async (req, res) => {
       "application.$": 1, // returns only the matching element
     }
   );
-  console.log(`${applicationId} and the ${application.application}`);
+
   try {
     // Generate the Excel buffer
-    const excelBuffer = await generateExcel(application, username);
+    const excelBuffer = await generateExcel(
+      application,
+      username,
+      title,
+      funder,
+      contractor
+    );
 
     // Set the response headers
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.ms-excel");
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=applications.xlsx"
