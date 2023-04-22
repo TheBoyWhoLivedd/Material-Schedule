@@ -29,19 +29,19 @@ function calculateConcreteGivenClass(concreteClass, cum) {
 
 function calculateBRC(size, area) {
   if (size === "A66" || "A98(30)") {
-    let brcRolls = Math.ceil(Number(area) / 63.9);
+    let brcRolls = Math.ceil(Number(area) / 57.514);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A98(48)" || "A142") {
-    let brcRolls = Math.ceil(Number(area) / 115.2);
+    let brcRolls = Math.ceil(Number(area) / 105.16);
     return {
       brcSize: size,
       brcRolls: brcRolls,
     };
   } else if (size === "A193" || "A252") {
-    let brcRolls = Math.ceil(Number(area) / 11.52);
+    let brcRolls = Math.ceil(Number(area) / 10.12);
     return {
       brcSize: size,
       brcRolls: brcRolls,
@@ -102,58 +102,45 @@ function calculateRebar(diameter, weight) {
 }
 
 function calculateBricks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags = Math.ceil(Number(area) * 0.3);
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBricks;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 112);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 112);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 60);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numBricks = Math.ceil(Number(area) * 60);
   }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBricks: numBricks,
+  };
 }
 function calculateBlocks(area, bond) {
+  let hoopIron = Math.ceil(Number(area) * 0.1);
+  let numCementBags;
   if (bond === "Header") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.3);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 112);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.4);
   } else if (bond === "Stretcher") {
-    let hoopIron = Math.ceil(Number(area) * 0.1);
-    let numCementBags = Math.ceil(Number(area) * 0.2);
-    let sandWeighttTonnes = Math.ceil(Number(area) * 0.04);
-    let numBricks = Math.ceil(Number(area) * 60);
-    return {
-      bond: bond,
-      hoopIron: hoopIron,
-      numCementBags: numCementBags,
-      sandWeighttTonnes: sandWeighttTonnes,
-      numBricks: numBricks,
-    };
+    numCementBags = Math.ceil(Number(area) * 0.2);
   }
+  let sandWeighttTonnes = Number(area) * 0.04;
+  let numBlocks;
+  if (bond === "Header") {
+    numBlocks = Math.ceil(Number(area) * 24);
+  } else if (bond === "Stretcher") {
+    numBlocks = Math.ceil(Number(area) * 11);
+  }
+  return {
+    bond: bond,
+    hoopIron: hoopIron,
+    numCementBags: numCementBags,
+    sandWeighttTonnes: sandWeighttTonnes,
+    numBlocks: numBlocks,
+  };
 }
 
 module.exports = {
