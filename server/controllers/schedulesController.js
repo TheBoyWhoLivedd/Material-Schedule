@@ -3,6 +3,7 @@ const User = require("../models/User");
 const mongoose = require("mongoose");
 const ExcelJS = require("exceljs");
 const moment = require("moment");
+const path = require("path");
 const { v4: uuid } = require("uuid");
 const {
   materialsAggregationPipeline,
@@ -732,7 +733,9 @@ async function generateExcel(app, username, title, funder, contractor) {
   const { application } = app;
   console.log("Application received", application);
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile("./template.xlsx");
+  const fileDirectory = path.join(process.cwd(), "template.xlsx");
+  // console.log(fileDirectory);
+  await workbook.xlsx.readFile(fileDirectory);
   const sheet = workbook.getWorksheet(1);
 
   const style = {
