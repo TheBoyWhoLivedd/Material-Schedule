@@ -1,5 +1,5 @@
 //why isnt the required prop working on the textfields?
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import {
   useAddNewMaterialMutation,
@@ -33,37 +33,40 @@ const MaterialAddForm = ({
   const [updateMaterial, { isLoading, isSuccess }] =
     useUpdateMaterialMutation();
 
-
   const [options, setOptions] = useState(formData);
   const [error, setError] = React.useState("");
 
   console.log(options);
-  const handleOnElementSelect = (e, name) => {
-    setOptions({ ...options, [name]: e.target.value });
-  };
-  const handleOnSelect = (e, name) => {
-    setOptions({ ...options, [name]: e.target.value });
-  };
-  const handleOnChange = (e) => {
-    setOptions({ ...options, [e.target.name]: e.target.value });
+  const handleOnElementSelect = useCallback(
+    (e, name) => {
+      setOptions({ ...options, [name]: e.target.value });
+    },
+    [options]
+  );
+  const handleOnSelect = useCallback(
+    (e, name) => {
+      setOptions({ ...options, [name]: e.target.value });
+    },
+    [options]
+  );
 
-    console.log(e.target.value);
-  };
-  const handleOnParamSelect = (e, name) => {
-    setOptions({
-      ...options,
-      parameters: { ...options.parameters, [name]: e.target.value },
-    });
-  };
-  const handleOnParamChange = (e) => {
-    setOptions({
-      ...options,
-      parameters: { ...options.parameters, [e.target.name]: e.target.value },
-    });
+  const handleOnChange = useCallback(
+    (e) => {
+      setOptions({ ...options, [e.target.name]: e.target.value });
+    },
+    [options]
+  );
 
-    console.log(e.target.value);
-  };
-  const handleOnCalcParamChange = (e) => {
+  const handleOnParamSelect = useCallback(
+    (e, name) => {
+      setOptions({
+        ...options,
+        parameters: { ...options.parameters, [name]: e.target.value },
+      });
+    },
+    [options]
+  );
+  const handleOnCalcParamChange = useCallback((e) => {
     try {
       // Check the input string for any incomplete expressions
 
@@ -101,7 +104,7 @@ const MaterialAddForm = ({
       setError(error.message);
       console.log(error);
     }
-  };
+  });
 
   //validating that all object keys have values before sending update request
   let canSave;
@@ -126,9 +129,8 @@ const MaterialAddForm = ({
     canSave = allPropsWithValue;
   }
 
-  
   //preventing edit of elementName property if calculation from backend has already been made
-  const canEdit = "_id" in options;
+  const canEdit = useMemo(() => "_id" in options, [options]);
 
   // Add Material
   const onSaveMaterialClicked = async (e) => {
@@ -147,7 +149,7 @@ const MaterialAddForm = ({
       });
 
       if (response.data.isError) {
-        console.log(`Error: ${response.message}`);  
+        console.log(`Error: ${response.message}`);
         openSnackbarWithMessage(`Error: ${response.data.message}`);
       } else {
         handleClose();
@@ -157,29 +159,42 @@ const MaterialAddForm = ({
       openSnackbarWithMessage(`Error: ${error.message}`);
     }
   };
-  
 
-const onUpdateMaterialClicked = async (e) => {
-  e.preventDefault();
-  try {
-    await updateMaterial({
-      id: id,
-      _id: options._id,
-      elementName: options.elementName,
-      description: options.materialDescription,
-      materialName: options.materialName,
-      parameters: options.parameters,
-      materialType: options?.materialType,
-      relatedId: options?.relatedId,
-      computedValue: options?.computedValue,
-      materialUnit: options?.materialUnit,
-    }).then(() => {
-      handleClose();
-    });
-  } catch (error) {
-    openSnackbarWithMessage(`Error: ${error.message}`);
-  }
-};
+  const onUpdateMaterialClicked = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await updateMaterial({
+        id: id,
+        _id: options._id,
+        elementName: options.elementName,
+        description: options.materialDescription,
+        materialName: options.materialName,
+        parameters: options.parameters,
+        materialType: options?.materialType,
+        relatedId: options?.relatedId,
+        computedValue: options?.computedValue,
+        materialUnit: options?.materialUnit,
+      });
+
+      if (
+        response &&
+        response.error &&
+        response.error.data &&
+        response.error.data.isError
+      ) {
+        console.log(`Error: ${response.error.data.message}`);
+        openSnackbarWithMessage(`Error: ${response.error.data.message}`);
+      } else {
+        handleClose();
+        openSnackbarWithMessage(`Materials Added Successfully`);
+      }
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      openSnackbarWithMessage(`Error: ${error.message}`);
+    }
+  };
+
   // Update Material
 
   return (
@@ -199,7 +214,7 @@ const onUpdateMaterialClicked = async (e) => {
           disabled={canEdit}
           // required
           renderInput={(params) => (
-            <TextField {...params} label="Choose Element" required  />
+            <TextField {...params} label="Choose Element" required />
           )}
         />
 
@@ -387,7 +402,6 @@ const onUpdateMaterialClicked = async (e) => {
           placeholder="Enter Description"
           onChange={handleOnChange}
           value={options?.materialDescription}
- 
         />
 
         {Object.keys(formData).length === 0 ? (

@@ -456,76 +456,90 @@ const getScheduleDetails = async (req, res) => {
 };
 
 const updateScheduleMaterial = async (req, res) => {
-  const scheduleId = req.params.scheduleId;
-  const objectId = mongoose.Types.ObjectId(scheduleId);
-  console.log(objectId);
-  const materialId = req.params.materialId;
-  // Validate update data
-  const {
-    elementName,
-    materialName,
-    description,
-    parameters,
-    materialType,
-    relatedId,
-  } = req.body;
-  console.log(relatedId);
-  // Confirm data
-  if (!materialName && !description && !parameters && !elementName) {
-    return res.status(400).json({ message: "Please provide a relevant field" });
+  try {
+    const scheduleId = req.params.scheduleId;
+    const objectId = mongoose.Types.ObjectId(scheduleId);
+    console.log(objectId);
+    const materialId = req.params.materialId;
+    // Validate update data
+    const {
+      elementName,
+      materialName,
+      description,
+      parameters,
+      materialType,
+      relatedId,
+    } = req.body;
+    console.log(relatedId);
+    // Confirm data
+    if (!materialName && !description && !parameters && !elementName) {
+      return res
+        .status(400)
+        .json({ message: "Please provide a relevant field", isError: true });
+    }
+
+    const schedule = await Schedule.findById(scheduleId).exec();
+
+    if (!schedule) {
+      return res
+        .status(400)
+        .json({
+          message: `Schedule with id ${scheduleId} not found`,
+          isError: true,
+        });
+    }
+
+    //Run New Parameters through function
+
+    switch (elementName) {
+      case "Concrete":
+        await updateConcrete(schedule, relatedId, description, parameters);
+        break;
+
+      case "Reinforcement":
+        switch (materialName) {
+          case "BRC":
+            await updateBRC(scheduleId, materialId, description, parameters);
+            break;
+          case "Rebar":
+            await updateRebar(scheduleId, materialId, description, parameters);
+            break;
+          default:
+            throw new Error(`Invalid material name: ${materialName}`);
+        }
+        break;
+
+      case "Walling":
+        await updateWalling(
+          schedule,
+          relatedId,
+          description,
+          parameters,
+          materialType
+        );
+        break;
+      default:
+        throw new Error(`Invalid element name: ${elementName}`);
+    }
+
+    const updatedMaterial = await schedule.save();
+
+    const summary = await materialsAggregationPipeline(objectId);
+    // Update the summary field of the Schedule document
+    await Schedule.updateOne(
+      { _id: scheduleId },
+      { $set: { summary: summary } }
+    ).exec();
+    // console.log(summary);
+
+    res.json({
+      message: "Material updated successfully",
+      material: updatedMaterial,
+      isError: false,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, isError: true });
   }
-
-  const schedule = await Schedule.findById(scheduleId).exec();
-
-  if (!schedule) {
-    return res
-      .status(400)
-      .json({ message: `Schedule with id ${scheduleId} not found` });
-  }
-
-  //Run New Parameters through function
-
-  switch (elementName) {
-    case "Concrete":
-      await updateConcrete(schedule, relatedId, description, parameters);
-      break;
-
-    case "Reinforcement":
-      switch (materialName) {
-        case "BRC":
-          await updateBRC(scheduleId, materialId, description, parameters);
-          break;
-        case "Rebar":
-          await updateRebar(scheduleId, materialId, description, parameters);
-          break;
-      }
-      break;
-
-    case "Walling":
-      await updateWalling(
-        schedule,
-        relatedId,
-        description,
-        parameters,
-        materialType
-      );
-      break;
-  }
-
-  const updatedMaterial = await schedule.save();
-
-  const summary = await materialsAggregationPipeline(objectId);
-  // Update the summary field of the Schedule document
-  await Schedule.updateOne(
-    { _id: scheduleId },
-    { $set: { summary: summary } }
-  ).exec();
-  // console.log(summary);
-
-  res.json({
-    "message ": "Material updated successfully",
-    material: updatedMaterial,
-  });
 };
 
 const getSummary = async (req, res) => {
