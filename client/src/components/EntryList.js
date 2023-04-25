@@ -13,11 +13,11 @@ import React from "react";
 
 const EntryList = ({ entries, handleDelete, handleChange }) => {
   return (
-    <div >
+    <div>
       {entries?.map((entry) => (
-        <div key={entry.id} >
-          <form >
-            <Grid container spacing={3} mt={0.5} mr={0.5} >
+        <div key={entry.id}>
+          <form>
+            <Grid container spacing={3} mt={0.5} mr={0.5}>
               <Grid item md={4}>
                 <TextField
                   label="Item"
@@ -46,13 +46,13 @@ const EntryList = ({ entries, handleDelete, handleChange }) => {
                   name="requested"
                   placeholder="Enter Quantity Requested"
                   variant="outlined"
-                  value={entry?.requested}
+                  value={entry?.amountRequested}
                   onChange={(e) => handleChange(e, entry.id)}
                   fullWidth
                 />
               </Grid>
-              <Grid item md={1} >
-                <Button onClick={() => handleDelete(entry.id)} >
+              <Grid item md={1}>
+                <Button onClick={() => handleDelete(entry.id)}>
                   <Trash size={20} />
                 </Button>
               </Grid>

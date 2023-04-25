@@ -18,7 +18,7 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWit
   const initialState = {
     item: "",
     supplier: "",
-    requested: "",
+    amountRequested: "",
    
   };
   const [newEntry, setNewEntry] = useState(initialState);
@@ -101,6 +101,7 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWit
           handleFormSubmit={handleFormSubmit}
           handleOnItemSelect={handleOnItemSelect}
           schedule={schedule}
+          isLoading={isLoading}
         />
       </Paper>
     </Container>

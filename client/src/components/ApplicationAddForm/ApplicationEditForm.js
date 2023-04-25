@@ -6,22 +6,22 @@ import { applicationItems } from "../../assets/data";
 import { Plus, Trash } from "feather-icons-react";
 import "./ApplicationAddForm.css";
 import { v4 as uuidv4 } from "uuid";
+import AddEntryComponent from "../AddEntryComponent";
 
 const ApplicationEditForm = ({
   id,
   handleClose,
   content,
   openSnackbarWithMessage,
+  schedule,
 }) => {
-  const [entries, setEntries] = useState(content.items);
-
   const initialState = {
     item: "",
     supplier: "",
     amountRequested: "",
-    amountAllowed: "",
   };
   const [newEntry, setNewEntry] = useState(initialState);
+  const [entries, setEntries] = useState(content.items);
 
   const [updateApplication, { isSuccess: isAddSuccess, isLoading }] =
     useUpdateApplicationMutation();
@@ -163,76 +163,16 @@ const ApplicationEditForm = ({
           ) : (
             <p style={{ marginTop: "2rem" }}>Your list is empty.</p>
           )}
-          <form className="inputsForm">
-            <Grid container spacing={3} mt={0.5}>
-              <Grid item md={4}>
-                <Autocomplete
-                  options={applicationItems.map((option) => option)}
-                  name="item"
-                  placeholder="Choose Element"
-                  onSelect={(e) => handleOnItemSelect(e, "item")}
-                  value={newEntry?.item}
-                  required
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Item"
-                      required
-                      placeholder="Item Description"
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item md={4}>
-                <TextField
-                  label="Supplier"
-                  name="supplier"
-                  placeholder="Enter Supplier"
-                  variant="outlined"
-                  value={newEntry?.supplier}
-                  onChange={handleOnChange}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item md={4}>
-                <TextField
-                  label="Requested"
-                  name="amountRequested"
-                  placeholder="Enter Quantity Requested"
-                  variant="outlined"
-                  value={newEntry?.amountRequested}
-                  onChange={handleOnChange}
-                  fullWidth
-                />
-              </Grid>
 
-              <Grid item md={1}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  onClick={handleSubmit}
-                >
-                  <Plus width={20} />
-                </Button>
-              </Grid>
-            </Grid>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
-              <Button
-                onClick={handleFormSubmit}
-                variant="contained"
-                type="submit"
-              >
-                {isLoading ? "Adding..." : "Add Items"}
-              </Button>
-            </div>
-          </form>
+          <AddEntryComponent
+            newEntry={newEntry}
+            handleChange={handleOnChange}
+            handleSubmit={handleSubmit}
+            handleFormSubmit={handleFormSubmit}
+            handleOnItemSelect={handleOnItemSelect}
+            schedule={schedule}
+            isLoading={isLoading}
+          />
         </Paper>
       </Container>
     </div>

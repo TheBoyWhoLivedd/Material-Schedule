@@ -12,23 +12,31 @@ const AddEntryComponent = ({
   handleFormSubmit,
   handleOnItemSelect,
   schedule,
+  isLoading,
 }) => {
   const [amountAllowed, setAmountAllowed] = useState("");
 
   useEffect(() => {
-    if (newEntry?.item && schedule?.balanceAllowable) {
-      const item = schedule.balanceAllowable.find(
+    if (newEntry?.item && schedule?.balanceAllowable && schedule?.summary) {
+      const balanceItem = schedule.balanceAllowable.find(
         (item) => item._id === newEntry.item
       );
-      if (item) {
-        setAmountAllowed(item.Value);
+      const summaryItem = schedule.summary.find(
+        (item) => item._id === newEntry.item
+      );
+
+      if (balanceItem) {
+        setAmountAllowed(balanceItem.Value);
+      } else if (summaryItem) {
+        setAmountAllowed(summaryItem.Value);
       } else {
         setAmountAllowed("null");
       }
     } else {
       setAmountAllowed("null");
     }
-  }, [newEntry?.item, schedule?.balanceAllowable]);
+  }, [newEntry?.item, schedule?.balanceAllowable, schedule?.summary]);
+
   return (
     <div>
       <form style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -66,10 +74,10 @@ const AddEntryComponent = ({
           <Grid item md={2}>
             <TextField
               label="Requested"
-              name="requested"
+              name="amountRequested"
               placeholder="Enter Quantity Requested"
               variant="outlined"
-              value={newEntry?.requested}
+              value={newEntry?.amountRequested}
               onChange={handleChange}
               fullWidth
             />
@@ -105,7 +113,7 @@ const AddEntryComponent = ({
           }}
         >
           <Button onClick={handleFormSubmit} variant="contained" type="submit">
-            Submit
+            {isLoading ? "Adding..." : "Add Items"}
           </Button>
         </div>
       </form>
