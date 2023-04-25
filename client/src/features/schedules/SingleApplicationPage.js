@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import useTitle from "../../hooks/useTitle";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams, Link } from "react-router-dom";
@@ -162,11 +162,13 @@ const SingleApplicationPage = () => {
   console.log(schedule);
 
   // Handles change events for the edit individual item form
-  const handleOnItemSelect = (e, name) => {
-    setEditItem({ ...editItem, [name]: e.target.value });
-    console.log(editItem);
-  };
-
+  const handleOnItemSelect = useCallback(
+    (e, name) => {
+      setEditItem({ ...editItem, [name]: e.target.value });
+      console.log(editItem);
+    },
+    [editItem]
+  );
   // Handling Secondary Modal
   const [open1, setOpen1] = useState(false);
   const [selectedChild, setSelectedChild] = useState(null);
@@ -179,207 +181,207 @@ const SingleApplicationPage = () => {
     setSelectedChild(null);
     setOpen1(false);
   };
-
-  let content;
-  content = (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: "1rem",
-        }}
-      >
-        <ModalComponent
-          open={open}
-          handleOpen={handleOpen}
-          handleClose={handleClose}
-          openModal={
-            <Button variant="outlined">
-              <Plus width={20} />
-              Add Application
-            </Button>
-          }
+  const memoizedContent = useMemo(() => {
+    return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "1rem",
+          }}
         >
-          <ApplicationAddForm
-            id={id}
+          <ModalComponent
+            open={open}
+            handleOpen={handleOpen}
             handleClose={handleClose}
-            schedule={schedule}
-            openSnackbarWithMessage={openSnackbarWithMessage}
-          />
-        </ModalComponent>
-        <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/requested`}>
-            <Button variant="outlined">View Summary</Button>
-          </Link>
-        </div>
-      </div>
-      {schedule?.application?.map((application) => (
-        <Accordion key={application._id}>
-          <AccordionSummary>
-            {moment(application.date).format("MMMM DD, YYYY")}
-          </AccordionSummary>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
+            openModal={
+              <Button variant="outlined">
+                <Plus width={20} />
+                Add Application
+              </Button>
+            }
           >
-            {" "}
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                onDownloadApplicatonClicked(application._id);
-              }}
-              style={{ marginLeft: "2rem" }}
-            >
-              Print
-            </Button>
+            <ApplicationAddForm
+              id={id}
+              handleClose={handleClose}
+              schedule={schedule}
+              openSnackbarWithMessage={openSnackbarWithMessage}
+            />
+          </ModalComponent>
+          <div style={{ marginLeft: "1rem" }}>
+            <Link to={`/dash/schedules/${id}/requested`}>
+              <Button variant="outlined">View Summary</Button>
+            </Link>
+          </div>
+        </div>
+        {schedule?.application?.map((application) => (
+          <Accordion key={application._id}>
+            <AccordionSummary>
+              {moment(application.date).format("MMMM DD, YYYY")}
+            </AccordionSummary>
             <div
               style={{
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                marginRight: "2rem",
               }}
             >
+              {" "}
               <Button
                 variant="outlined"
-                onClick={() => expandModel(application)}
-                style={{ marginRight: "8px" }}
+                color="primary"
+                onClick={() => {
+                  onDownloadApplicatonClicked(application._id);
+                }}
+                style={{ marginLeft: "2rem" }}
               >
-                <Plus width={20} />
-                Add
+                Print
               </Button>
-              <DeleteModal
-                handleDelete={(e) =>
-                  onDeleteApplicationClicked(application._id)
-                }
-              />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginRight: "2rem",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  onClick={() => expandModel(application)}
+                  style={{ marginRight: "8px" }}
+                >
+                  <Plus width={20} />
+                  Add
+                </Button>
+                <DeleteModal
+                  handleDelete={(e) =>
+                    onDeleteApplicationClicked(application._id)
+                  }
+                />
+              </div>
             </div>
-          </div>
 
-          <AccordionDetails style={{ display: "block" }}>
-            <List>
-              {application.items.map((item) => {
-                // Find the corresponding item in the balanceAllowable array
-                const balanceItem = schedule.balanceAllowable.find(
-                  (bItem) => bItem._id === item.item
-                );
+            <AccordionDetails style={{ display: "block" }}>
+              <List>
+                {application.items.map((item) => {
+                  // Find the corresponding item in the balanceAllowable array
+                  const balanceItem = schedule.balanceAllowable.find(
+                    (bItem) => bItem._id === item.item
+                  );
 
-                return (
-                  <ListItem
-                    key={item._id}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <ListItemText
-                      primary={item.item}
-                      secondary={`Supplier: ${item.supplier} | Requested: ${
-                        item.amountRequested
-                      } | Balance Allowable: ${
-                        balanceItem ? balanceItem.Value : ""
-                      }`}
-                    />
-                    <ListItemSecondaryAction>
-                      {/* Add a button to open the popper when clicked */}
-                      <div className="button-container">
-                        <Button
-                          className="edit-button"
-                          variant="outlined"
-                          color="primary"
-                          onClick={(e) =>
-                            handleEditClick(e, item, application._id)
-                          }
-                          style={{ border: "none" }}
-                        >
-                          <Edit />
-                        </Button>
-                        <DeleteModal
-                          handleDelete={(e) =>
-                            onDeleteitemClicked(application._id, item._id)
-                          }
-                          isLoading={isDelLoading}
-                          isSuccess={isDelSuccess}
-                          element="icon"
-                          className="delete-button"
-                        />
-                      </div>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-      <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        open={openSnackbar}
-        message={snackbarMessage}
-        autoHideDuration={3000} // closes after 3 seconds
-        onClose={closeSnackbar}
-        style={{
-          width: "500px",
-          color: "white !important",
-        }}
-      />
-      <ModalSecondary open={open1} handleClose={closeModal}>
-        <ApplicationEditForm
-          id={id}
-          handleClose={closeModal}
-          content={selectedChild}
-          openSnackbarWithMessage={openSnackbarWithMessage}
+                  return (
+                    <ListItem
+                      key={item._id}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <ListItemText
+                        primary={item.item}
+                        secondary={`Supplier: ${item.supplier} | Requested: ${
+                          item.amountRequested
+                        } | Balance Allowable: ${
+                          balanceItem ? balanceItem.Value : ""
+                        }`}
+                      />
+                      <ListItemSecondaryAction>
+                        {/* Add a button to open the popper when clicked */}
+                        <div className="button-container">
+                          <Button
+                            className="edit-button"
+                            variant="outlined"
+                            color="primary"
+                            onClick={(e) =>
+                              handleEditClick(e, item, application._id)
+                            }
+                            style={{ border: "none" }}
+                          >
+                            <Edit />
+                          </Button>
+                          <DeleteModal
+                            handleDelete={(e) =>
+                              onDeleteitemClicked(application._id, item._id)
+                            }
+                            isLoading={isDelLoading}
+                            isSuccess={isDelSuccess}
+                            element="icon"
+                            className="delete-button"
+                          />
+                        </div>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={openSnackbar}
+          message={snackbarMessage}
+          autoHideDuration={3000} // closes after 3 seconds
+          onClose={closeSnackbar}
+          style={{
+            width: "500px",
+            color: "white !important",
+          }}
         />
-      </ModalSecondary>
-      {/* Render the popper component */}
-      {isPopperOpen && (
-        <MyPopper
-          isOpen={isPopperOpen}
-          clickAwayHandler={clickAwayHandler}
-          anchorEl={anchorEl}
-        >
-          <form style={{ display: "flex" }}>
-            <TextField
-              label="Supplier"
-              value={editItem.supplier}
-              onChange={(e) =>
-                setEditItem({ ...editItem, supplier: e.target.value })
-              }
-              style={{ flex: 2 }}
-            />
-            <Autocomplete
-              id="items_id"
-              options={applicationItems.map((option) => option)}
-              name="item"
-              placeholder="Choose Element"
-              onSelect={(e) => handleOnItemSelect(e, "item")}
-              value={editItem.item}
-              style={{ flex: 1.25 }}
-              required
-              className="autocomplete"
-              renderInput={(params) => (
-                <TextField {...params} label="Item" required />
-              )}
-            />
+        <ModalSecondary open={open1} handleClose={closeModal}>
+          <ApplicationEditForm
+            id={id}
+            handleClose={closeModal}
+            content={selectedChild}
+            openSnackbarWithMessage={openSnackbarWithMessage}
+            schedule={schedule}
+          />
+        </ModalSecondary>
+        {/* Render the popper component */}
+        {isPopperOpen && (
+          <MyPopper
+            isOpen={isPopperOpen}
+            clickAwayHandler={clickAwayHandler}
+            anchorEl={anchorEl}
+          >
+            <form style={{ display: "flex" }}>
+              <TextField
+                label="Supplier"
+                value={editItem.supplier}
+                onChange={(e) =>
+                  setEditItem({ ...editItem, supplier: e.target.value })
+                }
+                style={{ flex: 2 }}
+              />
+              <Autocomplete
+                id="items_id"
+                options={applicationItems.map((option) => option)}
+                name="item"
+                placeholder="Choose Element"
+                onSelect={(e) => handleOnItemSelect(e, "item")}
+                value={editItem.item}
+                style={{ flex: 1.25 }}
+                required
+                className="autocomplete"
+                renderInput={(params) => (
+                  <TextField {...params} label="Item" required />
+                )}
+              />
 
-            <TextField
-              label="Amount Requested"
-              value={editItem.amountRequested}
-              onChange={(e) =>
-                setEditItem({
-                  ...editItem,
-                  amountRequested: e.target.value,
-                })
-              }
-              style={{ flex: 0.5 }}
-            />
+              <TextField
+                label="Amount Requested"
+                value={editItem.amountRequested}
+                onChange={(e) =>
+                  setEditItem({
+                    ...editItem,
+                    amountRequested: e.target.value,
+                  })
+                }
+                style={{ flex: 0.5 }}
+              />
 
-            {/* <TextField
+              {/* <TextField
               label="Amount Requested"
               value={editItem.amountRequested}
               onChange={(e) =>
@@ -390,17 +392,17 @@ const SingleApplicationPage = () => {
               }
               style={{ flex: 0.5 }}
             /> */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => updateItem(editItem)}
-              style={{ flex: 0.35 }}
-            >
-              {isLoading ? "Updating..." : "Update"}
-            </Button>
-          </form>
-          <style>
-            {`
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => updateItem(editItem)}
+                style={{ flex: 0.35 }}
+              >
+                {isLoading ? "Updating..." : "Update"}
+              </Button>
+            </form>
+            <style>
+              {`
         @media screen and (max-width: 600px) {
           form {
             flex-direction: column;
@@ -414,11 +416,13 @@ const SingleApplicationPage = () => {
           }
         }
       `}
-          </style>
-        </MyPopper>
-      )}
-    </div>
-  );
-  return content;
+            </style>
+          </MyPopper>
+        )}
+      </div>
+    );
+  });
+
+  return memoizedContent;
 };
 export default SingleApplicationPage;

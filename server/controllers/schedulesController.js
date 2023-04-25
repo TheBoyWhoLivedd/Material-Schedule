@@ -481,12 +481,10 @@ const updateScheduleMaterial = async (req, res) => {
     const schedule = await Schedule.findById(scheduleId).exec();
 
     if (!schedule) {
-      return res
-        .status(400)
-        .json({
-          message: `Schedule with id ${scheduleId} not found`,
-          isError: true,
-        });
+      return res.status(400).json({
+        message: `Schedule with id ${scheduleId} not found`,
+        isError: true,
+      });
     }
 
     //Run New Parameters through function
@@ -607,7 +605,11 @@ const postApplication = async (req, res) => {
     items: [],
   };
   applications.forEach((application) => {
-    if (!application.item || !application.supplier || !application.requested) {
+    if (
+      !application.item ||
+      !application.supplier ||
+      !application.amountRequested
+    ) {
       throw new Error("Missing required fields");
     }
 
@@ -621,7 +623,7 @@ const postApplication = async (req, res) => {
       item: application.item,
       supplier: application.supplier,
       unit: unit,
-      amountRequested: application.requested,
+      amountRequested: application.amountRequested,
     });
   });
 
