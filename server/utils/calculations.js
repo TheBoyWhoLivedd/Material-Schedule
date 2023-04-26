@@ -143,10 +143,61 @@ function calculateBlocks(area, bond) {
   };
 }
 
+function calculateAntiTermite(area) {
+  let numAntiTermite = Math.ceil(Number(area) * 0.1);
+  return {
+    numAntiTermite: numAntiTermite,
+  };
+}
+
+function calculateMurram(cum) {
+  let numMurram = Math.ceil(Number(cum) * 1.6);
+  return {
+    numMurram: numMurram,
+  };
+}
+
+function calculateHardcore(unit, value) {
+  let numHardcore;
+  if (unit === "CM") {
+    numHardcore = Math.ceil(Number(value) * 1.6);
+  } else if (unit === "SM") {
+    numHardcore = Math.ceil(Number(value) * 0.32);
+  }
+  return {
+    numHardcore: numHardcore,
+  };
+}
+
+function calculateSandBlinding(sqm) {
+  let numSandBlinding = Math.ceil(Number(sqm) * 0.08);
+  return {
+    numSandBlinding: numSandBlinding,
+  };
+}
+function calculateDampProofMembrane(sqm) {
+  let numDampProofMembrane = Math.ceil(Number(sqm) * 0.02);
+  return {
+    numDampProofMembrane: numDampProofMembrane,
+  };
+}
+function calculateDampProofCourse(lm) {
+  let numDampProofCourse = Math.ceil(Number(lm) * 0.03);
+  return {
+    numDampProofCourse: numDampProofCourse,
+  };
+}
+
 module.exports = {
   calculateConcreteGivenClass,
   calculateBRC,
   calculateRebar,
   calculateBlocks,
   calculateBricks,
+  calculateAntiTermite,
+  calculateMurram,
+  calculateHardcore,
+  calculateSandBlinding,
+  calculateDampProofMembrane,
+  calculateDampProofCourse,
 };

@@ -5,6 +5,13 @@ const {
   calculateRebar,
   calculateBlocks,
   calculateBricks,
+  calculateAntiTermite,
+  calculateMurram,
+  calculateHardcore,
+  calculateSandBlinding,
+  calculateDampProofing,
+  calculateDampProofMembrane,
+  calculateDampProofCourse,
 } = require("./calculations");
 
 // HELPERS TO ADD MATERIALS TO THE SCHEDULE
@@ -262,6 +269,122 @@ const handleWallingBlocks = (
   );
 };
 
+const handleAntiTermite = (schedule, parameters, description) => {
+  const results = calculateAntiTermite(parameters.surfaceArea);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Anti-Termite Treatment",
+      "Anti-Termite",
+      description,
+      results.numAntiTermite,
+      "Litres",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+const handleMurram = (schedule, parameters, description) => {
+  const results = calculateMurram(parameters.cum);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Murram",
+      "Murram",
+      description,
+      results.numMurram,
+      "Tonnes",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+const handleHardcore = (schedule, parameters, description) => {
+  const results = calculateHardcore(parameters.unit, parameters.cum);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Hardcore",
+      "Hardcore",
+      description,
+      results.numHardcore,
+      "Tonnes",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+
+const handleSandBlinding = (schedule, parameters, description) => {
+  const results = calculateSandBlinding(parameters.surfaceArea);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Sand Blinding",
+      "Sand Blinding",
+      description,
+      results.numSandBlinding,
+      "Tonnes",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+const handleDampProofMembrane = (schedule, parameters, description) => {
+  const results = calculateDampProofMembrane(parameters.surfaceArea);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Damp Proof Membrane",
+      "Damp Proof Membrane",
+      description,
+      results.numDampProofMembrane,
+      "Rolls",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+const handleDampProofCourse = (schedule, parameters, description) => {
+  const results = calculateDampProofCourse(parameters.lm);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Damp Proof Course",
+      "Damp Proof Course",
+      description,
+      results.numDampProofCourse,
+      "Metres",
+      parameters,
+      undefined,
+      false,
+      undefined,
+      undefined
+    )
+  );
+};
+
 const handleOther = (
   schedule,
   materialName,
@@ -285,7 +408,17 @@ const handleOther = (
     )
   );
 };
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //HELPERS TO UPDATE SCHEDULE MATERIALS
 
 const updateConcrete = async (schedule, relatedId, description, parameters) => {
@@ -293,7 +426,7 @@ const updateConcrete = async (schedule, relatedId, description, parameters) => {
     parameters.concreteClass,
     parameters.cum
   );
-  console.log(results)
+  console.log(results);
   const materials = schedule?.materials?.filter(
     (material) => material.relatedId === relatedId
   );
@@ -394,6 +527,116 @@ const updateWalling = async (
   await schedule.save();
 };
 
+const updateAntiTermite = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateAntiTermite(parameters.surfaceArea);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numAntiTermite,
+      },
+    }
+  ).exec();
+};
+const updateMurram = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateMurram(parameters.cum);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numMurram,
+      },
+    }
+  ).exec();
+};
+const updateHardcore = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateHardcore(parameters.unit, parameters.cum);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numHardcore,
+      },
+    }
+  ).exec();
+};
+
+const updateSandBlinding = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateSandBlinding(parameters.surfaceArea);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numSandBlinding,
+      },
+    }
+  ).exec();
+};
+const updateDampProofMembrane = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateDampProofMembrane(parameters.surfaceArea);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numDampProofMembrane,
+      },
+    }
+  ).exec();
+};
+const updateDampProofCourse = async (
+  scheduleId,
+  materialId,
+  description,
+  parameters
+) => {
+  const results = calculateDampProofCourse(parameters.lm);
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.computedValue": results.numDampProofCourse,
+      },
+    }
+  ).exec();
+};
+
 module.exports = {
   addMaterialToSchedule,
   createMaterialObject,
@@ -403,9 +646,21 @@ module.exports = {
   handleWallingBricks,
   handleWallingBlocks,
   handleOther,
+  handleAntiTermite,
+  handleMurram,
+  handleHardcore,
+  handleSandBlinding,
+  handleDampProofMembrane,
+  handleDampProofCourse,
 
   updateConcrete,
   updateBRC,
   updateRebar,
   updateWalling,
+  updateAntiTermite,
+  updateMurram,
+  updateHardcore,
+  updateSandBlinding,
+  updateDampProofMembrane,
+  updateDampProofCourse,
 };

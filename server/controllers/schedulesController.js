@@ -17,10 +17,22 @@ const {
   handleWallingBricks,
   handleWallingBlocks,
   handleOther,
+  handleAntiTermite,
   updateConcrete,
   updateBRC,
   updateRebar,
   updateWalling,
+  updateAntiTermite,
+  handleMurram,
+  updateMurram,
+  handleHardcore,
+  updateHardcore,
+  handleSandBlinding,
+  updateSandBlinding,
+  handleDampProofMembrane,
+  updateDampProofMembrane,
+  handleDampProofCourse,
+  updateDampProofCourse,
 } = require("../utils/helpers.js");
 
 // @desc Get all schedules
@@ -361,6 +373,42 @@ const addScheduleMaterial = async (req, res) => {
           throw new Error("Please Provide a Material Type");
       }
       break;
+    case "Anti-Termite Treatment":
+      if (!parameters.surfaceArea) {
+        throw new Error("Please Provide all required values");
+      }
+      handleAntiTermite(schedule, parameters, description);
+      break;
+    case "Murram":
+      if (!parameters.cum) {
+        throw new Error("Please Provide all required values");
+      }
+      handleMurram(schedule, parameters, description);
+      break;
+    case "Hardcore":
+      if (!parameters.cum && !parameters.sqm) {
+        throw new Error("Please Provide all required values");
+      }
+      handleHardcore(schedule, parameters, description);
+      break;
+    case "Sand Blinding":
+      if (!parameters.surfaceArea) {
+        throw new Error("Please Provide all required values");
+      }
+      handleSandBlinding(schedule, parameters, description);
+      break;
+    case "Damp Proof Membrane":
+      if (!parameters.surfaceArea) {
+        throw new Error("Please Provide all required values");
+      }
+      handleDampProofMembrane(schedule, parameters, description);
+      break;
+    case "Damp Proof Course":
+      if (!parameters.lm) {
+        throw new Error("Please Provide all required values");
+      }
+      handleDampProofCourse(schedule, parameters, description);
+      break;
     case "Other":
       if (!computedValue || !materialUnit || !materialName || !description) {
         throw new Error("Please Provide all required values");
@@ -514,6 +562,45 @@ const updateScheduleMaterial = async (req, res) => {
           description,
           parameters,
           materialType
+        );
+        break;
+
+      case "Anti-Termite Treatment":
+        await updateAntiTermite(
+          scheduleId,
+          materialId,
+          description,
+          parameters
+        );
+        break;
+      case "Murram":
+        await updateMurram(scheduleId, materialId, description, parameters);
+        break;
+      case "Hardcore":
+        await updateHardcore(scheduleId, materialId, description, parameters);
+        break;
+      case "Sand Blinding":
+        await updateSandBlinding(
+          scheduleId,
+          materialId,
+          description,
+          parameters
+        );
+        break;
+      case "Damp Proof Membrane":
+        await updateDampProofMembrane(
+          scheduleId,
+          materialId,
+          description,
+          parameters
+        );
+        break;
+      case "Damp Proof Course":
+        await updateDampProofCourse(
+          scheduleId,
+          materialId,
+          description,
+          parameters
         );
         break;
       default:
