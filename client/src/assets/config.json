@@ -1,0 +1,62 @@
+{
+  "elements": [
+    {
+      "name": "Concrete",
+      "concreteClasses": [
+        "C15",
+        "C20",
+        "C25",
+        "C30",
+        "C35",
+        "C40",
+        "C45",
+        "C50"
+      ]
+    },
+    {
+      "name": "Walling",
+      "materials": ["Bricks", "Blocks"],
+      "bonds": ["Stretcher", "Flemish", "English", "Header"]
+    },
+    {
+      "name": "Reinforcement",
+      "materials": ["BRC", "Rebar"],
+      "brcSizes": ["A98", "A142", "A193", "A252", "A393"],
+      "rebarSizes": [6, 8, 10, 12, 14, 16, 20, 25, 32]
+    },
+    {
+      "name": "Steel Work",
+      "materials": ["Beams"],
+      "beamSizes": [
+        "127x76x13",
+        "152x89x16",
+        "178x102x19",
+        "203x102x23",
+        "203x133x25",
+        "254x102x28"
+      ]
+    },
+    {
+      "name": "Other"
+    },
+    {
+      "name": "Anti-Termite Treatment"
+    },
+    {
+      "name": "Murram"
+    },
+    {
+      "name": "Sand Blinding"
+    },
+    {
+      "name": "Damp Proof Membrane"
+    },
+    {
+      "name": "Damp Proof Course"
+    },
+    {
+      "name": "Hardcore",
+      "unit": ["CM", "SM"]
+    }
+  ]
+}

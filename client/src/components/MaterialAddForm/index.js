@@ -8,17 +8,8 @@ import {
 import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField, useTheme } from "@mui/material";
 import "./MaterialAddForm.css";
-import {
-  concreteClassOptions,
-  elementsData,
-  wallingMaterialsData,
-  mortarOptions,
-  reinforcementMaterialsData,
-  brcSizeOptions,
-  rebarSizeOptions,
-  bondData,
-} from "../../assets/data";
-import { evaluate } from "mathjs";
+import config from "../../assets/config.json";
+import { evaluate, setSize } from "mathjs";
 
 const MaterialAddForm = ({
   formData = {},
@@ -33,7 +24,11 @@ const MaterialAddForm = ({
   const [updateMaterial, { isLoading, isSuccess }] =
     useUpdateMaterialMutation();
 
-  const [options, setOptions] = useState(formData);
+  const [options, setOptions] = useState({
+    ...formData,
+    elementName: formData.elementName || "",
+    parameters: formData.parameters || {},
+  });
   const [error, setError] = React.useState("");
 
   console.log(options);
@@ -56,9 +51,13 @@ const MaterialAddForm = ({
     },
     [options]
   );
-
+  const [selectedUnit, setSelectedUnit] = useState("");
   const handleOnParamSelect = useCallback(
     (e, name) => {
+      console.log(name);
+      if (name === "unit") {
+        setSelectedUnit(e.target.value);
+      }
       setOptions({
         ...options,
         parameters: { ...options.parameters, [name]: e.target.value },
@@ -206,12 +205,13 @@ const MaterialAddForm = ({
       <form className="inputsForm">
         <Autocomplete
           id="elements_id"
-          options={elementsData.map((option) => option)}
+          options={config.elements.map((option) => option.name)}
           name="elementName"
           placeholder="Choose Element"
           onSelect={(e) => handleOnElementSelect(e, "elementName")}
           value={options?.elementName}
           disabled={canEdit}
+          isOptionEqualToValue={(option, value) => option === value}
           // required
           renderInput={(params) => (
             <TextField {...params} label="Choose Element" required />
@@ -222,12 +222,16 @@ const MaterialAddForm = ({
           <>
             <Autocomplete
               id="concreteClassOptions_id"
-              options={concreteClassOptions.map((option) => option.class)}
+              options={
+                config.elements.find((element) => element.name === "Concrete")
+                  .concreteClasses
+              }
               name="concreteClass"
               value={options?.parameters?.concreteClass}
               placeholder="Choose Concrete Class"
               onSelect={(e) => handleOnParamSelect(e, "concreteClass")}
               required
+              isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField {...params} label="Concrete Class" required />
               )}
@@ -249,24 +253,32 @@ const MaterialAddForm = ({
           <>
             <Autocomplete
               id="wallingMaterials_id"
-              options={wallingMaterialsData.map((option) => option)}
+              options={
+                config.elements.find((element) => element.name === "Walling")
+                  .materials
+              }
               name="materialName"
               placeholder="Enter Material"
               onSelect={(e) => handleOnSelect(e, "materialType")}
               value={options?.materialType}
               required={true}
+              isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
             />
             <Autocomplete
               id="bond_id"
-              options={bondData.map((option) => option)}
+              options={
+                config.elements.find((element) => element.name === "Walling")
+                  .bonds
+              }
               name="bondName"
               placeholder="Choose Bond Type"
               onSelect={(e) => handleOnParamSelect(e, "bondName")}
               value={options?.parameters?.bondName}
               required={true}
+              isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField {...params} label="Bond Type" required />
               )}
@@ -287,13 +299,18 @@ const MaterialAddForm = ({
           <>
             <Autocomplete
               id="reinforcementMaterials_id"
-              options={reinforcementMaterialsData.map((option) => option)}
+              options={
+                config.elements.find(
+                  (element) => element.name === "Reinforcement"
+                ).materials
+              }
               name="materialName"
               placeholder="Enter Material"
               onSelect={(e) => handleOnSelect(e, "materialName")}
               value={options?.materialName}
               required={true}
               disabled={canEdit}
+              isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField {...params} label="Materials" required />
               )}
@@ -302,12 +319,17 @@ const MaterialAddForm = ({
               <>
                 <Autocomplete
                   id="brcSizeOptions_id"
-                  options={brcSizeOptions.map((option) => option.size)}
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Reinforcement"
+                    ).brcSizes
+                  }
                   name="brcSize"
                   value={options?.parameters?.brcSize}
                   placeholder="Choose BRC Size"
                   onSelect={(e) => handleOnParamSelect(e, "brcSize")}
                   required={true}
+                  isOptionEqualToValue={(option, value) => option === value}
                   renderInput={(params) => (
                     <TextField {...params} label="BRC Size" required />
                   )}
@@ -328,12 +350,18 @@ const MaterialAddForm = ({
               <>
                 <Autocomplete
                   id="rebarSizeOptions_id"
-                  options={rebarSizeOptions.map((option) => option.size)}
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Reinforcement"
+                    ).rebarSizes
+                  }
                   name="rebarSize"
                   value={options?.parameters?.rebarSize}
                   placeholder="Choose Rebar Diameter (mm)"
                   onSelect={(e) => handleOnParamSelect(e, "rebarSize")}
                   required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -354,6 +382,117 @@ const MaterialAddForm = ({
                 />
               </>
             )}
+          </>
+        )}
+        {options?.elementName === "Anti-Termite Treatment" && (
+          <>
+            <TextField
+              type="string"
+              name="surfaceArea"
+              label="Square Metres"
+              placeholder="Enter Square Metres"
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Murram" && (
+          <>
+            <TextField
+              type="string"
+              name="cum"
+              label="Cubic Metres"
+              placeholder="Enter Cubic Metres"
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Hardcore" && (
+          <>
+            <Autocomplete
+              id="unit._id"
+              options={
+                config.elements.find((element) => element.name === "Hardcore")
+                  .unit
+              }
+              name="unit"
+              value={options?.parameters?.unit}
+              placeholder="Choose Unit of Measurement"
+              onSelect={(e) => handleOnParamSelect(e, "unit")}
+              required={true}
+              getOptionLabel={(option) => option.toString()}
+              isOptionEqualToValue={(option, value) => option === value}
+              renderInput={(params) => (
+                <TextField {...params} label="Unit of Measurement" required />
+              )}
+            />
+            <TextField
+              type="string"
+              name="cum"
+              label={selectedUnit === "CM" ? "Cubic Metres" : "Square Metres"}
+              placeholder={
+                selectedUnit === "CM"
+                  ? "Enter Cubic Metres"
+                  : "Enter Square Metres"
+              }
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Sand Blinding" && (
+          <>
+            <TextField
+              type="string"
+              name="surfaceArea"
+              label="Square Metres"
+              placeholder="Enter Square Metres"
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Damp Proof Membrane" && (
+          <>
+            <TextField
+              type="string"
+              name="surfaceArea"
+              label="Square Metres"
+              placeholder="Enter Square Metres"
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Damp Proof Course" && (
+          <>
+            <TextField
+              type="string"
+              name="lm"
+              label="Linear Metres"
+              placeholder="Enter Linear Metres"
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
           </>
         )}
         {options?.elementName === "Other" && (
