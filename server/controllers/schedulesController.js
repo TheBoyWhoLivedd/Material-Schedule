@@ -33,6 +33,8 @@ const {
   updateDampProofMembrane,
   handleDampProofCourse,
   updateDampProofCourse,
+  updateSteel,
+  handleSteel,
 } = require("../utils/helpers.js");
 
 // @desc Get all schedules
@@ -409,6 +411,12 @@ const addScheduleMaterial = async (req, res) => {
       }
       handleDampProofCourse(schedule, parameters, description);
       break;
+    case "Steel Work":
+      if (!parameters.unit && !parameters.sectionSize) {
+        throw new Error("Please Provide all required values");
+      }
+      handleSteel(schedule, materialName, parameters, description);
+      break;
     case "Other":
       if (!computedValue || !materialUnit || !materialName || !description) {
         throw new Error("Please Provide all required values");
@@ -599,6 +607,15 @@ const updateScheduleMaterial = async (req, res) => {
         await updateDampProofCourse(
           scheduleId,
           materialId,
+          description,
+          parameters
+        );
+        break;
+      case "Steel Work":
+        await updateSteel(
+          scheduleId,
+          materialId,
+          materialName,
           description,
           parameters
         );

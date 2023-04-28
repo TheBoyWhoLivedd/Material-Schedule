@@ -495,6 +495,254 @@ const MaterialAddForm = ({
             />
           </>
         )}
+        {options?.elementName === "Steel Work" && (
+          <>
+            <Autocomplete
+              id="steelWorkMaterials_id"
+              options={
+                config.elements.find((element) => element.name === "Steel Work")
+                  .materials
+              }
+              name="materialName"
+              placeholder="Enter Material"
+              onSelect={(e) => handleOnSelect(e, "materialName")}
+              value={options?.materialName}
+              required={true}
+              disabled={canEdit}
+              isOptionEqualToValue={(option, value) => option === value}
+              renderInput={(params) => (
+                <TextField {...params} label="Materials" required />
+              )}
+            />
+            {options?.materialName === "UB/IPE/UC" && (
+              <>
+                <Autocomplete
+                  id="ubSizeOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).UB
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField {...params} label="UB/IPE/UC Size" required />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "Hollow Sections" && (
+              <>
+                <Autocomplete
+                  id="hollowSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).HS
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Hollow Section Size"
+                      required
+                    />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "CHS" && (
+              <>
+                <Autocomplete
+                  id="chsSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).CHS
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Hollow Section Size"
+                      required
+                    />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "RSC/PFC" && (
+              <>
+                <Autocomplete
+                  id="rscPfcOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).RSC
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Circular Hollow Section Size"
+                      required
+                    />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "JIS" && (
+              <>
+                <Autocomplete
+                  id="jisSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).JIS
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Section Size" required />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "CFC/Z/CFLC(Purlins)" && (
+              <>
+                <Autocomplete
+                  id="cfcSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).CFC
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Section Size" required />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "CFA" && (
+              <>
+                <Autocomplete
+                  id="cfaSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).CFA
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Hollow Section Size"
+                      required
+                    />
+                  )}
+                />
+              </>
+            )}
+            {options?.materialName === "RSA" && (
+              <>
+                <Autocomplete
+                  id="rsaSectionsOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).RSA
+                  }
+                  name="sectionSize"
+                  value={options?.parameters?.sectionSize}
+                  placeholder="Choose Section Size"
+                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
+                  required={true}
+                  getOptionLabel={(option) => option.toString()}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Angle Section Size"
+                      required
+                    />
+                  )}
+                />
+              </>
+            )}
+            <Autocomplete
+              id="unit._id"
+              options={
+                config.elements.find((element) => element.name === "Steel Work")
+                  .unit
+              }
+              name="unit"
+              value={options?.parameters?.unit}
+              placeholder="Choose Unit of Measurement"
+              onSelect={(e) => handleOnParamSelect(e, "unit")}
+              required={true}
+              getOptionLabel={(option) => option.toString()}
+              isOptionEqualToValue={(option, value) => option === value}
+              renderInput={(params) => (
+                <TextField {...params} label="Unit of Measurement" required />
+              )}
+            />
+            <TextField
+              type="string"
+              name="eval"
+              label={selectedUnit === "LM" ? "Linear Metres" : "Kilograms"}
+              placeholder={
+                selectedUnit === "LM"
+                  ? "Enter Linear Metres"
+                  : "Enter Kilograms"
+              }
+              onChange={handleOnCalcParamChange}
+              value={options?.parameters?.expression}
+              required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
         {options?.elementName === "Other" && (
           <>
             <TextField

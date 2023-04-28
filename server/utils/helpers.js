@@ -12,6 +12,7 @@ const {
   calculateDampProofing,
   calculateDampProofMembrane,
   calculateDampProofCourse,
+  calculateSteel,
 } = require("./calculations");
 
 // HELPERS TO ADD MATERIALS TO THE SCHEDULE
@@ -385,6 +386,31 @@ const handleDampProofCourse = (schedule, parameters, description) => {
   );
 };
 
+const handleSteel = (schedule, materialName, parameters, description) => {
+  const results = calculateSteel(
+    materialName,
+    parameters.sectionSize,
+    parameters.eval,
+    parameters.unit
+  );
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Steel Work",
+      materialName,
+      description,
+      results.steelPieces,
+      "Pieces",
+      parameters,
+      undefined,
+      true,
+      undefined,
+      `${parameters.sectionSize}`
+    )
+  );
+};
+
 const handleOther = (
   schedule,
   materialName,
@@ -637,6 +663,32 @@ const updateDampProofCourse = async (
   ).exec();
 };
 
+const updateSteel = async (
+  scheduleId,
+  materialId,
+  materialName,
+  description,
+  parameters
+) => {
+  const results = calculateSteel(
+    materialName,
+    parameters.sectionSize,
+    parameters.eval,
+    parameters.unit
+  );
+  await Schedule.findOneAndUpdate(
+    { _id: scheduleId, "materials._id": materialId },
+    {
+      $set: {
+        "materials.$.parameters": parameters,
+        "materials.$.materialDescription": description,
+        "materials.$.materialDetail": `${parameters.sectionSize}`,
+        "materials.$.computedValue": results.steelPieces,
+      },
+    }
+  ).exec();
+};
+
 module.exports = {
   addMaterialToSchedule,
   createMaterialObject,
@@ -652,6 +704,7 @@ module.exports = {
   handleSandBlinding,
   handleDampProofMembrane,
   handleDampProofCourse,
+  handleSteel,
 
   updateConcrete,
   updateBRC,
@@ -663,4 +716,5 @@ module.exports = {
   updateSandBlinding,
   updateDampProofMembrane,
   updateDampProofCourse,
+  updateSteel,
 };
