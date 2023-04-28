@@ -33,60 +33,59 @@ const SummaryPage = () => {
 
   content = (
     <div>
-      {schedule?.summary?.map((child) => (
-        <Accordion>
-          <AccordionSummary
-            expandIcon={
-              <IconButton
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <ChevronDown />
-              </IconButton>
-            }
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              width: "100%",
-              height: "10px",
-            }}
-          >
-            <Typography style={{ marginRight: "10px" }}>
-              Total {child._id}
-            </Typography>
-            <Typography style={{ marginRight: "10px" }}>
-              {child.Value}
-            </Typography>
-            <Typography>{child.unit}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
-              {child.details.map((detail) => (
-                <ListItem
-                  style={{ display: "flex"}}
+      {(schedule?.summary ? [...schedule.summary] : [])
+        .sort((a, b) => (a._id > b._id ? 1 : -1))
+        .map((child) => (
+          <Accordion>
+            <AccordionSummary
+              expandIcon={
+                <IconButton
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <ListItemText
-                    primary={detail.materialDescription}
-                    classes={{ primary: "material-description" }}
-                    style={{
-                      whiteSpace: "nowrap",
-                      marginRight: "1rem",
-                      
-                    }}
-                  />
-                  <ListItemText
-                    primary={detail.computedValue}
-                    style={{ marginRight: "1rem" }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+                  <ChevronDown />
+                </IconButton>
+              }
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                width: "100%",
+                height: "10px",
+              }}
+            >
+              <Typography style={{ marginRight: "10px" }}>
+                Total {child._id}
+              </Typography>
+              <Typography style={{ marginRight: "10px" }}>
+                {child.Value}
+              </Typography>
+              <Typography>{child.unit}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {child.details.map((detail) => (
+                  <ListItem style={{ display: "flex" }}>
+                    <ListItemText
+                      primary={detail.materialDescription}
+                      classes={{ primary: "material-description" }}
+                      style={{
+                        whiteSpace: "nowrap",
+                        marginRight: "1rem",
+                      }}
+                    />
+                    <ListItemText
+                      primary={detail.computedValue}
+                      style={{ marginRight: "1rem" }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        ))}
     </div>
   );
 
