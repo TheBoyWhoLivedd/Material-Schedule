@@ -130,9 +130,13 @@ const SingleApplicationPage = () => {
   const accessToken = useSelector(selectCurrentToken);
   const onDownloadApplicatonClicked = async (applId) => {
     console.log(`Schedule id is ${id} and Application id is ${applId}`);
+    const baseUrl =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3500"
+        : "https://server-materialschedule.hitajitech.site";
     try {
       const response = await fetch(
-        `http://localhost:3500/schedules/${id}/applications/${applId}/download`,
+        `${baseUrl}/schedules/${id}/applications/${applId}/download`,
         {
           headers: {
             "Content-Type": "application/json",
