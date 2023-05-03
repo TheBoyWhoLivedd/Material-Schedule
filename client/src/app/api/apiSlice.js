@@ -1,12 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setCredentials } from "../../features/auth/authSlice";
 
-
+// "https://materialschedule-api.onrender.com"
 const baseQuery = fetchBaseQuery({
   baseUrl:
     process.env.NODE_ENV === "development"
       ? "http://localhost:3500"
-      : "https://materialschedule-api.onrender.com",
+      : "https://server-materialschedule.hitajitech.site",
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;
