@@ -577,6 +577,182 @@ function calculateSteel(name, size, weight, unit) {
   }
 }
 
+function calculateTiles(squareMeters) {
+  if (squareMeters <= 0) {
+    return {
+      error:
+        "Invalid input. Please provide a positive value for square meters.",
+    };
+  }
+
+  // Constants
+  const TILE_COVERAGE = 1.0;
+  const TILE_WASTAGE = 1.05;
+  const ADHESIVE_PER_SQM = 0.35;
+  const GROUT_PER_SQM = 0.21;
+
+  // Calculate required quantities
+  const tiles = Math.ceil(squareMeters * TILE_COVERAGE * TILE_WASTAGE);
+  const adhesiveBags = parseFloat((squareMeters * ADHESIVE_PER_SQM).toFixed(2));
+  const groutKgs = parseFloat((squareMeters * GROUT_PER_SQM).toFixed(2));
+
+  return {
+    tiles: tiles,
+    adhesiveBags: adhesiveBags,
+    groutKgs: groutKgs,
+  };
+}
+
+function calculateWallScreed(squareMeters, cssClass) {
+  if (squareMeters <= 0) {
+    return {
+      error:
+        "Invalid input. Please provide a positive value for square meters.",
+    };
+  }
+
+  const classOne = {
+    cementBags: 0.00027,
+    sandTons: 0.00004,
+  };
+
+  const classTwo = {
+    cementBags: 0.0135,
+    sandTons: 0.0016,
+  };
+
+  let requiredMaterials;
+
+  if (cssClass === "1:4") {
+    requiredMaterials = classOne;
+  } else if (cssClass === "1:3") {
+    requiredMaterials = classTwo;
+  } else {
+    return {
+      error:
+        'Invalid plaster class. Please provide either "class 1:4" or "class 1:3".',
+    };
+  }
+
+  const cementBags = parseFloat(
+    (squareMeters * requiredMaterials.cementBags).toFixed(2)
+  );
+  const sandTons = parseFloat(
+    (squareMeters * requiredMaterials.sandTons).toFixed(2)
+  );
+
+  return {
+    cementBags: cementBags,
+    sandTons: sandTons,
+  };
+}
+
+function calculateFloorScreed(squareMeters, cssClass) {
+  if (squareMeters <= 0) {
+    return {
+      error:
+        "Invalid input. Please provide a positive value for square meters.",
+    };
+  }
+
+  const classOne = {
+    cementBags: 0.43,
+    sandTons: 0.0672,
+  };
+
+  const classTwo = {
+    cementBags: 0.0135,
+    sandTons: 0.0016,
+  };
+
+  let requiredMaterials;
+
+  if (cssClass === "1:4") {
+    requiredMaterials = classOne;
+  } else if (cssClass === "1:3") {
+    requiredMaterials = classTwo;
+  } else {
+    return {
+      error:
+        'Invalid plaster class. Please provide either "class 1:4" or "class 1:3".',
+    };
+  }
+
+  const cementBags = parseFloat(
+    (squareMeters * requiredMaterials.cementBags).toFixed(2)
+  );
+  const sandTons = parseFloat(
+    (squareMeters * requiredMaterials.sandTons).toFixed(2)
+  );
+
+  return {
+    cementBags: cementBags,
+    sandTons: sandTons,
+  };
+}
+function calculatePlastering(squareMeters, plasterClass) {
+  if (squareMeters <= 0) {
+    return {
+      error:
+        "Invalid input. Please provide a positive value for square meters.",
+    };
+  }
+
+  const classOne = {
+    cementBags: 0.066,
+    limeBags: 0.00128,
+    sandTons: 0.0003,
+  };
+
+  const classTwo = {
+    cementBags: 0.00047,
+    limeBags: 0.00046,
+    sandTons: 0.00015,
+  };
+
+  let requiredMaterials;
+
+  if (plasterClass === "1:2:9") {
+    requiredMaterials = classOne;
+  } else if (plasterClass === "1:1:6") {
+    requiredMaterials = classTwo;
+  } else {
+    return {
+      error:
+        'Invalid plaster class. Please provide either "class 1:2:9" or "class 1:1:6".',
+    };
+  }
+
+  const cementBags = parseFloat(
+    (squareMeters * requiredMaterials.cementBags).toFixed(2)
+  );
+  const limeBags = parseFloat(
+    (squareMeters * requiredMaterials.limeBags).toFixed(2)
+  );
+  const sandTons = parseFloat(
+    (squareMeters * requiredMaterials.sandTons).toFixed(2)
+  );
+
+  return {
+    cementBags: cementBags,
+    limeBags: limeBags,
+    sandTons: sandTons,
+  };
+}
+
+function calculateCeiling(squareMeters) {
+  return {
+    lathe: parseFloat((squareMeters * 0.07).toFixed(2)),
+    branderings: parseFloat((squareMeters * 1).toFixed(2)),
+  };
+}
+function calculatePainting(squareMeters) {
+  return {
+    undercoat: parseFloat((squareMeters * 0.17).toFixed(2)),
+    finish: parseFloat((squareMeters * 375).toFixed(2)),
+  };
+}
+
 module.exports = {
   calculateConcreteGivenClass,
   calculateBRC,
@@ -590,4 +766,10 @@ module.exports = {
   calculateDampProofMembrane,
   calculateDampProofCourse,
   calculateSteel,
+  calculateTiles,
+  calculateWallScreed,
+  calculateFloorScreed,
+  calculatePlastering,
+  calculateCeiling,
+  calculatePainting,
 };
