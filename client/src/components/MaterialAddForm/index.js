@@ -38,12 +38,26 @@ const MaterialAddForm = ({
     },
     [options]
   );
-  const handleOnSelect = useCallback(
-    (e, name) => {
-      setOptions({ ...options, [name]: e.target.value });
-    },
-    [options]
-  );
+
+  const resetParameters = () => {
+    setOptions((prevOptions) => ({
+      ...prevOptions,
+      parameters: {},
+    }));
+  };
+  const handleOnSelect = useCallback((e, name) => {
+    const value = e.target.value;
+    // Reset parameters when the category or material name changes because
+    //i use the properties in the parameters object to determine which calculation to make backend
+    if (name === "categoryName" || name === "materialName") {
+      resetParameters();
+    }
+
+    setOptions((prevOptions) => ({
+      ...prevOptions,
+      [name]: value,
+    }));
+  }, []);
 
   const handleOnChange = useCallback(
     (e) => {
@@ -141,6 +155,7 @@ const MaterialAddForm = ({
         elementName: options.elementName,
         description: options.materialDescription,
         materialName: options.materialName,
+        categoryName: options?.categoryName,
         parameters: options.parameters,
         materialType: options?.materialType,
         computedValue: options?.computedValue,
@@ -169,6 +184,7 @@ const MaterialAddForm = ({
         elementName: options.elementName,
         description: options.materialDescription,
         materialName: options.materialName,
+        categoryName: options?.categoryName,
         parameters: options.parameters,
         materialType: options?.materialType,
         relatedId: options?.relatedId,
@@ -257,7 +273,7 @@ const MaterialAddForm = ({
                 config.elements.find((element) => element.name === "Walling")
                   .materials
               }
-              name="materialName"
+              name="materialType"
               placeholder="Enter Material"
               onSelect={(e) => handleOnSelect(e, "materialType")}
               value={options?.materialType}
@@ -738,6 +754,157 @@ const MaterialAddForm = ({
               onChange={handleOnCalcParamChange}
               value={options?.parameters?.expression}
               required
+              error={Boolean(error)}
+              helperText={error}
+            />
+          </>
+        )}
+        {options?.elementName === "Finishes" && (
+          <>
+            <Autocomplete
+              id="category_id"
+              options={
+                config.elements.find((element) => element.name === "Finishes")
+                  .category
+              }
+              name="categoryName"
+              placeholder="Enter Category"
+              onSelect={(e) => handleOnSelect(e, "categoryName")}
+              value={options?.categoryName}
+              required={true}
+              disabled={canEdit}
+              isOptionEqualToValue={(option, value) => option === value}
+              renderInput={(params) => (
+                <TextField {...params} label="Category" required />
+              )}
+            />
+            {options?.categoryName === "Floor Finishes" && (
+              <>
+                <Autocomplete
+                  id="floorMaterialOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Finishes"
+                    ).floorMaterials
+                  }
+                  name="materialName"
+                  placeholder="Enter Material"
+                  onSelect={(e) => handleOnSelect(e, "materialName")}
+                  value={options?.materialName}
+                  required={true}
+                  disabled={canEdit}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Materials" required />
+                  )}
+                />
+                {options?.materialName === "Cement sand screed" && (
+                  <>
+                    <Autocomplete
+                      id="cssClassOptions_id"
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Finishes"
+                        ).cssClass
+                      }
+                      name="cssClass"
+                      value={options?.parameters?.cssClass}
+                      placeholder="Choose CSS Class"
+                      onSelect={(e) => handleOnParamSelect(e, "cssClass")}
+                      required={true}
+                      getOptionLabel={(option) => option.toString()}
+                      isOptionEqualToValue={(option, value) => option === value}
+                      renderInput={(params) => (
+                        <TextField {...params} label="CSS Class" required />
+                      )}
+                    />
+                  </>
+                )}
+                {/* <TextField
+                  type="text"
+                  name="area"
+                  value={options?.parameters?.expression}
+                  label="Area (sqm)"
+                  placeholder="Area"
+                  onChange={handleOnCalcParamChange}
+                  error={Boolean(error)}
+                  helperText={error}
+                /> */}
+              </>
+            )}
+            {options?.categoryName === "Wall Finishes" && (
+              <>
+                <Autocomplete
+                  id="wallMaterialOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Finishes"
+                    ).wallMaterials
+                  }
+                  name="materialName"
+                  placeholder="Enter Material"
+                  onSelect={(e) => handleOnSelect(e, "materialName")}
+                  value={options?.materialName}
+                  required={true}
+                  disabled={canEdit}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Materials" required />
+                  )}
+                />
+                {options?.materialName === "Cement sand screed" && (
+                  <>
+                    <Autocomplete
+                      id="cssClassOptions_id"
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Finishes"
+                        ).cssClass
+                      }
+                      name="cssClass"
+                      value={options?.parameters?.cssClass}
+                      placeholder="Choose CSS Class"
+                      onSelect={(e) => handleOnParamSelect(e, "cssClass")}
+                      required={true}
+                      getOptionLabel={(option) => option.toString()}
+                      isOptionEqualToValue={(option, value) => option === value}
+                      renderInput={(params) => (
+                        <TextField {...params} label="CSS Class" required />
+                      )}
+                    />
+                  </>
+                )}
+                {options?.materialName === "Plastering and rendering" && (
+                  <>
+                    <Autocomplete
+                      id="cssClassOptions_id"
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Finishes"
+                        ).plasterClass
+                      }
+                      name="plasterClass"
+                      value={options?.parameters?.plasterClass}
+                      placeholder="Choose Plaster Class"
+                      onSelect={(e) => handleOnParamSelect(e, "plasterClass")}
+                      required={true}
+                      getOptionLabel={(option) => option.toString()}
+                      isOptionEqualToValue={(option, value) => option === value}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Plaster Class" required />
+                      )}
+                    />
+                  </>
+                )}
+              </>
+            )}
+            <TextField
+              type="text"
+              name="area"
+              value={options?.parameters?.expression}
+              label="Area (sqm)"
+              placeholder="Area"
+              onChange={handleOnCalcParamChange}
               error={Boolean(error)}
               helperText={error}
             />

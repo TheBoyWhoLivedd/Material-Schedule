@@ -35,7 +35,18 @@ const {
   updateDampProofCourse,
   updateSteel,
   handleSteel,
+  handleScreed,
+  handlePlastering,
+  handleCeiling,
+  handlePainting,
+  handleTiles,
+  updateTiles,
+  updateScreed,
+  updatePlastering,
+  updateCeiling,
+  updatePainting,
 } = require("../utils/helpers.js");
+const { calculateScreed, calculateTiles } = require("../utils/calculations");
 
 // @desc Get all schedules
 // @route GET /schedules
@@ -103,6 +114,7 @@ const updateBalanceAllowable = async (schedule, objectId) => {
   console.log("totalRequested", totalRequested);
   console.log("summary", summary);
 
+  // Create a map from the balanceAllowable array for faster lookup
   const balanceAllowableMap = new Map(
     schedule.balanceAllowable.map((item) => [item._id, item.Value])
   );
@@ -159,17 +171,16 @@ const updateBalanceAllowable = async (schedule, objectId) => {
 };
 
 const getAllSchedules = async (req, res) => {
-  // Get all notes from MongoDB
+  // Get all schedules from MongoDB
   const schedules = await Schedule.find().lean();
 
-  // If no notes
+  // If no schedules
   if (!schedules?.length) {
     return res.status(400).json({ message: "No schedules found" });
   }
 
   // Add username to each schedule before sending the response
   // See Promise.all with map() here: https://youtu.be/4lqJBBEpjRE
-  // You could also do this with a for...of loop
   const schedulesWithUser = await Promise.all(
     schedules.map(async (schedule) => {
       const user = await User.findById(schedule.user).lean().exec();
@@ -299,6 +310,7 @@ const addScheduleMaterial = async (req, res) => {
     parameters,
     materialType,
     materialUnit,
+    categoryName,
     computedValue, //when the user chooses the "Other" to add a material
   } = req.body;
   const scheduleId = req.params.scheduleId;
@@ -417,6 +429,85 @@ const addScheduleMaterial = async (req, res) => {
       }
       handleSteel(schedule, materialName, parameters, description);
       break;
+    case "Finishes":
+      switch (categoryName) {
+        case "Floor Finishes":
+          switch (materialName) {
+            case "Cement sand screed":
+              handleScreed(
+                schedule,
+                parameters,
+                description,
+                relatedId,
+                categoryName
+              );
+              break;
+            case "Tiles":
+              handleTiles(
+                schedule,
+                parameters,
+                description,
+                relatedId,
+                categoryName
+              );
+              break;
+            default:
+              break;
+          }
+          break;
+        case "Wall Finishes":
+          switch (materialName) {
+            case "Cement sand screed":
+              handleScreed(
+                schedule,
+                parameters,
+                description,
+                relatedId,
+                categoryName
+              );
+              break;
+            case "Tiles":
+              handleTiles(
+                schedule,
+                parameters,
+                description,
+                relatedId,
+                categoryName
+              );
+              break;
+            case "Plastering and rendering":
+              handlePlastering(
+                schedule,
+                parameters,
+                description,
+                relatedId,
+                categoryName
+              );
+              break;
+            default:
+              break;
+          }
+          break;
+        case "Ceiling Finishes":
+          handleCeiling(
+            schedule,
+            parameters,
+            description,
+            relatedId,
+            categoryName
+          );
+          break;
+        case "Painting Works":
+          handlePainting(
+            schedule,
+            parameters,
+            description,
+            relatedId,
+            categoryName
+          );
+          break;
+      }
+      break;
     case "Other":
       if (!computedValue || !materialUnit || !materialName || !description) {
         throw new Error("Please Provide all required values");
@@ -525,6 +616,7 @@ const updateScheduleMaterial = async (req, res) => {
       parameters,
       materialType,
       relatedId,
+      categoryName,
     } = req.body;
     console.log(relatedId);
     // Confirm data
@@ -619,6 +711,65 @@ const updateScheduleMaterial = async (req, res) => {
           description,
           parameters
         );
+        break;
+      case "Finishes":
+        switch (categoryName) {
+          case "Floor Finishes":
+            if (materialName === "Cement" || materialName === "Sand") {
+              await updateScreed(
+                schedule,
+                relatedId,
+                description,
+                parameters,
+                categoryName
+              );
+            } else if (
+              materialName === "Tiles" ||
+              materialName === "Adhesive" ||
+              materialName === "Grout"
+            ) {
+              await updateTiles(schedule, relatedId, description, parameters);
+            }
+            break;
+          case "Wall Finishes":
+            if (parameters.hasOwnProperty("plasterClass")) {
+              if (
+                materialName === "Cement" ||
+                materialName === "Sand" ||
+                materialName === "Lime"
+              ) {
+                await updatePlastering(
+                  schedule,
+                  relatedId,
+                  description,
+                  parameters
+                );
+              }
+            } else {
+              if (materialName === "Cement" || materialName === "Sand") {
+                await updateScreed(
+                  schedule,
+                  relatedId,
+                  description,
+                  parameters,
+                  categoryName
+                );
+              } else if (
+                materialName === "Tiles" ||
+                materialName === "Adhesive" ||
+                materialName === "Grout"
+              ) {
+                await updateTiles(schedule, relatedId, description, parameters);
+              }
+            }
+            break;
+          case "Ceiling Finishes":
+            await updateCeiling(schedule, relatedId, description, parameters);
+            break;
+          case "Painting Works":
+            await updatePainting(schedule, relatedId, description, parameters);
+            break;
+        }
         break;
       default:
         throw new Error(`Invalid element name: ${elementName}`);

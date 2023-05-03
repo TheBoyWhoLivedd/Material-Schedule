@@ -96,6 +96,9 @@ const scheduleSchema = new mongoose.Schema(
         materialType: {
           type: String,
         },
+        categoryName: {
+          type: String,
+        },
         materialDescription: {
           type: String,
         },

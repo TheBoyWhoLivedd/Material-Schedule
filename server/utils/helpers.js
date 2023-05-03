@@ -13,6 +13,13 @@ const {
   calculateDampProofMembrane,
   calculateDampProofCourse,
   calculateSteel,
+  calculateTiles,
+  calculateScreed,
+  calculatePlastering,
+  calculateCeiling,
+  calculatePainting,
+  calculateWallScreed,
+  calculateFloorScreed,
 } = require("./calculations");
 
 // HELPERS TO ADD MATERIALS TO THE SCHEDULE
@@ -31,7 +38,8 @@ const createMaterialObject = (
   relatedId,
   groupByFirstProp = false,
   materialType = undefined,
-  materialDetail = undefined
+  materialDetail = undefined,
+  categoryName = undefined
 ) => ({
   elementName,
   materialName,
@@ -43,6 +51,7 @@ const createMaterialObject = (
   groupByFirstProp,
   materialType,
   materialDetail,
+  categoryName,
 });
 
 const handleConcrete = (schedule, parameters, description, relatedId) => {
@@ -411,6 +420,255 @@ const handleSteel = (schedule, materialName, parameters, description) => {
   );
 };
 
+const handleTiles = (
+  schedule,
+  parameters,
+  description,
+  relatedId,
+  categoryName
+) => {
+  const results = calculateTiles(parameters.area);
+  console.log(results);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Tiles",
+      description,
+      results.tiles,
+      "Number",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Adhesive",
+      description,
+      results.adhesiveBags,
+      "Bags",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Grout",
+      description,
+      results.groutKgs,
+      "Kgs",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+};
+
+const handleScreed = (
+  schedule,
+  parameters,
+  description,
+  relatedId,
+  categoryName
+) => {
+  const results =
+    categoryName === "Wall Finishes"
+      ? calculateWallScreed(parameters.area, parameters.cssClass)
+      : calculateFloorScreed(parameters.area, parameters.cssClass);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Cement",
+      description,
+      results.cementBags,
+      "Kgs",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Sand",
+      description,
+      results.sandTons,
+      "Tonnes",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+};
+
+const handlePlastering = (
+  schedule,
+  parameters,
+  description,
+  relatedId,
+  categoryName
+) => {
+  const results = calculatePlastering(parameters.area, parameters.plasterClass);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Cement",
+      description,
+      results.cementBags,
+      "Bags",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Lime",
+      description,
+      results.limeBags,
+      "Bags",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Sand",
+      description,
+      results.sandTons,
+      "Tonnes",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+};
+const handleCeiling = (
+  schedule,
+  parameters,
+  description,
+  relatedId,
+  categoryName
+) => {
+  const results = calculateCeiling(parameters.area);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Expanded Metal Lathe",
+      description,
+      results.lathe,
+      "Bundles",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Branderings",
+      description,
+      results.branderings,
+      "Pieces",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+};
+const handlePainting = (
+  schedule,
+  parameters,
+  description,
+  relatedId,
+  categoryName
+) => {
+  const results = calculatePainting(parameters.area);
+
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Undercoat",
+      description,
+      results.undercoat,
+      "Litres",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+  addMaterialToSchedule(
+    schedule,
+    createMaterialObject(
+      "Finishes",
+      "Finishing Coat (3 Coats)",
+      description,
+      results.finish,
+      "Litres",
+      parameters,
+      relatedId,
+      false,
+      undefined,
+      undefined,
+      categoryName
+    )
+  );
+};
+
 const handleOther = (
   schedule,
   materialName,
@@ -689,6 +947,124 @@ const updateSteel = async (
   ).exec();
 };
 
+const updateTiles = async (schedule, relatedId, description, parameters) => {
+  const results = calculateTiles(parameters.area);
+  // console.log(results)
+
+  const materials = schedule?.materials?.filter(
+    (material) => material.relatedId === relatedId
+  );
+
+  for (const material of materials) {
+    if (material.materialName === "Tiles") {
+      material.computedValue = results.tiles;
+    } else if (material.materialName === "Adhesive") {
+      material.computedValue = results.adhesiveBags;
+    } else if (material.materialName === "Grout") {
+      material.computedValue = results.groutKgs;
+    }
+
+    material.parameters = parameters;
+    material.materialDescription = description;
+  }
+
+  await schedule.save();
+};
+const updateScreed = async (
+  schedule,
+  relatedId,
+  description,
+  parameters,
+  categoryName
+) => {
+  const results =
+    categoryName === "Wall Finishes"
+      ? calculateWallScreed(parameters.area, parameters.cssClass)
+      : calculateFloorScreed(parameters.area, parameters.cssClass);
+  console.log(results);
+  const materials = schedule?.materials?.filter(
+    (material) => material.relatedId === relatedId
+  );
+
+  for (const material of materials) {
+    if (material.materialName === "Cement") {
+      material.computedValue = results.cementBags;
+    } else if (material.materialName === "Sand") {
+      material.computedValue = results.sandTons;
+    }
+    material.parameters = parameters;
+    material.materialDescription = description;
+  }
+
+  await schedule.save();
+};
+
+const updatePlastering = async (
+  schedule,
+  relatedId,
+  description,
+  parameters
+) => {
+  const results = calculatePlastering(parameters.area, parameters.plasterClass);
+
+  const materials = schedule?.materials?.filter(
+    (material) => material.relatedId === relatedId
+  );
+
+  for (const material of materials) {
+    if (material.materialName === "Cement") {
+      material.computedValue = results.cementBags;
+    } else if (material.materialName === "Lime") {
+      material.computedValue = results.limeBags;
+    } else if (material.materialName === "Sand") {
+      material.computedValue = results.sandTons;
+    }
+
+    material.parameters = parameters;
+    material.materialDescription = description;
+  }
+
+  await schedule.save();
+};
+const updatePainting = async (schedule, relatedId, description, parameters) => {
+  const results = calculatePainting(parameters.area);
+
+  const materials = schedule?.materials?.filter(
+    (material) => material.relatedId === relatedId
+  );
+
+  for (const material of materials) {
+    if (material.materialName === "Undercoat") {
+      material.computedValue = results.undercoat;
+    } else if (material.materialName === "Finishing coat (3 coats)") {
+      material.computedValue = results.finish;
+    }
+    material.parameters = parameters;
+    material.materialDescription = description;
+  }
+
+  await schedule.save();
+};
+const updateCeiling = async (schedule, relatedId, description, parameters) => {
+  const results = calculateCeiling(parameters.area);
+
+  const materials = schedule?.materials?.filter(
+    (material) => material.relatedId === relatedId
+  );
+
+  for (const material of materials) {
+    if (material.materialName === "Expanded Metal lathe") {
+      material.computedValue = results.lathe;
+    } else if (material.materialName === "Branderings") {
+      material.computedValue = results.branderings;
+    }
+    material.parameters = parameters;
+    material.materialDescription = description;
+  }
+
+  await schedule.save();
+};
+
 module.exports = {
   addMaterialToSchedule,
   createMaterialObject,
@@ -705,6 +1081,11 @@ module.exports = {
   handleDampProofMembrane,
   handleDampProofCourse,
   handleSteel,
+  handleTiles,
+  handleScreed,
+  handlePlastering,
+  handlePainting,
+  handleCeiling,
 
   updateConcrete,
   updateBRC,
@@ -717,4 +1098,9 @@ module.exports = {
   updateDampProofMembrane,
   updateDampProofCourse,
   updateSteel,
+  updateTiles,
+  updateScreed,
+  updatePlastering,
+  updatePainting,
+  updateCeiling,
 };

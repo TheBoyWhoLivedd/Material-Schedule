@@ -428,6 +428,23 @@
     {
       "name": "Hardcore",
       "unit": ["CM", "SM"]
+    },
+    {
+      "name": "Finishes",
+      "category": [
+        "Floor Finishes",
+        "Wall Finishes",
+        "Ceiling Finishes",
+        "Painting Works"
+      ],
+      "floorMaterials": ["Tiles", "Cement sand screed"],
+      "wallMaterials": [
+        "Tiles",
+        "Cement sand screed",
+        "Plastering and rendering"
+      ],
+      "cssClass": ["1:4", "1:3"],
+      "plasterClass": ["1:2:9", "1:1:6"]
     }
   ]
 }
