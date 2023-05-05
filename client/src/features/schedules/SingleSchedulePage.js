@@ -16,7 +16,7 @@ import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import DeleteModal from "../../components/DeleteModal";
 
 const SingleSchedulePage = () => {
-  useTitle("techNotes: Single Schedule Page");
+  useTitle("Deemed VAT: Single Schedule Page");
 
   const { id } = useParams();
   const [open, setOpen] = useState(false);
@@ -53,14 +53,14 @@ const SingleSchedulePage = () => {
       schedule: data?.entities[id],
     }),
   });
-  // const sortedScheduleMaterials = schedule.materials.sort();
+
   console.log(schedule);
   const [deleteMaterial] = useDeleteMaterialMutation();
 
   const onDeleteMaterialClicked = async (materialId) => {
     await deleteMaterial({ id: schedule.id, _id: materialId });
   };
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(40);
   const [rowId, setRowId] = useState(null);
 
   const columns = useMemo(() => [
@@ -86,9 +86,6 @@ const SingleSchedulePage = () => {
       type: "actions",
       width: 200,
       renderCell: (params) => (
-        // <Button onClick={() => onDeleteMaterialClicked(params.row._id)}>
-        //   <Trash size={20} />
-        // </Button>
         <DeleteModal
           handleDelete={() => onDeleteMaterialClicked(params.row._id)}
           element="icon"
@@ -100,6 +97,10 @@ const SingleSchedulePage = () => {
 
   content = (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <Typography>
+        Materials List (Click Add Materials to add a Material or View Summary to
+        view aggregations)
+      </Typography>
       <div
         style={{
           display: "flex",
@@ -116,7 +117,6 @@ const SingleSchedulePage = () => {
               Add Materials
             </Button>
           }
-          
         >
           <MaterialAddForm
             id={id}
@@ -161,8 +161,9 @@ const SingleSchedulePage = () => {
             <DataGrid
               columns={columns}
               rows={schedule.materials}
+              rowHeight={30}
               getRowId={(row) => row._id}
-              rowsPerPageOptions={[20, 40, 60]}
+              rowsPerPageOptions={[40, 80, 100]}
               pageSize={pageSize}
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
               getRowSpacing={(params) => ({
@@ -170,9 +171,13 @@ const SingleSchedulePage = () => {
                 bottom: params.isLastVisible ? 0 : 5,
               })}
               sx={{
-                [`& .${gridClasses.row}`]: {
-                  bgcolor: (theme) =>
-                    theme.palette.mode === "light" ? grey[200] : grey[900],
+                "& .MuiDataGrid-cell": {
+                  fontSize: "0.8rem",
+                  padding: "8px",
+                  borderBottom: "none",
+                },
+                "& .MuiDataGrid-row": {
+                  height: "32px",
                 },
               }}
               onCellEditCommit={(params) => setRowId(params.id)}

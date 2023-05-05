@@ -20,7 +20,7 @@ import { useTheme } from "@mui/material/styles";
 
 const RequestedSummaryPage = () => {
   const theme = useTheme();
-  useTitle("techNotes: Summary Page");
+  useTitle("Deemed VAT: Summary Page");
 
   const { id } = useParams();
 

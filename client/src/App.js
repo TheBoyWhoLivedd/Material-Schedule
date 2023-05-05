@@ -69,13 +69,18 @@ function App() {
                     element={<SingleApplicationPage />}
                   />
                   <Route path=":id/summary" element={<SummaryPage />} />
-                  <Route path=":id/requested" element={<RequestedSummaryPage />} />
+                  <Route
+                    path=":id/requested"
+                    element={<RequestedSummaryPage />}
+                  />
                   <Route path="new" element={<NewSchedule />} />
                   <Route path="add" element={<AddMaterialsPage />} />
                   <Route path="edit/:id" element={<EditSchedule />} />
                 </Route>
               </Route>
               {/* End Dash */}
+              {/* Default route */}
+              <Route path="/*" element={<ScheduleList />} />
             </Route>
           </Route>
         </Route>
