@@ -7,6 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Typography } from "@mui/material";
 
 const ScheduleList = () => {
   useTitle("Deemed VAT: Schedule List");
@@ -26,7 +27,6 @@ const ScheduleList = () => {
   });
 
   let content;
-
 
   if (isLoading) content = <PulseLoader color={"#FFF"} />;
 
@@ -57,6 +57,11 @@ const ScheduleList = () => {
     return (
       <>
         <p>{content}</p>
+        <Typography>
+          List of Projects - Recommended for testing (Proposed Remodelling of
+          High Dependecy Unts, Ugrade of Selected Hospotals and Dispatch Centres
+          at National and Regional Level)
+        </Typography>
         <Container sx={{ p: 2 }} maxWidth="md"></Container>
         <Grid container spacing={4}>
           {ScheduleContent}

@@ -28,6 +28,7 @@ import {
   Button,
   TextField,
   Snackbar,
+  Typography,
 } from "@mui/material";
 import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
@@ -47,7 +48,7 @@ const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
 );
 
 const SingleApplicationPage = () => {
-  useTitle("techNotes: Single Application Page");
+  useTitle("Deemed VAT: Single Application Page");
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -195,6 +196,11 @@ const SingleApplicationPage = () => {
             marginBottom: "1rem",
           }}
         >
+          <Typography style={{ marginRight: "1rem" }}>
+            Applications List. Adding an item to the application reduces it by a
+            similar amount in the Material Schedule. View Summary shows the
+            aggregation of materials applieid for.
+          </Typography>
           <ModalComponent
             open={open}
             handleOpen={handleOpen}

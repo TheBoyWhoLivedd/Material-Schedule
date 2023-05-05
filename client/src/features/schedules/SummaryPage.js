@@ -15,7 +15,7 @@ import {
 import { ChevronDown } from "feather-icons-react";
 
 const SummaryPage = () => {
-  useTitle("techNotes: Summary Page");
+  useTitle("Deemed VAT: Summary Page");
 
   const { id } = useParams();
 
@@ -33,6 +33,9 @@ const SummaryPage = () => {
 
   content = (
     <div>
+      <Typography variant="h5" style={{ marginBottom: "1rem" }}>
+        Aggregated Materials (Click on each to reveal details)
+      </Typography>
       {(schedule?.summary ? [...schedule.summary] : [])
         .sort((a, b) => (a._id > b._id ? 1 : -1))
         .map((child) => (

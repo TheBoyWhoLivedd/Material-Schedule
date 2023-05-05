@@ -7,7 +7,7 @@ import PulseLoader from "react-spinners/PulseLoader";
 import useTitle from "../../hooks/useTitle";
 
 const EditSchedule = () => {
-  useTitle("techNotes: Edit Schedule");
+  useTitle("Deemed VAT: Edit Schedule");
 
   const { id } = useParams();
 

@@ -1,7 +1,7 @@
 {
   "name": "lesson_13-be",
   "version": "1.0.0",
-  "description": "techNotes MERN Project",
+  "description": "Deemed VAT MERN Project",
   "main": "server.js",
   "scripts": {
     "start": "node server",
