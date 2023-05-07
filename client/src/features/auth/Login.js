@@ -12,13 +12,14 @@ import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import { Link as MaterialLink } from "@mui/material";
+import { InputAdornment, Link as MaterialLink } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import UserIcon from "@mui/icons-material/Person";
+import PasswordIcon from "@mui/icons-material/Lock";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-
 
 const Login = () => {
   useTitle("Employee Login");
@@ -99,9 +100,9 @@ const Login = () => {
           <h1>DEEMED VAT UNIT</h1>
         </header> */}
         <main className="">
-          <p ref={errRef} className={errClass} aria-live="assertive">
+          <Typography ref={errRef} className={errClass} aria-live="assertive">
             {errMsg}
-          </p>
+          </Typography>
 
           <>
             <Grid container component="main" sx={{ height: "100vh" }}>
@@ -148,7 +149,7 @@ const Login = () => {
                     component="form"
                     onSubmit={handleSubmit}
                     noValidate
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1, p: 4 }}
                   >
                     <TextField
                       margin="normal"
@@ -162,6 +163,24 @@ const Login = () => {
                       inputRef={userRef}
                       value={username}
                       onChange={handleUserInput}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment
+                            position="start"
+                            sx={{
+                              backgroundColor: (theme) =>
+                                theme.palette.background.paper,
+                              borderTopLeftRadius: 50,
+                              borderBottomLeftRadius: 50,
+                            }}
+                          >
+                            <UserIcon />
+                          </InputAdornment>
+                        ),
+                        sx: {
+                          borderRadius: "50px 50px 50px 50px",
+                        },
+                      }}
                     />
                     <TextField
                       margin="normal"
@@ -174,6 +193,14 @@ const Login = () => {
                       autoComplete="current-password"
                       onChange={handlePwdInput}
                       value={password}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PasswordIcon />
+                          </InputAdornment>
+                        ),
+                        style: { borderRadius: 50 },
+                      }}
                     />
                     <FormControlLabel
                       control={
@@ -191,7 +218,7 @@ const Login = () => {
                       type="submit"
                       fullWidth
                       variant="contained"
-                      sx={{ mt: 3, mb: 2 }}
+                      sx={{ pt: 1, pb: 1, borderRadius: 50 }}
                     >
                       Sign In
                     </Button>
@@ -202,10 +229,6 @@ const Login = () => {
             </Grid>
           </>
         </main>
-
-        {/* <footer>
-          <Link to="/">Back to Home</Link>
-        </footer> */}
       </section>
     </>
   );
