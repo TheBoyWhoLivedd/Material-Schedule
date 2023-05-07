@@ -17,9 +17,8 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-
 import Paper from "@mui/material/Paper";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 
 const Login = () => {
   useTitle("Employee Login");
@@ -83,7 +82,7 @@ const Login = () => {
       </Typography>
     );
   }
-  const theme = createTheme();
+
   const handleUserInput = (e) => setUsername(e.target.value);
   const handlePwdInput = (e) => setPassword(e.target.value);
   const handleToggle = () => setPersist((prev) => !prev);
@@ -93,7 +92,7 @@ const Login = () => {
   if (isLoading) return <PulseLoader color={"#FFF"} />;
 
   const content = (
-    <ThemeProvider theme={theme}>
+    <>
       <CssBaseline />
       <section className="">
         {/* <header>
@@ -208,7 +207,7 @@ const Login = () => {
           <Link to="/">Back to Home</Link>
         </footer> */}
       </section>
-    </ThemeProvider>
+    </>
   );
 
   return content;

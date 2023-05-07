@@ -4,21 +4,21 @@ import { useMemo, useState } from "react";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import { Container } from "@mui/material";
 
-const DashLayout = () => {
-  const [dark, setDark] = useState(true);
+const DashLayout = ({dark,setDark}) => {
+  // const [dark, setDark] = useState(true);
 
-  const darkTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode: dark ? "dark" : "light",
-        },
-      }),
-    [dark]
-  );
+  // const darkTheme = useMemo(
+  //   () =>
+  //     createTheme({
+  //       palette: {
+  //         mode: dark ? "dark" : "light",
+  //       },
+  //     }),
+  //   [dark]
+  // );
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    // <ThemeProvider theme={darkTheme}>
       <div
         style={{
           display: "flex",
@@ -36,7 +36,7 @@ const DashLayout = () => {
           <Outlet />
         </div> */}
       </div>
-    </ThemeProvider>
+    // </ThemeProvider>
   );
 };
 export default DashLayout;
