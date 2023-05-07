@@ -23,16 +23,17 @@ import SingleApplicationPage from "./features/schedules/SingleApplicationPage";
 import SummaryPage from "./features/schedules/SummaryPage";
 import RequestedSummaryPage from "./features/schedules/RequestedSummaryPage";
 import AddMaterialsPage from "./features/schedules/AddMaterialsPage";
+import { useState } from "react";
 
 function App() {
   useTitle("Demmed VAT");
+  const [dark, setDark] = useState(true);
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<Layout dark={dark} />}>
         {/* public routes */}
-        <Route index element={<Public />} />
-        <Route path="login" element={<Login />} />
+        <Route index element={<Login />} />
 
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
@@ -40,7 +41,10 @@ function App() {
             element={<RequireAuth allowedRoles={[...Object.values(ROLES)]} />}
           >
             <Route element={<Prefetch />}>
-              <Route path="dash" element={<DashLayout />}>
+              <Route
+                path="dash"
+                element={<DashLayout dark={dark} setDark={setDark} />}
+              >
                 <Route index element={<Welcome />} />
 
                 <Route
