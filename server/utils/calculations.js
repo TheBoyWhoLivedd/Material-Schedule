@@ -698,6 +698,7 @@ function calculatePlastering(squareMeters, plasterClass) {
     };
   }
 
+
   const classOne = {
     cementBags: 0.066,
     limeBags: 0.00128,

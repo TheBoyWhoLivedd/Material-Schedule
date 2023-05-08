@@ -107,6 +107,7 @@ const SingleSchedulePage = () => {
           justifyContent: "flex-end",
         }}
       >
+        
         <ModalComponent
           open={open}
           handleOpen={handleOpen}

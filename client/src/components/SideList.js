@@ -1,4 +1,13 @@
-import { ChevronLeft, Dashboard, Logout, PeopleAlt } from "@mui/icons-material";
+import {
+  ChevronLeft,
+  Dashboard,
+  Logout,
+  PeopleAlt,
+  ListAltOutlined,
+  PostAddOutlined,
+  SettingsOutlined,
+  PersonAddAltOutlined,
+} from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -76,30 +85,30 @@ const SideList = ({ open, setOpen, sendLogout }) => {
   const list = [
     {
       title: "View Projects",
-      icon: <Dashboard />,
+      icon: <ListAltOutlined />,
       link: "/dash/schedules",
     },
     ...(isAdmin || isManager
       ? [
           {
             title: "Add New Project",
-            icon: <Dashboard />,
+            icon: <PostAddOutlined />,
             link: "/dash/schedules/new",
           },
-
           {
             title: "View User Settings",
-            icon: <PeopleAlt />,
+            icon: <SettingsOutlined />,
             link: "/dash/users",
           },
           {
             title: "Add New User",
-            icon: <PeopleAlt />,
+            icon: <PersonAddAltOutlined />,
             link: "/dash/users/new",
           },
         ]
       : []),
   ];
+
   const navigate = useNavigate();
 
   return (
@@ -141,6 +150,7 @@ const SideList = ({ open, setOpen, sendLogout }) => {
                 display: "block",
                 paddingRight: "0.5rem",
                 paddingLeft: "0.5rem",
+                gap: "1rem",
               }}
             >
               <ListItemButton
@@ -151,6 +161,7 @@ const SideList = ({ open, setOpen, sendLogout }) => {
                     selectedLink === item.link ? "#475BE8 !important" : "none",
                   padding: "16px 16px",
                   gap: "10px",
+                  marginBottom: "5px",
                   height: "56px",
                   borderRadius: "12px",
                 }}
