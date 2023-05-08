@@ -177,6 +177,7 @@ const SideList = ({ open, setOpen, sendLogout }) => {
                     // mr: open ? 3 : "auto",
                     justifyContent: "center",
                     alignItems: "center",
+                    color: selectedLink === item.link ? "#FCFCFC" : "auto",
                   }}
                 >
                   {item.icon}
