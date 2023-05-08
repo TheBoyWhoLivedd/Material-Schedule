@@ -20,6 +20,7 @@ import UserIcon from "@mui/icons-material/Person";
 import PasswordIcon from "@mui/icons-material/Lock";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import { GlobalStyles } from "@mui/system";
 
 const Login = () => {
   useTitle("Employee Login");
@@ -93,19 +94,32 @@ const Login = () => {
   if (isLoading) return <PulseLoader color={"#FFF"} />;
 
   const content = (
-    <>
-      <CssBaseline />
-      <section className="">
-        {/* <header>
-          <h1>DEEMED VAT UNIT</h1>
-        </header> */}
-        <main className="">
+    <Box
+      sx={{
+        backgroundColor: (theme) => theme.palette.background.primary,
+      }}
+    >
+      <GlobalStyles
+        styles={{
+          ".css-17xewvb-MuiPaper-root-MuiGrid-root": {
+            backgroundImage: "none !important",
+          },
+        }}
+      />
+      <section>
+        <main>
           <Typography ref={errRef} className={errClass} aria-live="assertive">
             {errMsg}
           </Typography>
 
-          <>
-            <Grid container component="main" sx={{ height: "100vh" }}>
+          <Box>
+            <Grid
+              container
+              component="main"
+              sx={{
+                height: "100vh",
+              }}
+            >
               <Grid
                 item
                 xs={false}
@@ -114,10 +128,7 @@ const Login = () => {
                 sx={{
                   backgroundImage: "url(./img/ura.jpg)",
                   backgroundRepeat: "no-repeat",
-                  backgroundColor: (t) =>
-                    t.palette.mode === "light"
-                      ? t.palette.grey[50]
-                      : t.palette.grey[900],
+
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -137,6 +148,11 @@ const Login = () => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
+                    // backgroundColor: (theme) =>
+                    //   theme.palette.background.primary,
+                    // "& .css-j3vtcw-MuiPaper-root-MuiGrid-root": {
+                    //   backgroundImage: "none",
+                    // },
                   }}
                 >
                   <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
@@ -168,8 +184,6 @@ const Login = () => {
                           <InputAdornment
                             position="start"
                             sx={{
-                              backgroundColor: (theme) =>
-                                theme.palette.background.paper,
                               borderTopLeftRadius: 50,
                               borderBottomLeftRadius: 50,
                             }}
@@ -227,10 +241,10 @@ const Login = () => {
                 </Box>
               </Grid>
             </Grid>
-          </>
+          </Box>
         </main>
       </section>
-    </>
+    </Box>
   );
 
   return content;

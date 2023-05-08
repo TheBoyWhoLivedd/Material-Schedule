@@ -131,43 +131,57 @@ const SideList = ({ open, setOpen, sendLogout }) => {
             <ChevronLeft />
           </IconButton>
         </DrawerHeader>
-        {/* <Divider /> */}
-        <List
-        // sx={{
-        //   backgroundColor: (theme) => theme.palette.background.secondary,
-        // }}
-        >
+
+        <List>
           {list.map((item) => (
-            <ListItem key={item.title} disablePadding sx={{ display: "block" }}>
+            <ListItem
+              key={item.title}
+              disablePadding
+              sx={{
+                display: "block",
+                paddingRight: "0.5rem",
+                paddingLeft: "0.5rem",
+              }}
+            >
               <ListItemButton
                 sx={{
                   minHeight: 48,
                   justifyContent: open ? "initial" : "center",
-                  px: 2.5,
+                  backgroundColor:
+                    selectedLink === item.link ? "#475BE8 !important" : "none",
+                  padding: "16px 16px",
+                  gap: "10px",
+                  height: "56px",
+                  borderRadius: "12px",
                 }}
-                onClick={() => navigate(item.link)}
+                onClick={() => {
+                  navigate(item.link);
+                  setSelectedLink(item.link);
+                }}
                 selected={selectedLink === item.link}
               >
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
-                    mr: open ? 3 : "auto",
+                    // mr: open ? 3 : "auto",
                     justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText
                   primary={item.title}
-                  sx={{ opacity: open ? 1 : 0 }}
+                  sx={{
+                    opacity: open ? 1 : 0,
+                    display: open ? "block" : "none",
+                    color: selectedLink === item.link ? "#FCFCFC" : "auto",
+                  }}
                 />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        {/* <Divider
-        
-        /> */}
         <Box sx={{ mx: "auto", mt: 3, mb: 1 }}>
           <Tooltip title={username}>
             <Avatar src="" {...(open && { sx: { width: 100, height: 100 } })} />
@@ -184,9 +198,6 @@ const SideList = ({ open, setOpen, sendLogout }) => {
           </Tooltip>
         </Box>
       </Drawer>
-      {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <DrawerHeader />
-      </Box> */}
     </Box>
   );
 };
