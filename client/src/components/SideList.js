@@ -103,15 +103,40 @@ const SideList = ({ open, setOpen, sendLogout }) => {
   const navigate = useNavigate();
 
   return (
-    <>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
+    <Box
+      sx={{
+        backgroundColor: (theme) => theme.palette.background.secondary,
+        background: "none",
+      }}
+    >
+      <Drawer
+        variant="permanent"
+        open={open}
+        sx={{
+          backgroundColor: (theme) => theme.palette.background.secondary,
+          "& .MuiDrawer-paper": {
+            ...openedMixin,
+            backgroundColor: (theme) => theme.palette.background.secondary,
+            border: "none",
+          },
+        }}
+      >
+        <DrawerHeader
+          sx={{
+            backgroundColor: (theme) => theme.palette.background.secondary,
+            border: "none",
+          }}
+        >
           <IconButton onClick={() => setOpen(false)}>
             <ChevronLeft />
           </IconButton>
         </DrawerHeader>
-        <Divider />
-        <List>
+        {/* <Divider /> */}
+        <List
+        // sx={{
+        //   backgroundColor: (theme) => theme.palette.background.secondary,
+        // }}
+        >
           {list.map((item) => (
             <ListItem key={item.title} disablePadding sx={{ display: "block" }}>
               <ListItemButton
@@ -140,7 +165,9 @@ const SideList = ({ open, setOpen, sendLogout }) => {
             </ListItem>
           ))}
         </List>
-        <Divider />
+        {/* <Divider
+        
+        /> */}
         <Box sx={{ mx: "auto", mt: 3, mb: 1 }}>
           <Tooltip title={username}>
             <Avatar src="" {...(open && { sx: { width: 100, height: 100 } })} />
@@ -160,7 +187,7 @@ const SideList = ({ open, setOpen, sendLogout }) => {
       {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
       </Box> */}
-    </>
+    </Box>
   );
 };
 

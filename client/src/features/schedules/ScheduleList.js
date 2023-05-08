@@ -57,10 +57,10 @@ const ScheduleList = () => {
     return (
       <>
         <p>{content}</p>
-        <Typography>
+        <Typography sx={{ color: (theme) => theme.palette.text.primary }}>
           List of Projects - Recommended for testing (Proposed Remodelling of
           High Dependecy Unts, Ugrade of Selected Hospotals and Dispatch Centres
-          at National and Regional Level)
+          at National and Regional Level) or start your own.
         </Typography>
         <Container sx={{ p: 2 }} maxWidth="md"></Container>
         <Grid container spacing={4}>

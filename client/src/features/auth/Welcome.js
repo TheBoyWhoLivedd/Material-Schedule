@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import BackgroundAnimation from "../../components/BackgroundAnimation";
 import useAuth from "../../hooks/useAuth";
 import useTitle from "../../hooks/useTitle";
+import { Typography } from "@mui/material";
 
 const Welcome = () => {
   const { username, isManager, isAdmin } = useAuth();
@@ -15,14 +16,24 @@ const Welcome = () => {
   }).format(date);
 
   const content = (
-    <section className="welcome">
-      <p>{today}</p>
+    <section className="">
+      <Typography
+        variant="h6"
+        sx={{ color: (theme) => theme.palette.text.primary }}
+      >
+        {today}
+      </Typography>
 
-      <h1>Welcome {username}!</h1>
+      <Typography
+        variant="h4"
+        sx={{ color: (theme) => theme.palette.text.primary }}
+      >
+        Welcome {username}!
+      </Typography>
 
-      <div className="background">
+      {/* <div className="background">
         <BackgroundAnimation />
-      </div>
+      </div> */}
     </section>
   );
 

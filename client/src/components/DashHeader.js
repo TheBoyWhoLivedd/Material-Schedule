@@ -1,27 +1,22 @@
 import { useEffect } from "react";
-
-
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSendLogoutMutation } from "../features/auth/authApiSlice";
 import useAuth from "../hooks/useAuth";
-import PulseLoader from "react-spinners/PulseLoader";
-import {  styled } from "@mui/material/styles";
-import {
-  Box,
-  Toolbar,
-  CssBaseline,
-  Typography,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { Box, Toolbar, Typography, IconButton, Tooltip } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
-import { Brightness4, Brightness7, Home, Menu } from "@mui/icons-material";
+import {
+  Brightness4,
+  Brightness7,
+  Home,
+  Menu,
+  BrightnessHigh,
+  BrightnessLow,
+  HomeOutlined,
+  MenuOutlined,
+} from "@mui/icons-material";
 import { useState } from "react";
 import SideList from "./SideList";
-
-const DASH_REGEX = /^\/dash(\/)?$/;
-const NOTES_REGEX = /^\/dash\/notes(\/)?$/;
-const USERS_REGEX = /^\/dash\/users(\/)?$/;
 
 const drawerWidth = 240;
 
@@ -61,32 +56,30 @@ const DashHeader = ({ dark, setDark }) => {
     if (isSuccess) navigate("/");
   }, [isSuccess, navigate]);
 
-
   const errClass = isError ? "errmsg" : "offscreen";
-
-  // let buttonContent;
-  // if (isLoading) {
-  //   buttonContent = <PulseLoader color={"#FFF"} />;
-  // } else {
-  //   buttonContent = (
-  //     <>
-  //       {newNoteButton}
-  //       {newUserButton}
-  //       {notesButton}
-  //       {userButton}
-  //       {logoutButton}
-  //     </>
-  //   );
-  // }
-
   const content = (
-    <>
-      <Box sx={{ display: "flex" }}>
-        <CssBaseline />
-        <AppBar position="fixed" open={open}>
+    <Box
+      sx={{
+        backgroundColor: (theme) => theme.palette.background.secondary,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          backgroundColor: (theme) => theme.palette.background.secondary,
+        }}
+      >
+        <AppBar
+          position="fixed"
+          open={open}
+          sx={{
+            backgroundColor: (theme) => theme.palette.background.secondary,
+            boxShadow: "none",
+            backgroundImage: "none",
+          }}
+        >
           <Toolbar>
             <IconButton
-              color="inherit"
               aria-label="open drawer"
               onClick={handleDrawerOpen}
               edge="start"
@@ -95,30 +88,30 @@ const DashHeader = ({ dark, setDark }) => {
                 ...(open && { display: "none" }),
               }}
             >
-              <Menu />
+              <MenuOutlined />
             </IconButton>
             <Tooltip title="Go back to home page">
               <IconButton sx={{ mr: 1 }} onClick={() => navigate("/dash")}>
-                <Home />
+                <HomeOutlined />
               </IconButton>
             </Tooltip>
             <Typography
               variant="h6"
               noWrap
               component="div"
-              sx={{ flexGrow: 1 }}
+              sx={{ flexGrow: 1, color: (theme) => theme.palette.text.primary }}
             >
               Dashboard
             </Typography>
             <IconButton onClick={() => setDark(!dark)}>
-              {dark ? <Brightness7 /> : <Brightness4 />}
+              {dark ? <BrightnessHigh /> : <BrightnessLow />}
             </IconButton>
           </Toolbar>
           <p className={errClass}>{error?.data?.message}</p>
         </AppBar>
         <SideList {...{ open, setOpen, sendLogout }} />
       </Box>
-    </>
+    </Box>
   );
 
   return content;

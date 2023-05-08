@@ -1,42 +1,30 @@
 import { Outlet } from "react-router-dom";
 import DashHeader from "./DashHeader";
-import { useMemo, useState } from "react";
-import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import { Container } from "@mui/material";
+import { Container, Box } from "@mui/material";
 
-const DashLayout = ({dark,setDark}) => {
-  // const [dark, setDark] = useState(true);
-
-  // const darkTheme = useMemo(
-  //   () =>
-  //     createTheme({
-  //       palette: {
-  //         mode: dark ? "dark" : "light",
-  //       },
-  //     }),
-  //   [dark]
-  // );
-
+const DashLayout = ({ dark, setDark }) => {
   return (
-    // <ThemeProvider theme={darkTheme}>
-      <div
-        style={{
-          display: "flex",
-          paddingTop: "5rem",
-          paddingLeft: "1rem",
-          paddingRight: "2rem",
+    <Box
+      sx={{
+        backgroundColor: (theme) => theme.palette.background.primary,
+        display: "flex",
+        paddingTop: "5rem",
+        // marginLeft: "1rem",
+        paddingRight: "2rem",
+        height:"100vh"
+      }}
+    >
+      <DashHeader
+        dark={dark}
+        setDark={setDark}
+        sx={{
+          backgroundColor: (theme) => theme.palette.background.primary,
         }}
-      >
-        <DashHeader dark={dark} setDark={setDark} />
-        <Container maxWidth="1500px">
-          <Outlet />
-        </Container>
-
-        {/* <div className="dash-container">
-          <Outlet />
-        </div> */}
-      </div>
-    // </ThemeProvider>
+      />
+      <Container maxWidth="1500px" >
+        <Outlet />
+      </Container>
+    </Box>
   );
 };
 export default DashLayout;
