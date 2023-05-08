@@ -97,7 +97,7 @@ const SingleSchedulePage = () => {
 
   content = (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <Typography>
+      <Typography sx={{ color: (theme) => theme.palette.text.primary }}>
         Materials List (Click Add Materials to add a Material or View Summary to
         view aggregations)
       </Typography>

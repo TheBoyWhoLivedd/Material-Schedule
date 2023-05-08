@@ -3,16 +3,18 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSendLogoutMutation } from "../features/auth/authApiSlice";
 import useAuth from "../hooks/useAuth";
 import { styled } from "@mui/material/styles";
-import {
-  Box,
-  Toolbar,
-  CssBaseline,
-  Typography,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Toolbar, Typography, IconButton, Tooltip } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
-import { Brightness4, Brightness7, Home, Menu } from "@mui/icons-material";
+import {
+  Brightness4,
+  Brightness7,
+  Home,
+  Menu,
+  BrightnessHigh,
+  BrightnessLow,
+  HomeOutlined,
+  MenuOutlined,
+} from "@mui/icons-material";
 import { useState } from "react";
 import SideList from "./SideList";
 
@@ -78,7 +80,6 @@ const DashHeader = ({ dark, setDark }) => {
         >
           <Toolbar>
             <IconButton
-              color="inherit"
               aria-label="open drawer"
               onClick={handleDrawerOpen}
               edge="start"
@@ -87,23 +88,23 @@ const DashHeader = ({ dark, setDark }) => {
                 ...(open && { display: "none" }),
               }}
             >
-              <Menu />
+              <MenuOutlined />
             </IconButton>
             <Tooltip title="Go back to home page">
               <IconButton sx={{ mr: 1 }} onClick={() => navigate("/dash")}>
-                <Home />
+                <HomeOutlined />
               </IconButton>
             </Tooltip>
             <Typography
               variant="h6"
               noWrap
               component="div"
-              sx={{ flexGrow: 1 }}
+              sx={{ flexGrow: 1, color: (theme) => theme.palette.text.primary }}
             >
               Dashboard
             </Typography>
             <IconButton onClick={() => setDark(!dark)}>
-              {dark ? <Brightness7 /> : <Brightness4 />}
+              {dark ? <BrightnessHigh /> : <BrightnessLow />}
             </IconButton>
           </Toolbar>
           <p className={errClass}>{error?.data?.message}</p>

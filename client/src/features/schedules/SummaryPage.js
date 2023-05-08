@@ -33,7 +33,13 @@ const SummaryPage = () => {
 
   content = (
     <div>
-      <Typography variant="h5" style={{ marginBottom: "1rem" }}>
+      <Typography
+        variant="h5"
+        sx={{
+          marginBottom: "1rem",
+          color: (theme) => theme.palette.text.primary,
+        }}
+      >
         Aggregated Materials (Click on each to reveal details)
       </Typography>
       {(schedule?.summary ? [...schedule.summary] : [])

@@ -11,6 +11,7 @@ const DashLayout = ({ dark, setDark }) => {
         paddingTop: "5rem",
         // marginLeft: "1rem",
         paddingRight: "2rem",
+        height:"100vh"
       }}
     >
       <DashHeader
@@ -20,7 +21,7 @@ const DashLayout = ({ dark, setDark }) => {
           backgroundColor: (theme) => theme.palette.background.primary,
         }}
       />
-      <Container maxWidth="1500px" height="100vh">
+      <Container maxWidth="1500px" >
         <Outlet />
       </Container>
     </Box>

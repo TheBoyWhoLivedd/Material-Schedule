@@ -5,7 +5,7 @@ const theme = ({ dark }) => {
     palette: {
       mode: dark ? "dark" : "light",
       background: {
-        primary: dark ? "#121212" : "#E4E4E4",
+        primary: dark ? "#111315" : "#F4F4F4",
         secondary: dark ? "#1A1D1F" : "#FCFCFC",
         // paper: dark ? "#1f1f1f" : "#ffffff",
       },
