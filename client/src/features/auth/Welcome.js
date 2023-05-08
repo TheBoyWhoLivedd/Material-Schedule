@@ -15,14 +15,14 @@ const Welcome = () => {
   }).format(date);
 
   const content = (
-    <section className="welcome">
+    <section className="">
       <p>{today}</p>
 
       <h1>Welcome {username}!</h1>
 
-      <div className="background">
+      {/* <div className="background">
         <BackgroundAnimation />
-      </div>
+      </div> */}
     </section>
   );
 

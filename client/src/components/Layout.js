@@ -1,23 +1,12 @@
 import { Outlet } from "react-router-dom";
-import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
+
 import { useMemo, useState } from "react";
+import CssBaseline from "@mui/material/CssBaseline";
 
-const Layout = ({dark}) => {
- 
-
-  const darkTheme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode: dark ? "dark" : "light",
-        },
-      }),
-    [dark]
-  );
+const Layout = () => {
   return (
-    <ThemeProvider theme={darkTheme}>
-      <Outlet />
-    </ThemeProvider>
+    // <CssBaseline />
+    <Outlet />
   );
 };
 export default Layout;
