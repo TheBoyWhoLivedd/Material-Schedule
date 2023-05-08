@@ -5,18 +5,41 @@ import { useSelector } from "react-redux";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
-import { useMediaQuery } from "@mui/material";
+import {
+  CardContent,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Skeleton,
+} from "@mui/material";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 import { Edit } from "feather-icons-react";
+
+const CustomCardContent = () => {
+  const theme = useTheme();
+
+  return (
+    <CardContent>
+      <Skeleton variant="text" height={30} />
+      <Skeleton variant="text" />
+      <Skeleton variant="text" />
+      <Skeleton variant="text" />
+      <Skeleton variant="text" />
+      <Skeleton variant="text" />
+    </CardContent>
+  );
+};
 
 const Schedule = ({ scheduleId }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+  const { schedule, isLoading } = useGetSchedulesQuery("schedulesList", {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[scheduleId],
     }),
@@ -30,15 +53,26 @@ const Schedule = ({ scheduleId }) => {
       day: "numeric",
       month: "long",
     });
-    // const updated = new Date(note.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
+    // const updated = new Date(schedule.updatedAt).toLocaleString('en-US', { day: 'numeric', month: 'long' })
 
     const handleEdit = () => navigate(`/dash/notes/${scheduleId}`);
 
     return (
       <>
-        <Grid item key={schedule.id} xs={12} sm={6} md={4} styles={{paddingRight:"32px"}}>
+        <Grid
+          item
+          key={schedule.id}
+          xs={12}
+          sm={6}
+          md={4}
+          styles={{ paddingRight: "32px" }}
+        >
           <Card
             sx={{
+              backgroundColor: (theme) => theme.palette.background.secondary,
+              "&.MuiPaper-root": {
+                backgroundImage: "none !important",
+              },
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -48,7 +82,6 @@ const Schedule = ({ scheduleId }) => {
               },
               [theme.breakpoints.down("sm")]: {
                 height: "auto",
-                
               },
             }}
           >
@@ -58,54 +91,52 @@ const Schedule = ({ scheduleId }) => {
                 variant="h5"
                 component="h2"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "1.2rem",
-                  },
+                  fontSize: isSmallScreen ? "1.2rem" : "1.5rem",
+                  fontWeight: "bold",
                 }}
               >
                 {schedule.title}
               </Typography>
               <Typography
+                variant="body1"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "0.8rem",
-                  },
+                  fontSize: isSmallScreen ? "0.8rem" : "1rem",
+                  mb: 1,
                 }}
               >
-                Funded By {schedule.funder}
+                <AttachMoneyIcon /> {schedule.funder}
               </Typography>
               <Typography
+                variant="body1"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "0.8rem",
-                  },
+                  fontSize: isSmallScreen ? "0.8rem" : "1rem",
+                  mb: 1,
                 }}
               >
-                Contractor: {schedule.contractor}
+                <WorkOutlineIcon /> {schedule.contractor}
               </Typography>
               <Typography
+                variant="body1"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "0.8rem",
-                  },
+                  fontSize: isSmallScreen ? "0.8rem" : "1rem",
+                  mb: 1,
                 }}
               >
-                Contractor's TIN: {schedule.tin}
+                <FingerprintOutlinedIcon /> {schedule.tin}
               </Typography>
               <Typography
+                variant="body1"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "0.8rem",
-                  },
+                  fontSize: isSmallScreen ? "0.8rem" : "1rem",
+                  mb: 1,
                 }}
               >
-                By {schedule.username}
+                <PersonOutlineIcon /> {schedule.username}
               </Typography>
               <Typography
+                variant="body1"
                 sx={{
-                  [theme.breakpoints.down("sm")]: {
-                    fontSize: "0.8rem",
-                  },
+                  fontSize: isSmallScreen ? "0.8rem" : "1rem",
                 }}
               >
                 {created}
@@ -125,10 +156,9 @@ const Schedule = ({ scheduleId }) => {
                     top: 0,
                     right: 0,
                     background: "transparent",
-                    color: "black",
+
                     "&:hover": {
                       background: "transparent",
-                      color: "black",
                     },
                     [theme.breakpoints.down("sm")]: {
                       position: "relative",
@@ -137,7 +167,7 @@ const Schedule = ({ scheduleId }) => {
                     },
                   }}
                 >
-                  <Edit size={20} />
+                  <EditOutlinedIcon />
                 </Button>
               </Link>
             </CardActions>
