@@ -19,34 +19,67 @@ import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
-import { Edit } from "feather-icons-react";
-
-const CustomCardContent = () => {
-  const theme = useTheme();
-
-  return (
-    <CardContent>
-      <Skeleton variant="text" height={30} />
-      <Skeleton variant="text" />
-      <Skeleton variant="text" />
-      <Skeleton variant="text" />
-      <Skeleton variant="text" />
-      <Skeleton variant="text" />
-    </CardContent>
-  );
-};
-
 const Schedule = ({ scheduleId }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const { schedule, isLoading } = useGetSchedulesQuery("schedulesList", {
-    selectFromResult: ({ data }) => ({
-      schedule: data?.entities[scheduleId],
-    }),
-  });
+  const { data, isLoading } = useGetSchedulesQuery("schedulesList");
+  const schedule = data?.entities[scheduleId];
   console.log(schedule);
 
   const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <Grid
+        item
+        xs={12}
+        sm={6}
+        md={4}
+        style={{
+          gap: "8px",
+          
+        }}
+      >
+        <Card
+          sx={{
+            backgroundColor: "#FFFFFF21",
+            borderRadius: "4px",
+            overflow: "hidden",
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            height: "250px",
+            marginBottom:"16px",
+          }}
+        >
+          <Skeleton variant="text" width="80%" height="50px" />{" "}
+          <Skeleton variant="text" width="50%" height="30px" />{" "}
+          <Skeleton variant="text" width="40%" height="25px" />{" "}
+          <Skeleton variant="text" width="65%" height="20px" />{" "}
+          <Skeleton variant="text" width="30%" height="25px" />{" "}
+          <Skeleton variant="text" width="20%" height="20px" />{" "}
+        </Card>
+        <Card
+          sx={{
+            backgroundColor: "#FFFFFF21",
+            borderRadius: "4px",
+            overflow: "hidden",
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            height: "250px",
+          }}
+        >
+          <Skeleton variant="text" width="80%" height="50px" />{" "}
+          <Skeleton variant="text" width="50%" height="30px" />{" "}
+          <Skeleton variant="text" width="40%" height="25px" />{" "}
+          <Skeleton variant="text" width="65%" height="20px" />{" "}
+          <Skeleton variant="text" width="30%" height="25px" />{" "}
+          <Skeleton variant="text" width="20%" height="20px" />{" "}
+        </Card>
+      </Grid>
+    );
+  }
 
   if (schedule) {
     const created = new Date(schedule.createdAt).toLocaleString("en-US", {
@@ -104,7 +137,7 @@ const Schedule = ({ scheduleId }) => {
                   mb: 1,
                 }}
               >
-                <AttachMoneyIcon /> {schedule.funder}
+                <AttachMoneyIcon sx={{ color: "#475BE8" }} /> {schedule.funder}
               </Typography>
               <Typography
                 variant="body1"
@@ -113,7 +146,8 @@ const Schedule = ({ scheduleId }) => {
                   mb: 1,
                 }}
               >
-                <WorkOutlineIcon /> {schedule.contractor}
+                <WorkOutlineIcon sx={{ color: "#475BE8" }} />{" "}
+                {schedule.contractor}
               </Typography>
               <Typography
                 variant="body1"
@@ -122,7 +156,8 @@ const Schedule = ({ scheduleId }) => {
                   mb: 1,
                 }}
               >
-                <FingerprintOutlinedIcon /> {schedule.tin}
+                <FingerprintOutlinedIcon sx={{ color: "#475BE8" }} />{" "}
+                {schedule.tin}
               </Typography>
               <Typography
                 variant="body1"
@@ -131,7 +166,8 @@ const Schedule = ({ scheduleId }) => {
                   mb: 1,
                 }}
               >
-                <PersonOutlineIcon /> {schedule.username}
+                <PersonOutlineIcon sx={{ color: "#475BE8" }} />{" "}
+                {schedule.username}
               </Typography>
               <Typography
                 variant="body1"
