@@ -84,12 +84,17 @@ const Login = () => {
     return (
       <Typography
         variant="body2"
-        color="text.primary"
+        
         align="center"
         {...props}
       >
         {"Copyright © "}
-        <MaterialLink color="inherit" href="https://ura.go.ug/">
+        <MaterialLink
+          sx={{
+            color: (theme) => theme.palette.text.primary,
+          }}
+          href="https://ura.go.ug/"
+        >
           Uganda Revenue Authority
         </MaterialLink>{" "}
         {new Date().getFullYear()}
