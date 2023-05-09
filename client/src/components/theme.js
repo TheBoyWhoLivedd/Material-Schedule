@@ -9,6 +9,9 @@ const theme = ({ dark }) => {
         secondary: dark ? "#1A1D1F" : "#FCFCFC",
         // paper: dark ? "#1f1f1f" : "#ffffff",
       },
+      text: {
+        primary: dark ? "#ccc" : "#000000",
+      },
     },
   });
 };
