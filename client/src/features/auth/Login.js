@@ -5,22 +5,35 @@ import { setCredentials } from "./authSlice";
 import { useLoginMutation } from "./authApiSlice";
 import usePersist from "../../hooks/usePersist";
 import useTitle from "../../hooks/useTitle";
-import PulseLoader from "react-spinners/PulseLoader";
+import { CircularProgress } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import { InputAdornment, Link as MaterialLink } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
+import { Link as MaterialLink } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import UserIcon from "@mui/icons-material/Person";
 import PasswordIcon from "@mui/icons-material/Lock";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
+import {
+  Paper,
+  styled,
+  Typography,
+  Box,
+  Grid,
+  InputAdornment,
+  Checkbox,
+  TextField,
+} from "@mui/material";
 import { GlobalStyles } from "@mui/system";
+
+// Custom Spinner Component
+const Spinner = styled(CircularProgress)(({ theme }) => ({
+  position: "absolute",
+  left: "45%",
+  top: "45%",
+  transform: "translate(-50%, -50%)",
+  color: theme.palette.primary.main,
+}));
 
 const Login = () => {
   useTitle("Employee Login");
@@ -91,7 +104,42 @@ const Login = () => {
 
   const errClass = errMsg ? "errmsg" : "offscreen";
 
-  if (isLoading) return <PulseLoader color={"#FFF"} />;
+  if (isLoading)
+    return (
+      <Box
+        sx={{
+          backgroundColor: (theme) => theme.palette.background.primary,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+          textAlign: "center",
+          padding: (theme) => theme.spacing(2),
+        }}
+      >
+        <Spinner size={80} thickness={5} />
+        <Typography
+          variant="h6"
+          sx={{
+            color: (theme) => theme.palette.text.primary,
+            marginTop: "1rem",
+          }}
+        >
+          Loading, please wait...
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: (theme) => theme.palette.text.primary,
+            marginTop: "1rem",
+          }}
+        >
+          Initial request may take longer due to the server using shared
+          hosting.
+        </Typography>
+      </Box>
+    );
 
   const content = (
     <Box
@@ -148,11 +196,6 @@ const Login = () => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    // backgroundColor: (theme) =>
-                    //   theme.palette.background.primary,
-                    // "& .css-j3vtcw-MuiPaper-root-MuiGrid-root": {
-                    //   backgroundImage: "none",
-                    // },
                   }}
                 >
                   <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
