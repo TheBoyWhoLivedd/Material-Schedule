@@ -115,17 +115,97 @@ const SingleApplicationPage = () => {
       setIsPopperOpen(false);
     });
   };
+
   // Function to delete the item
-  const onDeleteitemClicked = async (applId, itemlId) => {
-    console.log(appId, itemId);
-    await deleteApplicationItem({ id: id, appId: applId, itemId: itemlId });
+  const [toBeDeleted, setToBeDeleted] = useState({ appId: null, itemId: null });
+  const [deleteApplicationModalOpen, setDeleteApplicationModalOpen] =
+    useState(false);
+  const [deleteApplicationItemModalOpen, setDeleteApplicationItemModalOpen] =
+    useState(false);
+  const handleDeleteApplicationItem = (applId, itemId) => {
+    setToBeDeleted({ appId: applId, itemId });
+    setDeleteApplicationItemModalOpen(true);
   };
 
   // Function to delete the whole Application
-  const onDeleteApplicationClicked = async (applId) => {
-    console.log(appId);
-    await deleteApplication({ id: id, appId: applId });
+  const [deleting, setIsDeleting] = useState(false);
+
+  const handleDeleteApplication = (appId) => {
+    setToBeDeleted({ appId: appId, itemId: null });
+    setDeleteApplicationModalOpen(true);
   };
+
+  const handleConfirmDeleteItem = async () => {
+    if (toBeDeleted.itemId) {
+      try {
+        setIsDeleting(true);
+        const response = await deleteApplicationItem({
+          id: id,
+          appId: toBeDeleted.appId,
+          itemId: toBeDeleted.itemId,
+        });
+        if (response.data.isError) {
+          console.log(`Error: ${response.message}`);
+          openSnackbarWithMessage(`Error: ${response.data.message}`);
+        } else {
+          openSnackbarWithMessage(`Item Deleted`);
+        }
+      } catch (error) {
+        openSnackbarWithMessage(`Error: ${error.message}`);
+      } finally {
+        setToBeDeleted({ appId: null, itemId: null });
+        setDeleteApplicationItemModalOpen(false);
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleConfirmDeleteApplication = async () => {
+    if (!toBeDeleted.itemId) {
+      try {
+        setIsDeleting(true);
+        const response = await deleteApplication({
+          id: id,
+          appId: toBeDeleted.appId,
+        });
+        if (response.data.isError) {
+          console.log(`Error: ${response.message}`);
+          openSnackbarWithMessage(`Error: ${response.data.message}`);
+        } else {
+          openSnackbarWithMessage(`Application Deleted`);
+        }
+      } catch (error) {
+        openSnackbarWithMessage(`Error: ${error.message}`);
+      } finally {
+        setToBeDeleted({ appId: null, itemId: null });
+        setDeleteApplicationModalOpen(false);
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  // Delete application modal
+  const deleteApplicationModal = (
+    <DeleteModal
+      deleting={deleting}
+      handleOpenDeleteModal={() => setDeleteApplicationModalOpen(true)}
+      handleCloseDeleteModal={() => setDeleteApplicationModalOpen(false)}
+      openDeleteModal={deleteApplicationModalOpen}
+      handleDelete={handleConfirmDeleteApplication}
+    />
+  );
+
+  // Delete application item modal
+  const deleteApplicationItemModal = (
+    <DeleteModal
+      deleting={deleting}
+      handleOpenDeleteModal={() => setDeleteApplicationItemModalOpen(true)}
+      handleCloseDeleteModal={() => setDeleteApplicationItemModalOpen(false)}
+      openDeleteModal={deleteApplicationItemModalOpen}
+      handleDelete={handleConfirmDeleteItem}
+      element="icon"
+    />
+  );
 
   //function to download application.
   const accessToken = useSelector(selectCurrentToken);
@@ -268,11 +348,15 @@ const SingleApplicationPage = () => {
                   <Plus width={20} />
                   Add
                 </Button>
-                <DeleteModal
-                  handleDelete={(e) =>
-                    onDeleteApplicationClicked(application._id)
-                  }
-                />
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => handleDeleteApplication(application._id)}
+                  disabled={deleting}
+                >
+                  <Trash width={20} />
+                  Delete
+                </Button>
               </div>
             </div>
 
@@ -315,15 +399,21 @@ const SingleApplicationPage = () => {
                           >
                             <Edit />
                           </Button>
-                          <DeleteModal
-                            handleDelete={(e) =>
-                              onDeleteitemClicked(application._id, item._id)
+                          <Button
+                            className="edit-button"
+                            variant="outlined"
+                            color="secondary"
+                            disabled={deleting}
+                            onClick={(e) =>
+                              handleDeleteApplicationItem(
+                                application._id,
+                                item._id
+                              )
                             }
-                            isLoading={isDelLoading}
-                            isSuccess={isDelSuccess}
-                            element="icon"
-                            className="delete-button"
-                          />
+                            style={{ border: "none" }}
+                          >
+                            <Trash />
+                          </Button>
                         </div>
                       </ListItemSecondaryAction>
                     </ListItem>
@@ -333,6 +423,14 @@ const SingleApplicationPage = () => {
             </AccordionDetails>
           </Accordion>
         ))}
+        <div
+          style={{
+            display: "none",
+          }}
+        >
+          {deleteApplicationModal}
+          {deleteApplicationItemModal}
+        </div>
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
           open={openSnackbar}

@@ -20,6 +20,7 @@ const SingleSchedulePage = () => {
 
   const { id } = useParams();
   const [open, setOpen] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [open1, setOpen1] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -34,8 +35,10 @@ const SingleSchedulePage = () => {
   };
 
   const handleOpen = () => setOpen(true);
+  const handleOpenDeleteModal = () => setOpenDeleteModal(true);
 
   const handleClose = () => setOpen(false);
+  const handleCloseDeleteModal = () => setOpenDeleteModal(false);
 
   const [selectedChild, setSelectedChild] = useState(null);
 
@@ -55,10 +58,29 @@ const SingleSchedulePage = () => {
   });
 
   console.log(schedule);
+  const [deleting, setIsDeleting] = useState(false);
+  const [deleteMaterialId, setDeleteMaterialId] = useState(null);
   const [deleteMaterial] = useDeleteMaterialMutation();
-
   const onDeleteMaterialClicked = async (materialId) => {
-    await deleteMaterial({ id: schedule.id, _id: materialId });
+    try {
+      setIsDeleting(true);
+      const response = await deleteMaterial({
+        id: schedule.id,
+        _id: deleteMaterialId,
+      });
+      if (response.data.isError) {
+        console.log(`Error: ${response.message}`);
+        openSnackbarWithMessage(`Error: ${response.data.message}`);
+      } else {
+        openSnackbarWithMessage(`Material Deleted`);
+      }
+    } catch (error) {
+      openSnackbarWithMessage(`Error: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+      handleCloseDeleteModal();
+      setDeleteMaterialId(null);
+    }
   };
   const [pageSize, setPageSize] = useState(40);
   const [rowId, setRowId] = useState(null);
@@ -86,13 +108,29 @@ const SingleSchedulePage = () => {
       type: "actions",
       width: 200,
       renderCell: (params) => (
-        <DeleteModal
-          handleDelete={() => onDeleteMaterialClicked(params.row._id)}
-          element="icon"
-        />
+        <Button
+          onClick={() => {
+            setDeleteMaterialId(params.row._id);
+            handleOpenDeleteModal();
+          }}
+          color="secondary"
+        >
+          <Trash size={20} />
+        </Button>
       ),
     },
   ]);
+
+  const deleteModal = (
+    <DeleteModal
+      deleting={deleting}
+      handleOpenDeleteModal={handleOpenDeleteModal}
+      handleCloseDeleteModal={handleCloseDeleteModal}
+      openDeleteModal={openDeleteModal}
+      handleDelete={onDeleteMaterialClicked}
+      element="icon"
+    />
+  );
   let content;
 
   content = (
@@ -107,7 +145,6 @@ const SingleSchedulePage = () => {
           justifyContent: "flex-end",
         }}
       >
-        
         <ModalComponent
           open={open}
           handleOpen={handleOpen}
@@ -159,36 +196,48 @@ const SingleSchedulePage = () => {
           }}
         >
           {schedule && (
-            <DataGrid
-              columns={columns}
-              rows={schedule.materials}
-              rowHeight={30}
-              getRowId={(row) => row._id}
-              rowsPerPageOptions={[40, 80, 100]}
-              pageSize={pageSize}
-              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-              getRowSpacing={(params) => ({
-                top: params.isFirstVisible ? 0 : 5,
-                bottom: params.isLastVisible ? 0 : 5,
-              })}
-              sx={{
-                "& .MuiDataGrid-cell": {
-                  fontSize: "0.8rem",
-                  padding: "8px",
-                  borderBottom: "none",
-                },
-                "& .MuiDataGrid-row": {
-                  height: "32px",
-                },
-              }}
-              onCellEditCommit={(params) => setRowId(params.id)}
-            />
+            <>
+              <DataGrid
+                columns={columns}
+                rows={schedule.materials}
+                rowHeight={30}
+                getRowId={(row) => row._id}
+                rowsPerPageOptions={[40, 80, 100]}
+                pageSize={pageSize}
+                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                getRowSpacing={(params) => ({
+                  top: params.isFirstVisible ? 0 : 5,
+                  bottom: params.isLastVisible ? 0 : 5,
+                })}
+                sx={{
+                  "& .MuiDataGrid-cell": {
+                    fontSize: "0.8rem",
+                    padding: "8px",
+                    borderBottom: "none",
+                  },
+                  "& .MuiDataGrid-row": {
+                    height: "32px",
+                  },
+                }}
+                onCellEditCommit={(params) => setRowId(params.id)}
+              />
+            </>
           )}
         </Box>
       </TableContainer>
     </div>
   );
-
-  return content;
+  return (
+    <>
+      {content}
+      <div
+        style={{
+          display: "none",
+        }}
+      >
+        {deleteModal}
+      </div>
+    </>
+  );
 };
 export default SingleSchedulePage;

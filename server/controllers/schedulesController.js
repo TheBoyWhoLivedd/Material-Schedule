@@ -52,61 +52,6 @@ const { calculateScreed, calculateTiles } = require("../utils/calculations");
 // @route GET /schedules
 // @access Private
 
-// const updateBalanceAllowable = async (schedule, objectId) => {
-//   const totalRequested = schedule.totalRequested;
-//   const summary = schedule.summary;
-
-//   console.log("totalRequested", totalRequested);
-//   console.log("summary", summary);
-
-//   // Create a map from the balanceAllowable array for faster lookup
-//   const balanceAllowableMap = new Map(
-//     schedule.balanceAllowable.map((item) => [item._id, item.Value])
-//   );
-
-//   for (const { _id: requestedId, amountRequested } of totalRequested) {
-//     const summaryItem = summary.find(
-//       ({ _id: summaryId }) => summaryId === requestedId
-//     );
-
-//     if (summaryItem) {
-//       const currentAllowableValue = balanceAllowableMap.get(requestedId) || 0;
-//       const newAllowableValue = summaryItem.Value - parseFloat(amountRequested);
-
-//       // Update the value in the map
-//       balanceAllowableMap.set(requestedId, newAllowableValue);
-
-//       // Update the value in the database
-//       await Schedule.updateMany(
-//         { _id: objectId, "balanceAllowable._id": requestedId },
-//         { $set: { "balanceAllowable.$.Value": newAllowableValue } }
-//       );
-
-//       // If there was no previous balanceAllowable item, add a new one
-//       if (!currentAllowableValue) {
-//         const newBalanceAllowableItem = {
-//           _id: requestedId,
-//           Value: newAllowableValue,
-//         };
-//         await Schedule.updateMany(
-//           { _id: objectId },
-//           { $push: { balanceAllowable: newBalanceAllowableItem } }
-//         );
-//       }
-//     }
-//   }
-
-//   // Remove any items in balanceAllowable that are not in totalRequested or summary
-//   for (const { _id } of schedule.balanceAllowable) {
-//     if (!totalRequested.some(({ _id: requestedId }) => requestedId === _id)) {
-//       await Schedule.updateMany(
-//         { _id: objectId },
-//         { $pull: { balanceAllowable: { _id } } }
-//       );
-//     }
-//   }
-// };
-
 const updateBalanceAllowable = async (schedule, objectId) => {
   const totalRequested = schedule.totalRequested;
   const summary = schedule.summary;

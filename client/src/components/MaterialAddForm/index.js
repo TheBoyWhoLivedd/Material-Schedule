@@ -87,7 +87,7 @@ const MaterialAddForm = ({
       if (regex.test(e.target.value)) {
         // If there is an incomplete expression, don't evaluate the input
         setError(
-          "The expression is incomplete because it has an open brcaket or missing operator at end"
+          "The expression is incomplete because it has an open bracket or missing operator at end"
         );
         setOptions({
           ...options,
@@ -146,8 +146,10 @@ const MaterialAddForm = ({
   const canEdit = useMemo(() => "_id" in options, [options]);
 
   // Add Material
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const onSaveMaterialClicked = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     console.log(options);
     try {
       const response = await addNewMaterial({
@@ -171,6 +173,8 @@ const MaterialAddForm = ({
       }
     } catch (error) {
       openSnackbarWithMessage(`Error: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -209,8 +213,6 @@ const MaterialAddForm = ({
       openSnackbarWithMessage(`Error: ${error.message}`);
     }
   };
-
-  // Update Material
 
   return (
     <div
@@ -965,9 +967,9 @@ const MaterialAddForm = ({
             variant="outlined"
             type="submit"
             className="button"
-            disabled={error}
+            disabled={isSubmitting || error}
           >
-            Generate
+            {isSubmitting ? "Generating..." : "Generate"}
           </Button>
         ) : (
           <Button
