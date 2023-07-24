@@ -9,25 +9,34 @@ import {
 } from "@mui/material";
 import { Trash } from "feather-icons-react";
 
-const DeleteModal = ({ handleDelete, element, isLoading, isSuccess }) => {
-  const [open, setOpen] = React.useState(false);
+const DeleteModal = ({
+  handleDelete,
+  element,
+  isLoading,
+  deleting,
+  handleOpenDeleteModal,
+  handleCloseDeleteModal,
+  openDeleteModal,
+  isSuccess,
+}) => {
+  // const [open, setOpen] = React.useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  // const handleClickOpen = () => {
+  //   setOpen(true);
+  // };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  // const handleClose = () => {
+  //   setOpen(false);
+  // };
 
   return (
     <div>
-      <Button onClick={handleClickOpen} color="secondary">
+      <Button onClick={handleOpenDeleteModal} color="secondary">
         {element === "icon" ? <Trash size={20} /> : "Delete"}
       </Button>
       <Dialog
-        open={open}
-        onClose={handleClose}
+        open={openDeleteModal}
+        onClose={handleCloseDeleteModal}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
@@ -39,11 +48,20 @@ const DeleteModal = ({ handleDelete, element, isLoading, isSuccess }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button
+            onClick={handleCloseDeleteModal}
+            color="primary"
+            disabled={deleting}
+          >
             Cancel
           </Button>
-          <Button onClick={handleDelete} color="secondary" autoFocus>
-            {isLoading ? "Deleting..." : "Delete"}
+          <Button
+            disabled={isLoading || deleting}
+            onClick={handleDelete}
+            color="secondary"
+            autoFocus
+          >
+            {isLoading || deleting ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>

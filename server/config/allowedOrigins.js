@@ -4,7 +4,7 @@ const allowedOrigins = [
   "http://localhost:3500",
   "https://materialschedule.onrender.com",
   "https://server-materialschedule.hitajitech.site",
-
+  "https://materialschedule.vercel.app",
   "https://hitajitech.site/server-deemedvat",
 
   "https://materialschedule-api.onrender.com",
