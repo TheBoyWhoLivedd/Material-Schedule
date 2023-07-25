@@ -10,7 +10,13 @@ import AddEntryComponent from "../AddEntryComponent";
 import "./ApplicationAddForm.css";
 import Content from "../Content";
 
-const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWithMessage }) => {
+const ApplicationAddForm = ({
+  id,
+  handleClose,
+  content,
+  schedule,
+  openSnackbarWithMessage,
+}) => {
   const [entries, setEntries] = useState([]);
   if (content) {
     setEntries(content);
@@ -19,7 +25,6 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWit
     item: "",
     supplier: "",
     amountRequested: "",
-   
   };
   const [newEntry, setNewEntry] = useState(initialState);
 
@@ -52,7 +57,7 @@ const ApplicationAddForm = ({ id, handleClose, content, schedule,openSnackbarWit
       id: id,
     });
     if (response.data.isError) {
-      console.log(`Error: ${response.message}`);  
+      console.log(`Error: ${response.message}`);
       openSnackbarWithMessage(`Error: ${response.data.message}`);
     } else {
       handleClose();

@@ -1,15 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import useTitle from "../../hooks/useTitle";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useParams, Link } from "react-router-dom";
 import Paper from "@mui/material/Paper";
-// import { Button, TextField } from "@mui/material";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import {
   useUpdateApplicationItemMutation,
   useDeleteApplicationItemMutation,
   useDeleteApplicationMutation,
-  useDownloadApplicationMutation,
 } from "./schedulesApiSlice";
 import ModalComponent from "../../components/ModalComponent";
 import ModalSecondary from "../../components/ModalSecondary";
@@ -34,9 +32,10 @@ import { applicationItems } from "../../assets/data";
 import { Autocomplete } from "@mui/material";
 import DeleteModal from "../../components/DeleteModal";
 import moment from "moment";
-import FileSaver from "file-saver";
 import { useSelector } from "react-redux";
 import { selectCurrentToken } from "../auth/authSlice";
+import useSnackbar from "../../hooks/useSnackbar";
+import useDeleteModal from "../../hooks/useDeleteModal";
 
 // Custom Popper component that also handles closing when user clicks away
 const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
@@ -49,31 +48,49 @@ const MyPopper = ({ isOpen, clickAwayHandler, children, anchorEl }) => (
 
 const SingleApplicationPage = () => {
   useTitle("Deemed VAT: Single Application Page");
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  //State for the snackbar
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const openSnackbarWithMessage = (message) => {
-    setSnackbarMessage(message);
-    setOpenSnackbar(true);
-  };
-
-  const closeSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
-  const { id } = useParams();
 
   // State for the edit form
+  const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [appId, setAppId] = useState(null);
   const [itemId, setItemId] = useState(null);
   const [isPopperOpen, setIsPopperOpen] = useState(false);
+  const [open1, setOpen1] = useState(false);
+  const [selectedChild, setSelectedChild] = useState(null);
+  const [deleting, setIsDeleting] = useState(false);
+  const [toBeDeleted, setToBeDeleted] = useState({ appId: null, itemId: null });
+
+  const { id } = useParams();
+  const accessToken = useSelector(selectCurrentToken);
+
+  // RTK Query mutations for updating deleting and downloading applications or items
+  const [updateApplicationItem, { isLoading }] =
+    useUpdateApplicationItemMutation();
+  const [deleteApplicationItem] = useDeleteApplicationItemMutation();
+  const [deleteApplication] = useDeleteApplicationMutation();
+
+  // Custom hooks
+  const {
+    openSnackbar,
+    snackbarMessage,
+    openSnackbarWithMessage,
+    closeSnackbar,
+  } = useSnackbar();
+
+  const {
+    deleteApplicationModalOpen,
+    deleteApplicationItemModalOpen,
+    handleOpenDeleteApplicationModal,
+    handleCloseDeleteApplicationModal,
+    handleOpenDeleteApplicationItemModal,
+    handleCloseDeleteApplicationItemModal,
+  } = useDeleteModal();
+
+  //Helper Functions
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const clickAwayHandler = (event) => {
     // Check if the event target has the "edit-button" class name
     if (event.target.className.includes("edit-button")) {
@@ -84,28 +101,28 @@ const SingleApplicationPage = () => {
   };
 
   // Handles the click event for the edit button
-  const handleEditClick = (event, item, applId) => {
-    setIsPopperOpen(true);
-    setEditItem(item);
-    setAnchorEl(event.currentTarget);
-    setAppId(applId);
-    setItemId(item._id);
-    console.log(appId, itemId);
-  };
-
-  // RTK Query mutations for updating deleting and downloading applications or items
-  const [updateApplicationItem, { isSuccess, isLoading }] =
-    useUpdateApplicationItemMutation();
-  const [
-    deleteApplicationItem,
-    { isSuccess: isDelSuccess, isLoading: isDelLoading },
-  ] = useDeleteApplicationItemMutation();
-  const [deleteApplication, { isSuccess: isDelAppSuccess }] =
-    useDeleteApplicationMutation();
-  const [downloadApplication] = useDownloadApplicationMutation();
+  const handleEditClick = useCallback(
+    (event, item, applId) => {
+      setIsPopperOpen(true);
+      setEditItem(item);
+      setAnchorEl(event.currentTarget);
+      setAppId(applId);
+      setItemId(item._id);
+      console.log(appId, itemId);
+    },
+    [
+      setIsPopperOpen,
+      setEditItem,
+      setAnchorEl,
+      setAppId,
+      setItemId,
+      appId,
+      itemId,
+    ]
+  );
 
   // Function to update the individual item
-  const updateItem = async () => {
+  const updateItem = useCallback(async () => {
     await updateApplicationItem({
       id: id,
       appId: appId,
@@ -114,28 +131,45 @@ const SingleApplicationPage = () => {
     }).then(() => {
       setIsPopperOpen(false);
     });
+  }, [id, appId, itemId, editItem, updateApplicationItem, setIsPopperOpen]);
+
+  // Handles change events for the edit individual item form
+  const handleOnItemSelect = useCallback(
+    (e, name) => {
+      setEditItem({ ...editItem, [name]: e.target.value });
+      console.log(editItem);
+    },
+    [editItem]
+  );
+
+  const expandModel = (child) => {
+    setSelectedChild(child);
+    setOpen1(true);
+  };
+  const closeModal = () => {
+    setSelectedChild(null);
+    setOpen1(false);
   };
 
   // Function to delete the item
-  const [toBeDeleted, setToBeDeleted] = useState({ appId: null, itemId: null });
-  const [deleteApplicationModalOpen, setDeleteApplicationModalOpen] =
-    useState(false);
-  const [deleteApplicationItemModalOpen, setDeleteApplicationItemModalOpen] =
-    useState(false);
-  const handleDeleteApplicationItem = (applId, itemId) => {
-    setToBeDeleted({ appId: applId, itemId });
-    setDeleteApplicationItemModalOpen(true);
-  };
+  const handleDeleteApplicationItem = useCallback(
+    (applId, itemId) => {
+      setToBeDeleted({ appId: applId, itemId });
+      handleOpenDeleteApplicationItemModal();
+    },
+    [setToBeDeleted, handleOpenDeleteApplicationItemModal]
+  );
 
   // Function to delete the whole Application
-  const [deleting, setIsDeleting] = useState(false);
+  const handleDeleteApplication = useCallback(
+    (appId) => {
+      setToBeDeleted({ appId: appId, itemId: null });
+      handleOpenDeleteApplicationModal();
+    },
+    [setToBeDeleted, handleOpenDeleteApplicationModal]
+  );
 
-  const handleDeleteApplication = (appId) => {
-    setToBeDeleted({ appId: appId, itemId: null });
-    setDeleteApplicationModalOpen(true);
-  };
-
-  const handleConfirmDeleteItem = async () => {
+  const handleConfirmDeleteItem = useCallback(async () => {
     if (toBeDeleted.itemId) {
       try {
         setIsDeleting(true);
@@ -154,13 +188,19 @@ const SingleApplicationPage = () => {
         openSnackbarWithMessage(`Error: ${error.message}`);
       } finally {
         setToBeDeleted({ appId: null, itemId: null });
-        setDeleteApplicationItemModalOpen(false);
+        handleCloseDeleteApplicationItemModal();
         setIsDeleting(false);
       }
     }
-  };
+  }, [
+    id,
+    toBeDeleted,
+    openSnackbarWithMessage,
+    handleCloseDeleteApplicationItemModal,
+    deleteApplicationItem,
+  ]);
 
-  const handleConfirmDeleteApplication = async () => {
+  const handleConfirmDeleteApplication = useCallback(async () => {
     if (!toBeDeleted.itemId) {
       try {
         setIsDeleting(true);
@@ -178,65 +218,91 @@ const SingleApplicationPage = () => {
         openSnackbarWithMessage(`Error: ${error.message}`);
       } finally {
         setToBeDeleted({ appId: null, itemId: null });
-        setDeleteApplicationModalOpen(false);
+        handleCloseDeleteApplicationModal();
         setIsDeleting(false);
       }
     }
-  };
+  }, [
+    id,
+    toBeDeleted,
+    openSnackbarWithMessage,
+    handleCloseDeleteApplicationModal,
+    deleteApplication,
+  ]);
 
   // Delete application modal
-  const deleteApplicationModal = (
-    <DeleteModal
-      deleting={deleting}
-      handleOpenDeleteModal={() => setDeleteApplicationModalOpen(true)}
-      handleCloseDeleteModal={() => setDeleteApplicationModalOpen(false)}
-      openDeleteModal={deleteApplicationModalOpen}
-      handleDelete={handleConfirmDeleteApplication}
-    />
+  const deleteApplicationModal = useMemo(
+    () => (
+      <DeleteModal
+        deleting={deleting}
+        handleOpenDeleteModal={handleOpenDeleteApplicationModal}
+        handleCloseDeleteModal={handleCloseDeleteApplicationModal}
+        openDeleteModal={deleteApplicationModalOpen}
+        handleDelete={handleConfirmDeleteApplication}
+      />
+    ),
+    [
+      deleting,
+      handleOpenDeleteApplicationModal,
+      handleCloseDeleteApplicationModal,
+      deleteApplicationModalOpen,
+      handleConfirmDeleteApplication,
+    ]
   );
 
   // Delete application item modal
-  const deleteApplicationItemModal = (
-    <DeleteModal
-      deleting={deleting}
-      handleOpenDeleteModal={() => setDeleteApplicationItemModalOpen(true)}
-      handleCloseDeleteModal={() => setDeleteApplicationItemModalOpen(false)}
-      openDeleteModal={deleteApplicationItemModalOpen}
-      handleDelete={handleConfirmDeleteItem}
-      element="icon"
-    />
+  const deleteApplicationItemModal = useMemo(
+    () => (
+      <DeleteModal
+        deleting={deleting}
+        handleOpenDeleteModal={handleOpenDeleteApplicationItemModal}
+        handleCloseDeleteModal={handleCloseDeleteApplicationItemModal}
+        openDeleteModal={deleteApplicationItemModalOpen}
+        handleDelete={handleConfirmDeleteItem}
+        element="icon"
+      />
+    ),
+    [
+      deleting,
+      handleOpenDeleteApplicationItemModal,
+      handleCloseDeleteApplicationItemModal,
+      deleteApplicationItemModalOpen,
+      handleConfirmDeleteItem,
+    ]
   );
 
   //function to download application.
-  const accessToken = useSelector(selectCurrentToken);
-  const onDownloadApplicatonClicked = async (applId) => {
-    console.log(`Schedule id is ${id} and Application id is ${applId}`);
-    const baseUrl =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3500"
-        : "https://server-materialschedule.hitajitech.site";
-    try {
-      const response = await fetch(
-        `${baseUrl}/schedules/${id}/applications/${applId}/download`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          method: "POST",
-        }
-      );
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "applications.xlsx");
-      document.body.appendChild(link);
-      link.click();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const onDownloadApplicatonClicked = useCallback(
+    async (applId) => {
+      console.log(`Schedule id is ${id} and Application id is ${applId}`);
+      const baseUrl =
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:3500"
+          : "https://server-materialschedule.hitajitech.site";
+      try {
+        const response = await fetch(
+          `${baseUrl}/schedules/${id}/applications/${applId}/download`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            method: "POST",
+          }
+        );
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "applications.xlsx");
+        document.body.appendChild(link);
+        link.click();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [id, accessToken]
+  );
 
   // Query to get the schedule from the API
   const { schedule } = useGetSchedulesQuery("schedulesList", {
@@ -246,26 +312,6 @@ const SingleApplicationPage = () => {
   });
   console.log(schedule);
 
-  // Handles change events for the edit individual item form
-  const handleOnItemSelect = useCallback(
-    (e, name) => {
-      setEditItem({ ...editItem, [name]: e.target.value });
-      console.log(editItem);
-    },
-    [editItem]
-  );
-  // Handling Secondary Modal
-  const [open1, setOpen1] = useState(false);
-  const [selectedChild, setSelectedChild] = useState(null);
-
-  const expandModel = (child) => {
-    setSelectedChild(child);
-    setOpen1(true);
-  };
-  const closeModal = () => {
-    setSelectedChild(null);
-    setOpen1(false);
-  };
   const memoizedContent = useMemo(() => {
     return (
       <div>
@@ -493,18 +539,6 @@ const SingleApplicationPage = () => {
                 }
                 style={{ flex: 0.5 }}
               />
-
-              {/* <TextField
-              label="Amount Requested"
-              value={editItem.amountRequested}
-              onChange={(e) =>
-                setEditItem({
-                  ...editItem,
-                  amountRequested: e.target.value,
-                })
-              }
-              style={{ flex: 0.5 }}
-            /> */}
               <Button
                 variant="contained"
                 color="primary"
@@ -534,7 +568,30 @@ const SingleApplicationPage = () => {
         )}
       </div>
     );
-  });
+  }, [
+    schedule,
+    deleting,
+    open,
+    open1,
+    selectedChild,
+    openSnackbar,
+    snackbarMessage,
+    id,
+    isPopperOpen,
+    anchorEl,
+    editItem,
+    isLoading,
+    deleteApplicationItemModal,
+    deleteApplicationModal,
+    closeSnackbar,
+    handleDeleteApplication,
+    handleDeleteApplicationItem,
+    handleEditClick,
+    handleOnItemSelect,
+    onDownloadApplicatonClicked,
+    openSnackbarWithMessage,
+    updateItem,
+  ]);
 
   return memoizedContent;
 };

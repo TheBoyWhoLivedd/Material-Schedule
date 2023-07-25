@@ -14,6 +14,7 @@ import { Plus, Edit, Trash } from "feather-icons-react";
 import { useDeleteMaterialMutation } from "./schedulesApiSlice";
 import { DataGrid, gridClasses } from "@mui/x-data-grid";
 import DeleteModal from "../../components/DeleteModal";
+import useSnackbar from "../../hooks/useSnackbar";
 
 const SingleSchedulePage = () => {
   useTitle("Deemed VAT: Single Schedule Page");
@@ -22,17 +23,12 @@ const SingleSchedulePage = () => {
   const [open, setOpen] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [open1, setOpen1] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const openSnackbarWithMessage = (message) => {
-    setSnackbarMessage(message);
-    setOpenSnackbar(true);
-  };
-
-  const closeSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+  const {
+    openSnackbar,
+    snackbarMessage,
+    openSnackbarWithMessage,
+    closeSnackbar,
+  } = useSnackbar();
 
   const handleOpen = () => setOpen(true);
   const handleOpenDeleteModal = () => setOpenDeleteModal(true);
