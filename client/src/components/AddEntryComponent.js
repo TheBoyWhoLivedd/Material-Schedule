@@ -1,8 +1,8 @@
-import { React, useRef, useState, useEffect } from "react";
+import { React, useState, useEffect } from "react";
 import { Button, TextField, Grid } from "@mui/material";
 import { Trash, Plus } from "feather-icons-react";
 import Autocomplete from "@mui/material/Autocomplete";
-import { applicationItems } from "../assets/data";
+
 
 const AddEntryComponent = ({
   newEntry,
@@ -43,7 +43,7 @@ const AddEntryComponent = ({
         <Grid container spacing={3} mt={0.5}>
           <Grid item md={4}>
             <Autocomplete
-              options={applicationItems.map((option) => option)}
+              options={schedule?.summary.map((option) => option.name)}
               name="item"
               placeholder="Choose Element"
               onSelect={(e) => handleOnItemSelect(e, "item")}
