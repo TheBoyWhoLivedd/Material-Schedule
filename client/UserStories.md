@@ -1,22 +1,22 @@
 # User Stories for Deemed VAT
 
-1. [x] Replace current sticky note system
-2. [x] Add a public facing page with basic contact info
-3. [x] Add an employee login to the notes app
-4. [x] Provide a welcome page after login
-5. [x] Provide easy navigation
-6. [x] Display current user and assigned role
-7. [x] Provide a logout option
-8. [x] Require users to login at least once per week
-9. [x] Provide a way to remove employee access asap if needed
-10. [x] Notes are assigned to specific employees
-11. [x] Notes have a ticket #, title, note body, created & updated dates
-12. [x] Notes are either OPEN or COMPLETED
-13. [x] Users can be Employees, Managers, or Admins
-14. [x] Notes can only be deleted by Managers or Admins
-15. [x] Anyone can create a note (when customer checks-in)
-16. [x] Employees can only view and edit their assigned notes
-17. [x] Managers and Admins can view, edit, and delete all notes
-18. [x] Only Managers and Admins can access User Settings
-19. [x] Only Managers and Admins can create new users
-20. [x] Desktop mode is most important but should be available in mobile
+1. [x] Secure login with default password for new users.
+2. [x] Ability for users to change password after first login.
+3. [x] Accessible main dashboard with intuitive navigation.
+4. [x] Display of assigned projects on user dashboard.
+5. [x] Edit functionality for project details on dashboard.
+6. [x] Navigation buttons based on user roles (admin/employee).
+7. [x] Schedule creation for material calculation from BOQ.
+8. [x] Dynamic form for adding new materials.
+9. [x] Summary view of all calculated materials.
+10. [x] Management of material applications by users.
+11. [x] Functionality to add new material applications.
+12. [x] Summary page for material requests.
+13. [x] Admin ability to add new projects.
+14. [x] Admin control for user management and password changes.
+15. [x] Easy logout option for users.
+16. [x] Role-based access control for features.
+17. [x] Project assignment functionality for admins.
+18. [x] Real-time tracking of material allocation.
+19. [x] User-friendly interface for material schedule management.
+20. [x] Comprehensive contact information and support access.

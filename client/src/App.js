@@ -32,7 +32,7 @@ function App() {
   const [dark, setDark] = useState(true);
 
   return (
-    <ThemeProvider theme={theme({dark})}>
+    <ThemeProvider theme={theme({ dark })}>
       <Routes>
         <Route path="/" element={<Layout dark={dark} />}>
           {/* public routes */}
