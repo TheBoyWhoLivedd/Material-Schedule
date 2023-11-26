@@ -42,7 +42,7 @@ Version 1.0.0 – [Date]
 
 ### Contact Information
 
-For any inquiries or feedback regarding the Material Schedule Application, please contact our team at [email_address].
+For any inquiries or feedback regarding the Material Schedule Application, please contact our team at ayesigwar@gmail.com.
 
 [Additional contact information or relevant links can be added here if needed.]
 
