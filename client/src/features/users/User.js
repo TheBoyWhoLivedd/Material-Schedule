@@ -3,6 +3,8 @@ import { faPenToSquare } from "@fortawesome/free-solid-svg-icons"
 import { useNavigate } from 'react-router-dom'
 import { useGetUsersQuery } from './usersApiSlice'
 import { memo } from 'react'
+import { TableRow, TableCell, IconButton } from '@mui/material'
+import EditIcon from '@mui/icons-material/Edit'
 
 const User = ({ userId }) => {
 
@@ -19,21 +21,19 @@ const User = ({ userId }) => {
 
         const userRolesString = user.roles.toString().replaceAll(',', ', ')
 
-        const cellStatus = user.active ? '' : 'table__cell--inactive'
-
         return (
-            <tr className="table__row user">
-                <td className={`table__cell ${cellStatus}`}>{user.username}</td>
-                <td className={`table__cell ${cellStatus}`}>{userRolesString}</td>
-                <td className={`table__cell ${cellStatus}`}>
-                    <button
-                        className="icon-button table__button"
+            <TableRow>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{userRolesString}</TableCell>
+                <TableCell>
+                    <IconButton
                         onClick={handleEdit}
+                        size="small"
                     >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                    </button>
-                </td>
-            </tr>
+                        <EditIcon />
+                    </IconButton>
+                </TableCell>
+            </TableRow>
         )
 
     } else return null

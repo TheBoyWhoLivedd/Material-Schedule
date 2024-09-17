@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
@@ -8,11 +8,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
 import TextField from "@mui/material/TextField";
-import Stack from "@mui/material/Stack";
-import Autocomplete from "@mui/material/Autocomplete";
 import { Box } from "@mui/system";
 import MenuItem from "@mui/material/MenuItem";
-import { FormLabel } from "@mui/material";
+import { Button, FormLabel, Typography } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
 
 const EditScheduleForm = ({ schedule, users }) => {
   const { isManager, isAdmin } = useAuth();
@@ -27,53 +26,34 @@ const EditScheduleForm = ({ schedule, users }) => {
 
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState(schedule.title);
-  const [program, setProgram] = useState(schedule.program);
-  const [funder, setFunder] = useState(schedule.funder);
-  const [contractor, setContractor] = useState(schedule.contractor);
-  const [tin, setTin] = useState(schedule.tin);
-  const [description, setDescription] = useState(schedule.description);
-  const [completed, setCompleted] = useState(schedule.completed);
-  const [userId, setUserId] = useState(schedule.user);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = useForm({
+    defaultValues: {
+      title: schedule.title,
+      program: schedule.program,
+      funder: schedule.funder,
+      contractor: schedule.contractor,
+      tin: schedule.tin,
+      user: schedule.user._id,
+      completed: schedule.completed,
+    },
+    mode: "onChange",
+  });
 
   useEffect(() => {
     if (isSuccess || isDelSuccess) {
-      setTitle("");
-      setProgram("");
-      setFunder("");
-      setContractor("");
-
-      setTin("");
-      setUserId("");
+      reset();
       navigate("/dash/schedules");
     }
-  }, [isSuccess, isDelSuccess, navigate]);
+  }, [isSuccess, isDelSuccess, navigate, reset]);
 
-  const onTitleChanged = (e) => setTitle(e.target.value);
-  const onProgramChanged = (e) => setProgram(e.target.value);
-  const onFunderChanged = (e) => setFunder(e.target.value);
-  const onContractorChanged = (e) => setContractor(e.target.value);
-  const onTinChanged = (e) => setTin(e.target.value);
-  const onDescriptionChanged = (e) => setDescription(e.target.value);
-  const onCompletedChanged = (e) => setCompleted((prev) => !prev);
-
-  const onUserIdChanged = (e) => setUserId(e.target.value);
-
-  const canSave = [title, program, funder, contractor, tin, userId].every(Boolean) && !isLoading;
-
-  const onSaveNoteClicked = async (e) => {
-    if (canSave) {
-      await updateSchedule({
-        id: schedule.id,
-        user: userId,
-        title,
-        program,
-        funder,
-        contractor,
-        tin,
-       
-        completed,
-      });
+  const onSaveScheduleClicked = async (data) => {
+    if (isValid) {
+      await updateSchedule({ id: schedule.id, ...data });
     }
   };
 
@@ -98,37 +78,26 @@ const EditScheduleForm = ({ schedule, users }) => {
     second: "numeric",
   });
 
-  const options = users.map((user) => {
-    return (
-      <option key={user.id} value={user.id}>
-        {" "}
-        {user.username}
-      </option>
-    );
-  });
-  const options2 = users.map((user) => {
-    return {
-      id: user.id,
-      username: user.username,
-    };
-  });
+  const options = users.map((user) => (
+    <MenuItem key={user.id} value={user.id}>
+      {user.username}
+    </MenuItem>
+  ));
 
   const errClass = isError || isDelError ? "errmsg" : "offscreen";
-  const validTitleClass = !title ? "form__input--incomplete" : "";
-  const validTextClass = !description ? "form__input--incomplete" : "";
-
   const errContent = (error?.data?.message || delerror?.data?.message) ?? "";
 
   let deleteButton = null;
   if (isManager || isAdmin) {
     deleteButton = (
-      <button
-        className="icon-button"
-        title="Delete"
+      <Button
+        variant="contained"
+        color="secondary"
         onClick={onDeleteScheduleClicked}
+        startIcon={<FontAwesomeIcon icon={faTrashCan} />}
       >
-        <FontAwesomeIcon icon={faTrashCan} />
-      </button>
+        Delete
+      </Button>
     );
   }
 
@@ -136,18 +105,21 @@ const EditScheduleForm = ({ schedule, users }) => {
     <>
       <p className={errClass}>{errContent}</p>
 
-      <form className="form" onSubmit={(e) => e.preventDefault()}>
+      <form className="form" onSubmit={handleSubmit(onSaveScheduleClicked)}>
         <div className="form__title-row">
-          <h2>Edit Project #{schedule.ticket}</h2>
+          <Typography variant="h4" component="h2" color="text.primary">
+            Edit Project #{schedule.ticket}
+          </Typography>
           <div className="form__action-buttons">
-            <button
-              className="icon-button"
-              title="Save"
-              onClick={onSaveNoteClicked}
-              disabled={!canSave}
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={!isValid || isLoading}
+              startIcon={<FontAwesomeIcon icon={faSave} />}
             >
-              <FontAwesomeIcon icon={faSave} />
-            </button>
+              Save
+            </Button>
             {deleteButton}
           </div>
         </div>
@@ -158,87 +130,137 @@ const EditScheduleForm = ({ schedule, users }) => {
             maxWidth: "100%",
           }}
         >
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="program"
+          <Controller
             name="program"
-            type="text"
-            autoComplete="off"
-            value={program}
-            onChange={onProgramChanged}
-            label="Program"
+            control={control}
+            rules={{ required: "Program is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ width: "100%" }}
+                id="program"
+                type="text"
+                autoComplete="off"
+                label="Program"
+                margin="normal"
+                error={!!errors.program}
+                helperText={errors.program?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="title"
+          <Controller
             name="title"
-            type="text"
-            autoComplete="off"
-            value={title}
-            onChange={onTitleChanged}
-            label="Title"
+            control={control}
+            rules={{ required: "Title is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ width: "100%" }}
+                id="title"
+                type="text"
+                autoComplete="off"
+                label="Title"
+                margin="normal"
+                error={!!errors.title}
+                helperText={errors.title?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="funder"
+          <Controller
             name="funder"
-            type="text"
-            autoComplete="off"
-            value={funder}
-            onChange={onFunderChanged}
-            label="Funder"
+            control={control}
+            rules={{ required: "Funder is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ width: "100%" }}
+                id="funder"
+                type="text"
+                autoComplete="off"
+                label="Funder"
+                margin="normal"
+                error={!!errors.funder}
+                helperText={errors.funder?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="contractor"
+          <Controller
             name="contractor"
-            type="text"
-            autoComplete="off"
-            value={contractor}
-            onChange={onContractorChanged}
-            label="Contractor"
+            control={control}
+            rules={{ required: "Contractor is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ width: "100%" }}
+                id="contractor"
+                type="text"
+                autoComplete="off"
+                label="Contractor"
+                margin="normal"
+                error={!!errors.contractor}
+                helperText={errors.contractor?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="tin"
+          <Controller
             name="tin"
-            type="text"
-            autoComplete="off"
-            value={tin}
-            onChange={onTinChanged}
-            label="TIN"
+            control={control}
+            rules={{ required: "TIN is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ width: "100%" }}
+                id="tin"
+                type="text"
+                autoComplete="off"
+                label="TIN"
+                margin="normal"
+                error={!!errors.tin}
+                helperText={errors.tin?.message}
+              />
+            )}
           />
-          
+
+          <FormLabel htmlFor="username">
+            <Controller
+              name="user"
+              control={control}
+              rules={{ required: "User is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  sx={{
+                    width: "100%",
+                    "& .MuiInputBase-root": {
+                      height: 60,
+                    },
+                  }}
+                  select
+                  variant="outlined"
+                  id="username"
+                  label="ASSIGNED TO"
+                  error={!!errors.user}
+                  helperText={errors.user?.message}
+                  margin="normal"
+                >
+                  {options}
+                </TextField>
+              )}
+            />
+          </FormLabel>
         </Box>
         <div className="form__row">
           <div className="form__divider">
-            <label
-              className="form__label form__checkbox-container"
-              htmlFor="note-username"
-            >
-              ASSIGNED TO:
-            </label>
-            <select
-              id="note-username"
-              name="username"
-              className="form__select"
-              value={userId}
-              onChange={onUserIdChanged}
-            >
-              {options}
-            </select>
-          </div>
-          <div className="form__divider">
-            <p className="form__created">
+            <Typography variant="body1" color="text.secondary">
               Created:
               <br />
               {created}
-            </p>
-            <p className="form__updated">
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
               Updated:
               <br />
               {updated}
-            </p>
+            </Typography>
           </div>
         </div>
       </form>

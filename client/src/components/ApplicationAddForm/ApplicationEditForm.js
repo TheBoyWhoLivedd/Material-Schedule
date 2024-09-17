@@ -47,6 +47,7 @@ const ApplicationEditForm = ({
   };
 
   const handleDelete = (changeId) => {
+    console.log("changeId", changeId);
     setEntries((prevEntries) =>
       prevEntries.filter((entry) => entry.changeId !== changeId)
     );
@@ -79,6 +80,7 @@ const ApplicationEditForm = ({
           handleFormSubmit={handleFormSubmit}
           schedule={schedule}
           isLoading={isLoading}
+          existingEntries={entries}
         />
       </Paper>
     </Container>

@@ -81,6 +81,7 @@ const ApplicationAddForm = ({
           handleFormSubmit={handleFormSubmit}
           schedule={schedule}
           isLoading={isLoading}
+          existingEntries={entries}
         />
       </Paper>
     </Container>

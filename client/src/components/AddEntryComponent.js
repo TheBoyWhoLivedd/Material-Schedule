@@ -13,21 +13,22 @@ import { Trash, Plus } from "feather-icons-react";
 import Autocomplete from "@mui/material/Autocomplete";
 
 const AddEntryComponent = ({
-  handleAddEntry, 
+  handleAddEntry,
   handleFormSubmit,
   schedule,
   isLoading,
+  existingEntries,
 }) => {
-  const { control, handleSubmit, watch, reset } = useForm({
-    defaultValues: {
-      item: "",
-      supplier: "",
-      amountRequested: "",
-    },
-  });
+  const { control, handleSubmit, watch, reset, setError, clearErrors } =
+    useForm({
+      defaultValues: {
+        item: "",
+        supplier: "",
+        amountRequested: "",
+      },
+    });
 
-  const [amountAllowed, setAmountAllowed] = useState("");
-
+  const [maxAllowed, setMaxAllowed] = useState("");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -42,21 +43,40 @@ const AddEntryComponent = ({
         (item) => item._id === selectedItem
       );
 
+      let allowedValue = 0;
       if (balanceItem) {
-        setAmountAllowed(balanceItem.Value);
+        console.log(`We have a balance item: ${balanceItem}`);
+        allowedValue = balanceItem.Value;
       } else if (summaryItem) {
-        setAmountAllowed(summaryItem.Value);
+        allowedValue = summaryItem.Value;
       } else {
-        setAmountAllowed("N/A");
+        setMaxAllowed("N/A");
+        return;
       }
+      // Calculate total requested for this item from existing entries
+      const totalRequested = existingEntries
+        .filter((entry) => entry.item === selectedItem && !entry._id)
+        .reduce((sum, entry) => sum + Number(entry.amountRequested || 0), 0);
+
+      const remaining = allowedValue - totalRequested;
+
+      setMaxAllowed(remaining >= 0 ? remaining : 0);
     } else {
-      setAmountAllowed("N/A");
+      setMaxAllowed("N/A");
     }
-  }, [selectedItem, schedule]);
+  }, [selectedItem, schedule, existingEntries]);
 
   const onSubmit = (data) => {
+    if (maxAllowed !== "N/A" && Number(data.amountRequested) > maxAllowed) {
+      setError("amountRequested", {
+        type: "manual",
+        message: `Amount exceeds the remaining balance of ${maxAllowed}`,
+      });
+      return;
+    }
     handleAddEntry(data);
     reset();
+    clearErrors("amountRequested");
   };
 
   return (
@@ -73,6 +93,25 @@ const AddEntryComponent = ({
                 {...field}
                 options={schedule?.summary.map((option) => option.name) || []}
                 onChange={(event, value) => field.onChange(value)}
+                getOptionDisabled={(option) => {
+                  // Disable options if remaining balance is 0
+                  if (!selectedItem) return false;
+                  if (option !== selectedItem) return false;
+                  const itemBalance =
+                    schedule.balanceAllowable.find(
+                      (item) => item.name === option
+                    )?.Value ||
+                    schedule.summary.find((item) => item.name === option)
+                      ?.Value ||
+                    0;
+                  const totalRequested = existingEntries
+                    .filter((entry) => entry.item === option)
+                    .reduce(
+                      (sum, entry) => sum + Number(entry.amountRequested || 0),
+                      0
+                    );
+                  return itemBalance - totalRequested <= 0;
+                }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -120,14 +159,26 @@ const AddEntryComponent = ({
                 value: /^[0-9]+$/,
                 message: "Enter a valid number",
               },
+              validate: (value) => {
+                if (maxAllowed === "N/A") return true;
+                if (Number(value) > maxAllowed) {
+                  return `Cannot exceed ${maxAllowed}`;
+                }
+                return true;
+              },
             }}
             render={({ field, fieldState: { error } }) => (
               <TextField
                 {...field}
+                type="number"
                 label="Requested"
                 placeholder="Enter Quantity"
                 variant="outlined"
                 fullWidth
+                inputProps={{
+                  min: 1,
+                  max: maxAllowed !== "N/A" ? maxAllowed : undefined,
+                }}
                 error={!!error}
                 helperText={error ? error.message : null}
                 required
@@ -140,7 +191,7 @@ const AddEntryComponent = ({
         <Grid item xs={12} sm={6} md={2}>
           <TextField
             label="Allowed"
-            value={amountAllowed}
+            value={maxAllowed !== "N/A" ? maxAllowed : "N/A"}
             variant="outlined"
             fullWidth
             InputProps={{ readOnly: true }}
@@ -159,8 +210,9 @@ const AddEntryComponent = ({
             sx={{
               height: "100%",
             }}
+            disabled={maxAllowed === 0 || maxAllowed === "N/A"} // Disable if no balance
           >
-           
+            {/* You can add text or keep it as icon */}
           </Button>
         </Grid>
       </Grid>
@@ -169,14 +221,14 @@ const AddEntryComponent = ({
       <Box
         sx={{
           mt: 3,
-          width: '100%',
+          width: "100%",
         }}
       >
         <Button
           onClick={handleFormSubmit}
           variant="contained"
           color="secondary"
-          disabled={isLoading}
+          disabled={isLoading || existingEntries.length === 0}
           fullWidth
           startIcon={isLoading ? null : <Plus width={20} height={20} />}
         >

@@ -4,11 +4,10 @@ import { useAddNewScheduleMutation } from "./schedulesApiSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import TextField from "@mui/material/TextField";
-import Stack from "@mui/material/Stack";
-import Autocomplete from "@mui/material/Autocomplete";
 import { Box } from "@mui/system";
 import MenuItem from "@mui/material/MenuItem";
-import { FormLabel } from "@mui/material";
+import { Button, FormLabel, Typography } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
 
 const NewScheduleForm = ({ users }) => {
   const [addNewSchedule, { isLoading, isSuccess, isError, error }] =
@@ -16,75 +15,59 @@ const NewScheduleForm = ({ users }) => {
 
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [program, setProgram] = useState("");
-  const [funder, setFunder] = useState("");
-  const [contractor, setContractor] = useState("");
-  const [tin, setTin] = useState("");
-
-  const [userId, setUserId] = useState(users[0].id);
+  const { control, handleSubmit, reset, formState: { errors, isValid } } = useForm({
+    defaultValues: {
+      title: "",
+      program: "",
+      funder: "",
+      contractor: "",
+      tin: "",
+      user: users[0].id,
+    },
+    mode: "onChange"
+  });
 
   useEffect(() => {
     if (isSuccess) {
-      setTitle("");
-      setProgram("");
-      setFunder("");
-      setContractor("");
-
-      setTin("");
-      setUserId("");
+      reset();
       navigate("/dash/schedules");
     }
-  }, [isSuccess, navigate]);
+  }, [isSuccess, navigate, reset]);
 
-  const onTitleChanged = (e) => setTitle(e.target.value);
-  const onProgramChanged = (e) => setProgram(e.target.value);
-  const onFunderChanged = (e) => setFunder(e.target.value);
-  const onContractorChanged = (e) => setContractor(e.target.value);
-  const onTinChanged = (e) => setTin(e.target.value);
-  const onUserIdChanged = (e) => setUserId(e.target.value);
-
-  const canSave =
-    [title, userId, program, funder, contractor, tin].every(Boolean) &&
-    !isLoading;
-
-  const onSaveProjectClicked = async (e) => {
-    e.preventDefault();
-    if (canSave) {
-      await addNewSchedule({
-        user: userId,
-        title,
-        program,
-        funder,
-        contractor,
-        tin,
-      });
+  const onSaveProjectClicked = async (data) => {
+    if (isValid) {
+      await addNewSchedule(data);
     }
   };
 
-  const options = users.map((user) => {
-    return (
-      <MenuItem key={user.id} value={user.id}>
-        {" "}
-        {user.username}
-      </MenuItem>
-    );
-  });
+  const options = users.map((user) => (
+    <MenuItem key={user.id} value={user.id}>
+      {user.username}
+    </MenuItem>
+  ));
 
   const errClass = isError ? "errmsg" : "offscreen";
-  const validTitleClass = !title ? "form__input--incomplete" : "";
 
   const content = (
     <>
       <p className={errClass}>{error?.data?.message}</p>
 
-      <form className="form" onSubmit={onSaveProjectClicked}>
+      <form className="form" onSubmit={handleSubmit(onSaveProjectClicked)}>
         <div className="form__title-row">
-          <h2>New Project</h2>
+          <Typography variant="h4" component="h2" color="text.primary">
+            New Project
+          </Typography>
           <div className="form__action-buttons">
-            <button className="icon-button" title="Save" disabled={!canSave}>
-              <FontAwesomeIcon icon={faSave} />
-            </button>
+            <Button
+              variant="contained"
+              color="primary"
+              title="Save"
+              type="submit"
+              disabled={!isValid || isLoading}
+              startIcon={<FontAwesomeIcon icon={faSave} />}
+            >
+              Save
+            </Button>
           </div>
         </div>
 
@@ -94,109 +77,135 @@ const NewScheduleForm = ({ users }) => {
             maxWidth: "100%",
           }}
         >
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="program"
+          <Controller
             name="program"
-            type="text"
-            autoComplete="off"
-            value={program}
-            size="normal"
-            variant="outlined"
-            label="Program Title"
-            onChange={onProgramChanged}
-            margin="normal"
+            control={control}
+            rules={{ required: "Program is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ color: "white", width: "100%" }}
+                id="program"
+                type="text"
+                autoComplete="off"
+                size="normal"
+                variant="outlined"
+                label="Program Title"
+                margin="normal"
+                error={!!errors.program}
+                helperText={errors.program?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="title"
+          <Controller
             name="title"
-            type="text"
-            autoComplete="off"
-            value={title}
-            size="normal"
-            variant="outlined"
-            label="Project Title"
-            onChange={onTitleChanged}
-            margin="normal"
+            control={control}
+            rules={{ required: "Title is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ color: "white", width: "100%" }}
+                id="title"
+                type="text"
+                autoComplete="off"
+                size="normal"
+                variant="outlined"
+                label="Project Title"
+                margin="normal"
+                error={!!errors.title}
+                helperText={errors.title?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            id="funder"
+          <Controller
             name="funder"
-            type="text"
-            autoComplete="off"
-            value={funder}
-            size="normal"
-            variant="outlined"
-            label="Project Funder"
-            onChange={onFunderChanged}
-            margin="normal"
+            control={control}
+            rules={{ required: "Funder is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ color: "white", width: "100%" }}
+                id="funder"
+                type="text"
+                autoComplete="off"
+                size="normal"
+                variant="outlined"
+                label="Project Funder"
+                margin="normal"
+                error={!!errors.funder}
+                helperText={errors.funder?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            style={{ color: "white" }}
-            id="contractor"
+          <Controller
             name="contractor"
-            type="text"
-            autoComplete="off"
-            value={contractor}
-            size="normal"
-            variant="outlined"
-            label="Contractor's Name"
-            onChange={onContractorChanged}
-            margin="normal"
+            control={control}
+            rules={{ required: "Contractor is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ color: "white", width: "100%" }}
+                id="contractor"
+                type="text"
+                autoComplete="off"
+                size="normal"
+                variant="outlined"
+                label="Contractor's Name"
+                margin="normal"
+                error={!!errors.contractor}
+                helperText={errors.contractor?.message}
+              />
+            )}
           />
-          <TextField
-            className={`form__input ${validTitleClass}`}
-            style={{ color: "white" }}
-            id="tin"
+          <Controller
             name="tin"
-            type="number"
-            autoComplete="off"
-            value={tin}
-            size="normal"
-            variant="outlined"
-            label="Contractor's TIN"
-            onChange={onTinChanged}
-            margin="normal"
+            control={control}
+            rules={{ required: "TIN is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                style={{ color: "white", width: "100%" }}
+                id="tin"
+                type="number"
+                autoComplete="off"
+                size="normal"
+                variant="outlined"
+                label="Contractor's TIN"
+                margin="normal"
+                error={!!errors.tin}
+                helperText={errors.tin?.message}
+              />
+            )}
           />
 
-          <FormLabel
-            // className="form__label form__checkbox-container"
-            htmlFor="username"
-          >
-            <TextField
-              sx={{
-                width: "100%",
-                "& .MuiInputBase-root": {
-                  height: 60,
-                },
-              }}
-              className={`select`}
-              select
-              variant="outlined"
-              id="username"
-              name="username"
-              label="ASSIGNED TO"
-              value={userId}
-              onChange={onUserIdChanged}
-            >
-              {options}
-            </TextField>
+          <FormLabel htmlFor="username">
+            <Controller
+              name="user"
+              control={control}
+              rules={{ required: "User is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  sx={{
+                    width: "100%",
+                    "& .MuiInputBase-root": {
+                      height: 60,
+                    },
+                  }}
+                  className={`select`}
+                  select
+                  variant="outlined"
+                  id="username"
+                  label="ASSIGNED TO"
+                  error={!!errors.userId}
+                  helperText={errors.userId?.message}
+                >
+                  {options}
+                </TextField>
+              )}
+            />
           </FormLabel>
         </Box>
-
-        {/* <label className="form__label" htmlFor="text">
-          Description
-        </label>
-        <input
-          className={`form__input form__input--text ${validTextClass}`}
-          id="text"
-          name="text"
-          value={description}
-          onChange={onTextChanged}
-        /> */}
       </form>
     </>
   );

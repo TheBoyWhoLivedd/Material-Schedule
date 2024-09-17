@@ -1,7 +1,7 @@
 import { useGetUsersQuery } from "./usersApiSlice";
 import User from "./User";
 import useTitle from "../../hooks/useTitle";
-import PulseLoader from "react-spinners/PulseLoader";
+import { CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 
 const UsersList = () => {
   useTitle("Deemed VAT: Users List");
@@ -20,10 +20,10 @@ const UsersList = () => {
 
   let content;
 
-  if (isLoading) content = <PulseLoader color={"#FFF"} />;
+  if (isLoading) content = <CircularProgress />;
 
   if (isError) {
-    content = <p className="errmsg">{error?.data?.message}</p>;
+    content = <Typography color="error">{error?.data?.message}</Typography>;
   }
 
   if (isSuccess) {
@@ -33,22 +33,18 @@ const UsersList = () => {
       ids?.length && ids.map((userId) => <User key={userId} userId={userId} />);
 
     content = (
-      <table className="table table--users">
-        <thead className="table__thead">
-          <tr>
-            <th scope="col" className="table__th user__username">
-              Username
-            </th>
-            <th scope="col" className="table__th user__roles">
-              Roles
-            </th>
-            <th scope="col" className="table__th user__edit">
-              Edit
-            </th>
-          </tr>
-        </thead>
-        <tbody>{tableContent}</tbody>
-      </table>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Roles</TableCell>
+              <TableCell>Edit</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{tableContent}</TableBody>
+        </Table>
+      </TableContainer>
     );
   }
 
