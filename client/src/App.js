@@ -1,17 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import Public from "./components/Public";
 import Login from "./features/auth/Login";
 import DashLayout from "./components/DashLayout";
 import Welcome from "./features/auth/Welcome";
-import NotesList from "./features/notes/NotesList";
 import ScheduleList from "./features/schedules/ScheduleList";
 import UsersList from "./features/users/UsersList";
 import EditUser from "./features/users/EditUser";
 import NewUserForm from "./features/users/NewUserForm";
-import EditNote from "./features/notes/EditNote";
 import EditSchedule from "./features/schedules/EditSchedule";
-import NewNote from "./features/notes/NewNote";
 import NewSchedule from "./features/schedules/NewSchedule";
 import Prefetch from "./features/auth/Prefetch";
 import PersistLogin from "./features/auth/PersistLogin";
@@ -62,12 +58,6 @@ function App() {
                       <Route path=":id" element={<EditUser />} />
                       <Route path="new" element={<NewUserForm />} />
                     </Route>
-                  </Route>
-
-                  <Route path="notes">
-                    <Route index element={<NotesList />} />
-                    <Route path=":id" element={<EditNote />} />
-                    <Route path="new" element={<NewNote />} />
                   </Route>
 
                   <Route path="schedules">

@@ -1,12 +1,8 @@
+// ApplicationAddForm.js
 import React, { useState, useEffect } from "react";
-import {
-  useAddApplicationMutation,
-  useUpdateMaterialMutation,
-} from "../../features/schedules/schedulesApiSlice";
-import Autocomplete from "@mui/material/Autocomplete";
+import { useAddApplicationMutation } from "../../features/schedules/schedulesApiSlice";
 import { Container, Paper, Box } from "@mui/material";
 import AddEntryComponent from "../AddEntryComponent";
-
 import "./ApplicationAddForm.css";
 import Content from "../Content";
 
@@ -18,40 +14,29 @@ const ApplicationAddForm = ({
   openSnackbarWithMessage,
 }) => {
   const [entries, setEntries] = useState([]);
-  if (content) {
-    setEntries(content);
-  }
+
+  useEffect(() => {
+    if (content) {
+      setEntries(content);
+    }
+  }, [content]);
+
   const initialState = {
     item: "",
     supplier: "",
     amountRequested: "",
   };
-  const [newEntry, setNewEntry] = useState(initialState);
 
   const [addApplication, { isSuccess: isAddSuccess, isLoading }] =
     useAddApplicationMutation();
 
-  const addEntry = (entry) => {
+  const handleAddEntry = (entry) => {
     const id = entries.length ? entries[entries.length - 1].id + 1 : 1;
     const myNewEntry = { ...entry, id };
-    const listEntries = [...entries, myNewEntry];
-    // console.log(listEntries);
-
-    setEntries(listEntries);
+    setEntries((prevEntries) => [...prevEntries, myNewEntry]);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (Object.keys(newEntry).length === 0) {
-      return;
-    } else {
-      addEntry(newEntry);
-      setNewEntry(initialState);
-    }
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+  const handleFormSubmit = async () => {
     const response = await addApplication({
       body: entries,
       id: id,
@@ -65,32 +50,24 @@ const ApplicationAddForm = ({
     }
   };
 
-  const handleOnChange = (e) => {
-    setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
-    // console.log(newEntry);
-  };
-  const handleOnItemSelect = (e, name) => {
-    setNewEntry({ ...newEntry, [name]: e.target.value });
-    // console.log(newEntry);
-  };
   const handleDelete = (id) => {
-    const entryItems = entries.filter((entry) => entry.id !== id);
-    setEntries(entryItems);
+    setEntries((prevEntries) => prevEntries.filter((entry) => entry.id !== id));
   };
+
   const handleEntryChange = (e, id) => {
-    const entryItems = entries.map((entry) => {
-      if (entry.id === id) {
-        return { ...entry, [e.target.name]: e.target.value };
-      }
-      return entry;
-    });
-    setEntries(entryItems);
-    console.log(entryItems);
+    const { name, value } = e.target;
+    setEntries((prevEntries) =>
+      prevEntries.map((entry) =>
+        entry.id === id ? { ...entry, [name]: value } : entry
+      )
+    );
   };
+
   const style = {
     boxShadow: "none",
     padding: "1rem",
   };
+
   return (
     <Container>
       <Paper component={Box} sx={style}>
@@ -100,11 +77,8 @@ const ApplicationAddForm = ({
           handleChange={handleEntryChange}
         />
         <AddEntryComponent
-          newEntry={newEntry}
-          handleChange={handleOnChange}
-          handleSubmit={handleSubmit}
+          handleAddEntry={handleAddEntry}
           handleFormSubmit={handleFormSubmit}
-          handleOnItemSelect={handleOnItemSelect}
           schedule={schedule}
           isLoading={isLoading}
         />

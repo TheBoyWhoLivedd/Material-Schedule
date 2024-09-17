@@ -1,6 +1,5 @@
-//why isnt the required prop working on the textfields?
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-
+import React, { useState, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
   useAddNewMaterialMutation,
   useUpdateMaterialMutation,
@@ -9,7 +8,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { Button, TextField, useTheme } from "@mui/material";
 import "./MaterialAddForm.css";
 import config from "../../assets/config.json";
-import { evaluate, setSize } from "mathjs";
+import { evaluate } from "mathjs";
 
 const MaterialAddForm = ({
   formData = {},
@@ -18,201 +17,126 @@ const MaterialAddForm = ({
   openSnackbarWithMessage,
 }) => {
   const theme = useTheme();
-  const [addNewMaterial, { isSuccess: isAddSuccess }] =
+  const [addNewMaterial, { isSuccess: isAddSuccess, isLoading: isAddLoading }] =
     useAddNewMaterialMutation();
 
-  const [updateMaterial, { isLoading, isSuccess }] =
-    useUpdateMaterialMutation();
+  const [
+    updateMaterial,
+    { isLoading: isUpdateLoading, isSuccess: isUpdateSuccess },
+  ] = useUpdateMaterialMutation();
 
-  const [options, setOptions] = useState({
-    ...formData,
-    elementName: formData.elementName || "",
-    parameters: formData.parameters || {},
-  });
-  const [error, setError] = React.useState("");
-
-  console.log(options);
-  const handleOnElementSelect = useCallback(
-    (e, name) => {
-      setOptions({ ...options, [name]: e.target.value });
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: "onChange",
+    defaultValues: {
+      elementName: formData.elementName || "",
+      materialDescription: formData.materialDescription || "",
+      materialName: formData.materialName || "",
+      categoryName: formData.categoryName || "",
+      materialType: formData.materialType || "",
+      materialUnit: formData.materialUnit || "",
+      computedValue: formData.computedValue || "",
+      parameters: formData.parameters || {},
     },
-    [options]
-  );
+  });
 
-  const resetParameters = () => {
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      parameters: {},
-    }));
-  };
-  const handleOnSelect = useCallback((e, name) => {
-    const value = e.target.value;
-    // Reset parameters when the category or material name changes because
-    //i use the properties in the parameters object to determine which calculation to make backend
-    if (name === "categoryName" || name === "materialName") {
-      resetParameters();
+  const [calcError, setCalcError] = useState({});
+
+  const watchedValues = watch();
+
+  const handleOnCalcParamChange = (fieldName, value) => {
+    // Reset error for this field
+    setCalcError((prev) => ({ ...prev, [fieldName]: null }));
+
+    // If the value is empty, set an error and return
+    if (value.trim() === "") {
+      setCalcError((prev) => ({ ...prev, [fieldName]: "Required" }));
+      return "Required";
     }
 
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      [name]: value,
-    }));
-  }, []);
-
-  const handleOnChange = useCallback(
-    (e) => {
-      setOptions({ ...options, [e.target.name]: e.target.value });
-    },
-    [options]
-  );
-  const [selectedUnit, setSelectedUnit] = useState("");
-  const handleOnParamSelect = useCallback(
-    (e, name) => {
-      console.log(name);
-      if (name === "unit") {
-        setSelectedUnit(e.target.value);
-      }
-      setOptions({
-        ...options,
-        parameters: { ...options.parameters, [name]: e.target.value },
+    // Check if the input is a valid number
+    if (!isNaN(value) && value.trim() !== "") {
+      const numericValue = parseFloat(value);
+      setValue(`parameters.${fieldName}Expression`, value.trim(), {
+        shouldValidate: true,
       });
-    },
-    [options]
-  );
-  const handleOnCalcParamChange = useCallback((e) => {
-    try {
-      // Check the input string for any incomplete expressions
+      setValue(`parameters.${fieldName}`, numericValue, {
+        shouldValidate: true,
+      });
+      return true;
+    }
 
-      const regex = /[+-/*]$|[(][^)]*$/;
-      if (regex.test(e.target.value)) {
-        // If there is an incomplete expression, don't evaluate the input
-        setError(
-          "The expression is incomplete because it has an open bracket or missing operator at end"
-        );
-        setOptions({
-          ...options,
-          parameters: {
-            ...options.parameters,
-            expression: e.target.value,
-            [e.target.name]: e.target.value,
-          },
+    // If not a number, attempt to evaluate it as an expression
+    try {
+      // Basic validation for BODMAS expression
+      if (!/^[\d\s\+\-\*\/\(\)\.]+$/.test(value)) {
+        throw new Error("Invalid characters in expression");
+      }
+
+      // Evaluate the expression
+      const result = evaluate(value);
+
+      if (typeof result !== "number" || isNaN(result)) {
+        throw new Error("Expression did not evaluate to a valid number");
+      }
+
+      // If valid, set the expression and evaluated value
+      setValue(`parameters.${fieldName}Expression`, value.trim(), {
+        shouldValidate: true,
+      });
+      setValue(`parameters.${fieldName}`, result, { shouldValidate: true });
+      return true;
+    } catch (error) {
+      setCalcError((prev) => ({ ...prev, [fieldName]: error.message }));
+      return error.message;
+    }
+  };
+
+  const canEdit = useMemo(() => "_id" in formData, [formData]);
+
+  const onSubmit = async (data) => {
+    try {
+      let response;
+      if (Object.keys(formData).length === 0) {
+        response = await addNewMaterial({
+          id: id,
+          ...data,
         });
       } else {
-        // Use the math.js evaluate function to calculate the result
-        const result = evaluate(e.target.value);
-        setOptions({
-          ...options,
-          parameters: {
-            ...options.parameters,
-            expression: e.target.value,
-            [e.target.name]: result,
-          },
+        response = await updateMaterial({
+          id: id,
+          _id: formData._id,
+          relatedId: formData.relatedId,
+          ...data,
         });
-
-        setError(false);
-        // If the calculation is successful, update the state or UI to show the result
       }
-    } catch (error) {
-      // If an error occurs, you can set the error message using the TextField's error prop
-      setError(error.message);
-      console.log(error);
-    }
-  });
 
-  //validating that all object keys have values before sending update request
-  let canSave;
-  if ("parameters" in options) {
-    const allPropsWithValue = Object.keys(options).every(
-      (key) => options[key] !== undefined && options[key] !== null
-    );
-    const allParamPropsWithValue = Object.keys(options.parameters).every(
-      (key) =>
-        options.parameters[key] !== undefined &&
-        options.parameters[key] !== null
-    );
-    canSave = allPropsWithValue && allParamPropsWithValue && !isLoading;
-    console.log(canSave);
-  } else {
-    const allPropsWithValue = Object.keys(options).every(
-      (key) =>
-        options[key] !== undefined &&
-        options[key] !== null &&
-        options[key] !== ""
-    );
-    canSave = allPropsWithValue;
-  }
-
-  //preventing edit of elementName property if calculation from backend has already been made
-  const canEdit = useMemo(() => "_id" in options, [options]);
-
-  // Add Material
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const onSaveMaterialClicked = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    console.log(options);
-    try {
-      const response = await addNewMaterial({
-        id: id,
-        elementName: options.elementName,
-        description: options.materialDescription,
-        materialName: options.materialName,
-        categoryName: options?.categoryName,
-        parameters: options.parameters,
-        materialType: options?.materialType,
-        computedValue: options?.computedValue,
-        materialUnit: options?.materialUnit,
-      });
-
-      if (response.data.isError) {
-        console.log(`Error: ${response.message}`);
+      if (response.data?.isError) {
         openSnackbarWithMessage(`Error: ${response.data.message}`);
       } else {
         handleClose();
-        openSnackbarWithMessage(`Material Added Successfully`);
+        openSnackbarWithMessage(
+          `${
+            Object.keys(formData).length === 0
+              ? "Material Added"
+              : "Material Updated"
+          } Successfully`
+        );
       }
     } catch (error) {
       openSnackbarWithMessage(`Error: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const onUpdateMaterialClicked = async (e) => {
-    e.preventDefault();
+  const selectedUnit = watchedValues?.parameters?.unit;
 
-    try {
-      const response = await updateMaterial({
-        id: id,
-        _id: options._id,
-        elementName: options.elementName,
-        description: options.materialDescription,
-        materialName: options.materialName,
-        categoryName: options?.categoryName,
-        parameters: options.parameters,
-        materialType: options?.materialType,
-        relatedId: options?.relatedId,
-        computedValue: options?.computedValue,
-        materialUnit: options?.materialUnit,
-      });
-
-      if (
-        response &&
-        response.error &&
-        response.error.data &&
-        response.error.data.isError
-      ) {
-        console.log(`Error: ${response.error.data.message}`);
-        openSnackbarWithMessage(`Error: ${response.error.data.message}`);
-      } else {
-        handleClose();
-        openSnackbarWithMessage(`Materials Added Successfully`);
-      }
-    } catch (error) {
-      console.error(`Error: ${error.message}`);
-      openSnackbarWithMessage(`Error: ${error.message}`);
-    }
-  };
+  // Determine if there are any calculation errors
+  const hasCalcErrors = Object.values(calcError).some((error) => error);
 
   return (
     <div
@@ -220,766 +144,956 @@ const MaterialAddForm = ({
         backgroundColor: theme.palette.background.default,
       }}
     >
-      <form className="inputsForm">
-        <Autocomplete
-          id="elements_id"
-          options={config.elements.map((option) => option.name)}
+      <form className="inputsForm" onSubmit={handleSubmit(onSubmit)}>
+        {/* Element Name */}
+        <Controller
           name="elementName"
-          placeholder="Choose Element"
-          onSelect={(e) => handleOnElementSelect(e, "elementName")}
-          value={options?.elementName}
-          disabled={canEdit}
-          isOptionEqualToValue={(option, value) => option === value}
-          // required
-          renderInput={(params) => (
-            <TextField {...params} label="Choose Element" required />
+          control={control}
+          rules={{ required: "Element Name is required" }}
+          render={({ field }) => (
+            <Autocomplete
+              {...field}
+              id="elements_id"
+              options={config.elements.map((option) => option.name)}
+              placeholder="Choose Element"
+              onChange={(e, value) => field.onChange(value)}
+              disabled={canEdit}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Choose Element"
+                  required
+                  error={!!errors.elementName}
+                  helperText={errors.elementName?.message}
+                />
+              )}
+            />
           )}
         />
 
-        {options?.elementName === "Concrete" && (
+        {/* Concrete Section */}
+        {watchedValues?.elementName === "Concrete" && (
           <>
-            <Autocomplete
-              id="concreteClassOptions_id"
-              options={
-                config.elements.find((element) => element.name === "Concrete")
-                  .concreteClasses
-              }
-              name="concreteClass"
-              value={options?.parameters?.concreteClass}
-              placeholder="Choose Concrete Class"
-              onSelect={(e) => handleOnParamSelect(e, "concreteClass")}
-              required
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Concrete Class" required />
+            {/* Concrete Class */}
+            <Controller
+              name="parameters.concreteClass"
+              control={control}
+              rules={{ required: "Concrete Class is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  id="concreteClassOptions_id"
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Concrete"
+                    ).concreteClasses
+                  }
+                  placeholder="Choose Concrete Class"
+                  onChange={(e, value) => field.onChange(value)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Concrete Class"
+                      required
+                      error={!!errors.parameters?.concreteClass}
+                      helperText={errors.parameters?.concreteClass?.message}
+                    />
+                  )}
+                />
               )}
             />
-            <TextField
-              type="string"
-              name="cum"
-              label="Cubic Meters"
-              placeholder="Enter Cubic Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+
+            {/* Cubic Metres */}
+            <Controller
+              name="parameters.cumExpression"
+              control={control}
+              rules={{
+                required: "Cubic Metres is required",
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Cubic Metres"
+                  placeholder="Enter Cubic Metres or Expression"
+                  required
+                  error={!!errors.parameters?.cum || !!calcError.cum}
+                  helperText={errors.parameters?.cum?.message || calcError.cum}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    // Pass the value and field name to the handler
+                    handleOnCalcParamChange("cum", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Walling" && (
+
+        {/* Walling Section */}
+        {watchedValues?.elementName === "Walling" && (
           <>
-            <Autocomplete
-              id="wallingMaterials_id"
-              options={
-                config.elements.find((element) => element.name === "Walling")
-                  .materials
-              }
+            {/* Material Type */}
+            <Controller
               name="materialType"
-              placeholder="Enter Material"
-              onSelect={(e) => handleOnSelect(e, "materialType")}
-              value={options?.materialType}
-              required={true}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Materials" required />
+              control={control}
+              rules={{ required: "Material Type is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  onChange={(e, value) => field.onChange(value)}
+                  options={
+                    config.elements.find((el) => el.name === "Walling")
+                      .materials
+                  }
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Materials"
+                      required
+                      error={!!errors.materialType}
+                      helperText={errors.materialType?.message}
+                    />
+                  )}
+                />
               )}
             />
-            <Autocomplete
-              id="bond_id"
-              options={
-                config.elements.find((element) => element.name === "Walling")
-                  .bonds
-              }
-              name="bondName"
-              placeholder="Choose Bond Type"
-              onSelect={(e) => handleOnParamSelect(e, "bondName")}
-              value={options?.parameters?.bondName}
-              required={true}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Bond Type" required />
+
+            {/* Bond Name */}
+            <Controller
+              name="parameters.bondName"
+              control={control}
+              rules={{ required: "Bond Type is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  onChange={(e, value) => field.onChange(value)}
+                  options={
+                    config.elements.find((el) => el.name === "Walling").bonds
+                  }
+                  isOptionEqualToValue={(option, value) => option === value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Bond Type"
+                      required
+                      error={!!errors.parameters?.bondName}
+                      helperText={errors.parameters?.bondName?.message}
+                    />
+                  )}
+                />
               )}
             />
-            <TextField
-              type="text"
-              name="wallArea"
-              value={options?.parameters?.expression}
-              label="Wall Area (sqm)"
-              placeholder="Enter Wall Area"
-              onChange={handleOnCalcParamChange}
-              error={Boolean(error)}
-              helperText={error}
+
+            {/* Wall Area */}
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{
+                required: "Wall Area is required",
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Wall Area (sqm)"
+                  placeholder="Enter Wall Area or Expression"
+                  required
+                  error={!!errors.parameters?.wallArea || !!calcError.wallArea}
+                  helperText={
+                    errors.parameters?.wallArea?.message || calcError.wallArea
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    // Pass the value and field name to the handler
+                    handleOnCalcParamChange("wallArea", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Reinforcement" && (
+
+        {/* Reinforcement Section */}
+        {watchedValues?.elementName === "Reinforcement" && (
           <>
-            <Autocomplete
-              id="reinforcementMaterials_id"
-              options={
-                config.elements.find(
-                  (element) => element.name === "Reinforcement"
-                ).materials
-              }
+            {/* Material Name */}
+            <Controller
               name="materialName"
-              placeholder="Enter Material"
-              onSelect={(e) => handleOnSelect(e, "materialName")}
-              value={options?.materialName}
-              required={true}
-              disabled={canEdit}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Materials" required />
-              )}
-            />
-            {options?.materialName === "BRC" && (
-              <>
+              control={control}
+              rules={{ required: "Material Name is required" }}
+              render={({ field }) => (
                 <Autocomplete
-                  id="brcSizeOptions_id"
+                  {...field}
+                   id="reinforcementMaterials_id"
                   options={
                     config.elements.find(
                       (element) => element.name === "Reinforcement"
-                    ).brcSizes
+                    ).materials
                   }
-                  name="brcSize"
-                  value={options?.parameters?.brcSize}
-                  placeholder="Choose BRC Size"
-                  onSelect={(e) => handleOnParamSelect(e, "brcSize")}
-                  required={true}
+                  onChange={(e, value) => {
+                    console.log("value", value);
+                    field.onChange(value);
+                  }}
                   isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="BRC Size" required />
-                  )}
-                />
-                <TextField
-                  type="text"
-                  name="area"
-                  value={options?.parameters?.expression}
-                  label="Area (sqm)"
-                  placeholder="Area"
-                  onChange={handleOnCalcParamChange}
-                  error={Boolean(error)}
-                  helperText={error}
-                />
-              </>
-            )}
-            {options?.materialName === "Rebar" && (
-              <>
-                <Autocomplete
-                  id="rebarSizeOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Reinforcement"
-                    ).rebarSizes
-                  }
-                  name="rebarSize"
-                  value={options?.parameters?.rebarSize}
-                  placeholder="Choose Rebar Diameter (mm)"
-                  onSelect={(e) => handleOnParamSelect(e, "rebarSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
+                  disabled={canEdit}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Rebar Diameter (mm)"
+                      label="Materials"
                       required
+                      error={!!errors.materialName}
+                      helperText={errors.materialName?.message}
                     />
                   )}
                 />
-                <TextField
-                  type="text"
-                  name="Kgs"
-                  value={options?.parameters?.expression}
-                  label="Kilograms"
-                  placeholder="Total Kilograms"
-                  onChange={handleOnCalcParamChange}
-                  error={Boolean(error)}
-                  helperText={error}
+              )}
+            />
+            {/* BRC Section */}
+            {watchedValues?.materialName === "BRC" && (
+              <>
+                <Controller
+                  name="parameters.brcSize"
+                  control={control}
+                  rules={{ required: "BRC Size is required" }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Reinforcement"
+                        ).brcSizes
+                      }
+                      onChange={(e, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="BRC Size"
+                          required
+                          error={!!errors.parameters?.brcSize}
+                          helperText={errors.parameters?.brcSize?.message}
+                        />
+                      )}
+                    />
+                  )}
+                />
+                {/* Area */}
+                <Controller
+                  name="parameters.expression"
+                  control={control}
+                  rules={{ required: "Area is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="text"
+                      label="Area (sqm)"
+                      placeholder="Enter Area"
+                      required
+                      error={!!calcError.area || !!errors.parameters?.area}
+                      helperText={
+                        calcError.area || errors.parameters?.area?.message
+                      }
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        handleOnCalcParamChange("area", e.target.value);
+                      }}
+                    />
+
+                  )}
+                />
+              </>
+            )}
+            {/* Rebar Section */}
+            {watchedValues?.materialName === "Rebar" && (
+              <>
+                <Controller
+                  name="parameters.rebarSize"
+                  control={control}
+                  rules={{ required: "Rebar Diameter is required" }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Reinforcement"
+                        ).rebarSizes
+                      }
+                      onChange={(e, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Rebar Diameter (mm)"
+                          required
+                          error={!!errors.parameters?.rebarSize}
+                          helperText={errors.parameters?.rebarSize?.message}
+                        />
+                      )}
+                    />
+                  )}
+                />
+                {/* Kilograms */}
+                <Controller
+                  name="parameters.expression"
+                  control={control}
+                  rules={{ required: "Kilograms is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="text"
+                      label="Kilograms"
+                      placeholder="Enter Kilograms"
+                      required
+                      error={!!calcError.Kgs || !!errors.parameters?.Kgs}
+                      helperText={
+                        calcError.Kgs || errors.parameters?.Kgs?.message
+                      }
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        handleOnCalcParamChange("Kgs", e.target.value);
+                      }}
+                    />
+                  )}
                 />
               </>
             )}
           </>
         )}
-        {options?.elementName === "Anti-Termite Treatment" && (
+
+        {/* Anti-Termite Treatment */}
+        {watchedValues?.elementName === "Anti-Termite Treatment" && (
           <>
-            <TextField
-              type="string"
-              name="surfaceArea"
-              label="Square Metres"
-              placeholder="Enter Square Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
-            />
-          </>
-        )}
-        {options?.elementName === "Murram" && (
-          <>
-            <TextField
-              type="string"
-              name="cum"
-              label="Cubic Metres"
-              placeholder="Enter Cubic Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
-            />
-          </>
-        )}
-        {options?.elementName === "Hardcore" && (
-          <>
-            <Autocomplete
-              id="unit._id"
-              options={
-                config.elements.find((element) => element.name === "Hardcore")
-                  .unit
-              }
-              name="unit"
-              value={options?.parameters?.unit}
-              placeholder="Choose Unit of Measurement"
-              onSelect={(e) => handleOnParamSelect(e, "unit")}
-              required={true}
-              getOptionLabel={(option) => option.toString()}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Unit of Measurement" required />
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Square Metres is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Square Metres"
+                  placeholder="Enter Square Metres"
+                  required
+                  error={!!calcError.surfaceArea || !!errors.parameters?.surfaceArea}
+                  helperText={
+                    calcError.surfaceArea || errors.parameters?.surfaceArea?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("surfaceArea", e.target.value);
+                  }}
+                />
               )}
             />
-            <TextField
-              type="string"
-              name="cum"
-              label={selectedUnit === "CM" ? "Cubic Metres" : "Square Metres"}
-              placeholder={
-                selectedUnit === "CM"
-                  ? "Enter Cubic Metres"
-                  : "Enter Square Metres"
-              }
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+          </>
+        )}
+
+        {/* Murram */}
+        {watchedValues?.elementName === "Murram" && (
+          <>
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Cubic Metres is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Cubic Metres"
+                  placeholder="Enter Cubic Metres"
+                  required
+                  error={!!calcError.cum || !!errors.parameters?.cum}
+                  helperText={
+                    calcError.cum || errors.parameters?.cum?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("cum", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Sand Blinding" && (
+
+        {/* Hardcore */}
+        {watchedValues?.elementName === "Hardcore" && (
           <>
-            <TextField
-              type="string"
-              name="surfaceArea"
-              label="Square Metres"
-              placeholder="Enter Square Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+            <Controller
+              name="parameters.unit"
+              control={control}
+              rules={{ required: "Unit of Measurement is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Hardcore"
+                    ).unit
+                  }
+                  onChange={(e, value) => field.onChange(value)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Unit of Measurement"
+                      required
+                      error={!!errors.parameters?.unit}
+                      helperText={errors.parameters?.unit?.message}
+                    />
+                  )}
+                />
+              )}
+            />
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Value is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={
+                    selectedUnit === "CM" ? "Cubic Metres" : "Square Metres"
+                  }
+                  placeholder={
+                    selectedUnit === "CM"
+                      ? "Enter Cubic Metres"
+                      : "Enter Square Metres"
+                  }
+                  required
+                  error={!!calcError.cum || !!errors.parameters?.cum}
+                  helperText={
+                    calcError.cum || errors.parameters?.cum?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("cum", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Damp Proof Membrane" && (
+
+        {/* Sand Blinding */}
+        {watchedValues?.elementName === "Sand Blinding" && (
           <>
-            <TextField
-              type="string"
-              name="surfaceArea"
-              label="Square Metres"
-              placeholder="Enter Square Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Square Metres is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Square Metres"
+                  placeholder="Enter Square Metres"
+                  required
+                  error={!!calcError.surfaceArea || !!errors.parameters?.surfaceArea}
+                  helperText={
+                    calcError.surfaceArea || errors.parameters?.surfaceArea?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("surfaceArea", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Damp Proof Course" && (
+
+        {/* Damp Proof Membrane */}
+        {watchedValues?.elementName === "Damp Proof Membrane" && (
           <>
-            <TextField
-              type="string"
-              name="lm"
-              label="Linear Metres"
-              placeholder="Enter Linear Metres"
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Square Metres is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Square Metres"
+                  placeholder="Enter Square Metres"
+                  required
+                  error={!!calcError.surfaceArea || !!errors.parameters?.surfaceArea}
+                  helperText={
+                    calcError.surfaceArea || errors.parameters?.surfaceArea?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("surfaceArea", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Steel Work" && (
+
+        {/* Damp Proof Course */}
+        {watchedValues?.elementName === "Damp Proof Course" && (
           <>
-            <Autocomplete
-              id="steelWorkMaterials_id"
-              options={
-                config.elements.find((element) => element.name === "Steel Work")
-                  .materials
-              }
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Linear Metres is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="text"
+                  label="Linear Metres"
+                  placeholder="Enter Linear Metres"
+                  required
+                  error={!!calcError.lm || !!errors.parameters?.lm}
+                  helperText={
+                    calcError.lm || errors.parameters?.lm?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("lm", e.target.value);
+                  }}
+                />
+              )}
+            />
+          </>
+        )}
+
+        {/* Steel Work */}
+        {watchedValues?.elementName === "Steel Work" && (
+          <>
+            {/* Material Name */}
+            <Controller
               name="materialName"
-              placeholder="Enter Material"
-              onSelect={(e) => handleOnSelect(e, "materialName")}
-              value={options?.materialName}
-              required={true}
-              disabled={canEdit}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Materials" required />
+              control={control}
+              rules={{ required: "Material Name is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Steel Work"
+                    ).materials
+                  }
+                  onChange={(e, value) => field.onChange(value)}
+                  disabled={canEdit}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Materials"
+                      required
+                      error={!!errors.materialName}
+                      helperText={errors.materialName?.message}
+                    />
+                  )}
+                />
               )}
             />
-            {options?.materialName === "UB/IPE/UC" && (
+            {/* Section Size */}
+            {[
+              "UB/IPE/UC",
+              "Hollow Sections",
+              "CHS",
+              "RSC/PFC",
+              "JIS",
+              "CFC/Z/CFLC(Purlins)",
+              "CFA",
+              "RSA",
+            ].includes(watchedValues?.materialName) && (
               <>
-                <Autocomplete
-                  id="ubSizeOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).UB
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="UB/IPE/UC Size" required />
-                  )}
-                />
-              </>
-            )}
-            {options?.materialName === "Hollow Sections" && (
-              <>
-                <Autocomplete
-                  id="hollowSectionsOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).HS
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Hollow Section Size"
-                      required
+                <Controller
+                  name="parameters.sectionSize"
+                  control={control}
+                  rules={{ required: "Section Size is required" }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Steel Work"
+                        )[
+                          {
+                            "UB/IPE/UC": "UB",
+                            "Hollow Sections": "HS",
+                            CHS: "CHS",
+                            "RSC/PFC": "RSC",
+                            JIS: "JIS",
+                            "CFC/Z/CFLC(Purlins)": "CFC",
+                            CFA: "CFA",
+                            RSA: "RSA",
+                          }[watchedValues?.materialName]
+                        ]
+                      }
+                      onChange={(e, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Section Size"
+                          required
+                          error={!!errors.parameters?.sectionSize}
+                          helperText={errors.parameters?.sectionSize?.message}
+                        />
+                      )}
                     />
                   )}
                 />
               </>
             )}
-            {options?.materialName === "CHS" && (
-              <>
+            {/* Unit */}
+            <Controller
+              name="parameters.unit"
+              control={control}
+              rules={{ required: "Unit of Measurement is required" }}
+              render={({ field }) => (
                 <Autocomplete
-                  id="chsSectionsOptions_id"
+                  {...field}
                   options={
                     config.elements.find(
                       (element) => element.name === "Steel Work"
-                    ).CHS
+                    ).unit
                   }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
+                  onChange={(e, value) => field.onChange(value)}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Hollow Section Size"
+                      label="Unit of Measurement"
                       required
+                      error={!!errors.parameters?.unit}
+                      helperText={errors.parameters?.unit?.message}
                     />
                   )}
                 />
-              </>
-            )}
-            {options?.materialName === "RSC/PFC" && (
-              <>
-                <Autocomplete
-                  id="rscPfcOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).RSC
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Circular Hollow Section Size"
-                      required
-                    />
-                  )}
-                />
-              </>
-            )}
-            {options?.materialName === "JIS" && (
-              <>
-                <Autocomplete
-                  id="jisSectionsOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).JIS
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Section Size" required />
-                  )}
-                />
-              </>
-            )}
-            {options?.materialName === "CFC/Z/CFLC(Purlins)" && (
-              <>
-                <Autocomplete
-                  id="cfcSectionsOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).CFC
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Section Size" required />
-                  )}
-                />
-              </>
-            )}
-            {options?.materialName === "CFA" && (
-              <>
-                <Autocomplete
-                  id="cfaSectionsOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).CFA
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Hollow Section Size"
-                      required
-                    />
-                  )}
-                />
-              </>
-            )}
-            {options?.materialName === "RSA" && (
-              <>
-                <Autocomplete
-                  id="rsaSectionsOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Steel Work"
-                    ).RSA
-                  }
-                  name="sectionSize"
-                  value={options?.parameters?.sectionSize}
-                  placeholder="Choose Section Size"
-                  onSelect={(e) => handleOnParamSelect(e, "sectionSize")}
-                  required={true}
-                  getOptionLabel={(option) => option.toString()}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Angle Section Size"
-                      required
-                    />
-                  )}
-                />
-              </>
-            )}
-            <Autocomplete
-              id="unit._id"
-              options={
-                config.elements.find((element) => element.name === "Steel Work")
-                  .unit
-              }
-              name="unit"
-              value={options?.parameters?.unit}
-              placeholder="Choose Unit of Measurement"
-              onSelect={(e) => handleOnParamSelect(e, "unit")}
-              required={true}
-              getOptionLabel={(option) => option.toString()}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Unit of Measurement" required />
               )}
             />
-            <TextField
-              type="string"
-              name="eval"
-              label={selectedUnit === "LM" ? "Linear Metres" : "Kilograms"}
-              placeholder={
-                selectedUnit === "LM"
-                  ? "Enter Linear Metres"
-                  : "Enter Kilograms"
-              }
-              onChange={handleOnCalcParamChange}
-              value={options?.parameters?.expression}
-              required
-              error={Boolean(error)}
-              helperText={error}
+            {/* Value */}
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Value is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={selectedUnit === "LM" ? "Linear Metres" : "Kilograms"}
+                  placeholder={
+                    selectedUnit === "LM"
+                      ? "Enter Linear Metres"
+                      : "Enter Kilograms"
+                  }
+                  required
+                  error={!!calcError.eval || !!errors.parameters?.eval}
+                  helperText={
+                    calcError.eval || errors.parameters?.eval?.message
+                  }
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("eval", e.target.value);
+                  }}
+                />
+              )}
             />
           </>
         )}
-        {options?.elementName === "Finishes" && (
+
+        {/* Finishes */}
+        {watchedValues?.elementName === "Finishes" && (
           <>
-            <Autocomplete
-              id="category_id"
-              options={
-                config.elements.find((element) => element.name === "Finishes")
-                  .category
-              }
+            {/* Category Name */}
+            <Controller
               name="categoryName"
-              placeholder="Enter Category"
-              onSelect={(e) => handleOnSelect(e, "categoryName")}
-              value={options?.categoryName}
-              required={true}
-              disabled={canEdit}
-              isOptionEqualToValue={(option, value) => option === value}
-              renderInput={(params) => (
-                <TextField {...params} label="Category" required />
+              control={control}
+              rules={{ required: "Category is required" }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  options={
+                    config.elements.find(
+                      (element) => element.name === "Finishes"
+                    ).category
+                  }
+                  onChange={(e, value) => field.onChange(value)}
+                  disabled={canEdit}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Category"
+                      required
+                      error={!!errors.categoryName}
+                      helperText={errors.categoryName?.message}
+                    />
+                  )}
+                />
               )}
             />
-            {options?.categoryName === "Floor Finishes" && (
+            {/* Floor Finishes */}
+            {watchedValues?.categoryName === "Floor Finishes" && (
               <>
-                <Autocomplete
-                  id="floorMaterialOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Finishes"
-                    ).floorMaterials
-                  }
+                <Controller
                   name="materialName"
-                  placeholder="Enter Material"
-                  onSelect={(e) => handleOnSelect(e, "materialName")}
-                  value={options?.materialName}
-                  required={true}
-                  disabled={canEdit}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Materials" required />
-                  )}
-                />
-                {options?.materialName === "Cement sand screed" && (
-                  <>
+                  control={control}
+                  rules={{ required: "Material Name is required" }}
+                  render={({ field }) => (
                     <Autocomplete
-                      id="cssClassOptions_id"
+                      {...field}
                       options={
                         config.elements.find(
                           (element) => element.name === "Finishes"
-                        ).cssClass
+                        ).floorMaterials
                       }
-                      name="cssClass"
-                      value={options?.parameters?.cssClass}
-                      placeholder="Choose CSS Class"
-                      onSelect={(e) => handleOnParamSelect(e, "cssClass")}
-                      required={true}
-                      getOptionLabel={(option) => option.toString()}
-                      isOptionEqualToValue={(option, value) => option === value}
+                      onChange={(e, value) => field.onChange(value)}
+                      disabled={canEdit}
                       renderInput={(params) => (
-                        <TextField {...params} label="CSS Class" required />
+                        <TextField
+                          {...params}
+                          label="Materials"
+                          required
+                          error={!!errors.materialName}
+                          helperText={errors.materialName?.message}
+                        />
+                      )}
+                    />
+                  )}
+                />
+                {/* CSS Class */}
+                {watchedValues?.materialName === "Cement sand screed" && (
+                  <>
+                    <Controller
+                      name="parameters.cssClass"
+                      control={control}
+                      rules={{ required: "CSS Class is required" }}
+                      render={({ field }) => (
+                        <Autocomplete
+                          {...field}
+                          options={
+                            config.elements.find(
+                              (element) => element.name === "Finishes"
+                            ).cssClass
+                          }
+                          onChange={(e, value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="CSS Class"
+                              required
+                              error={!!errors.parameters?.cssClass}
+                              helperText={errors.parameters?.cssClass?.message}
+                            />
+                          )}
+                        />
                       )}
                     />
                   </>
                 )}
-                {/* <TextField
+              </>
+            )}
+            {/* Wall Finishes */}
+            {watchedValues?.categoryName === "Wall Finishes" && (
+              <>
+                <Controller
+                  name="materialName"
+                  control={control}
+                  rules={{ required: "Material Name is required" }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      options={
+                        config.elements.find(
+                          (element) => element.name === "Finishes"
+                        ).wallMaterials
+                      }
+                      onChange={(e, value) => field.onChange(value)}
+                      disabled={canEdit}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Materials"
+                          required
+                          error={!!errors.materialName}
+                          helperText={errors.materialName?.message}
+                        />
+                      )}
+                    />
+                  )}
+                />
+                {/* CSS Class */}
+                {watchedValues?.materialName === "Cement sand screed" && (
+                  <>
+                    <Controller
+                      name="parameters.cssClass"
+                      control={control}
+                      rules={{ required: "CSS Class is required" }}
+                      render={({ field }) => (
+                        <Autocomplete
+                          {...field}
+                          options={
+                            config.elements.find(
+                              (element) => element.name === "Finishes"
+                            ).cssClass
+                          }
+                          onChange={(e, value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="CSS Class"
+                              required
+                              error={!!errors.parameters?.cssClass}
+                              helperText={errors.parameters?.cssClass?.message}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </>
+                )}
+                {/* Plaster Class */}
+                {watchedValues?.materialName === "Plastering and rendering" && (
+                  <>
+                    <Controller
+                      name="parameters.plasterClass"
+                      control={control}
+                      rules={{ required: "Plaster Class is required" }}
+                      render={({ field }) => (
+                        <Autocomplete
+                          {...field}
+                          options={
+                            config.elements.find(
+                              (element) => element.name === "Finishes"
+                            ).plasterClass
+                          }
+                          onChange={(e, value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Plaster Class"
+                              required
+                              error={!!errors.parameters?.plasterClass}
+                              helperText={
+                                errors.parameters?.plasterClass?.message
+                              }
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </>
+                )}
+              </>
+            )}
+            {/* Area */}
+            <Controller
+              name="parameters.expression"
+              control={control}
+              rules={{ required: "Area is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
                   type="text"
-                  name="area"
-                  value={options?.parameters?.expression}
                   label="Area (sqm)"
-                  placeholder="Area"
-                  onChange={handleOnCalcParamChange}
-                  error={Boolean(error)}
-                  helperText={error}
-                /> */}
-              </>
-            )}
-            {options?.categoryName === "Wall Finishes" && (
-              <>
-                <Autocomplete
-                  id="wallMaterialOptions_id"
-                  options={
-                    config.elements.find(
-                      (element) => element.name === "Finishes"
-                    ).wallMaterials
+                  placeholder="Enter Area"
+                  required
+                  error={!!calcError.area || !!errors.parameters?.area}
+                  helperText={
+                    calcError.area || errors.parameters?.area?.message
                   }
-                  name="materialName"
-                  placeholder="Enter Material"
-                  onSelect={(e) => handleOnSelect(e, "materialName")}
-                  value={options?.materialName}
-                  required={true}
-                  disabled={canEdit}
-                  isOptionEqualToValue={(option, value) => option === value}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Materials" required />
-                  )}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    handleOnCalcParamChange("area", e.target.value);
+                  }}
                 />
-                {options?.materialName === "Cement sand screed" && (
-                  <>
-                    <Autocomplete
-                      id="cssClassOptions_id"
-                      options={
-                        config.elements.find(
-                          (element) => element.name === "Finishes"
-                        ).cssClass
-                      }
-                      name="cssClass"
-                      value={options?.parameters?.cssClass}
-                      placeholder="Choose CSS Class"
-                      onSelect={(e) => handleOnParamSelect(e, "cssClass")}
-                      required={true}
-                      getOptionLabel={(option) => option.toString()}
-                      isOptionEqualToValue={(option, value) => option === value}
-                      renderInput={(params) => (
-                        <TextField {...params} label="CSS Class" required />
-                      )}
-                    />
-                  </>
-                )}
-                {options?.materialName === "Plastering and rendering" && (
-                  <>
-                    <Autocomplete
-                      id="cssClassOptions_id"
-                      options={
-                        config.elements.find(
-                          (element) => element.name === "Finishes"
-                        ).plasterClass
-                      }
-                      name="plasterClass"
-                      value={options?.parameters?.plasterClass}
-                      placeholder="Choose Plaster Class"
-                      onSelect={(e) => handleOnParamSelect(e, "plasterClass")}
-                      required={true}
-                      getOptionLabel={(option) => option.toString()}
-                      isOptionEqualToValue={(option, value) => option === value}
-                      renderInput={(params) => (
-                        <TextField {...params} label="Plaster Class" required />
-                      )}
-                    />
-                  </>
-                )}
-              </>
-            )}
-            <TextField
-              type="text"
-              name="area"
-              value={options?.parameters?.expression}
-              label="Area (sqm)"
-              placeholder="Area"
-              onChange={handleOnCalcParamChange}
-              error={Boolean(error)}
-              helperText={error}
+              )}
             />
           </>
         )}
-        {options?.elementName === "Other" && (
+
+        {/* Other */}
+        {watchedValues?.elementName === "Other" && (
           <>
-            <TextField
-              type="text"
+            <Controller
               name="materialName"
-              label="Material Name"
-              placeholder="Enter Material Name"
-              onChange={handleOnChange}
-              value={options?.materialName}
-              required
-              error={Boolean(error)}
-              helperText={error}
+              control={control}
+              rules={{ required: "Material Name is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Material Name"
+                  placeholder="Enter Material Name"
+                  required
+                  error={!!errors.materialName}
+                  helperText={errors.materialName?.message}
+                />
+              )}
             />
 
-            <TextField
-              type="text"
+            <Controller
               name="materialUnit"
-              label="Material Unit"
-              placeholder="Enter Unit"
-              onChange={handleOnChange}
-              value={options?.materialUnit}
-              required
-              error={Boolean(error)}
-              helperText={error}
+              control={control}
+              rules={{ required: "Material Unit is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Material Unit"
+                  placeholder="Enter Unit"
+                  required
+                  error={!!errors.materialUnit}
+                  helperText={errors.materialUnit?.message}
+                />
+              )}
             />
 
-            <TextField
-              type="number"
+            <Controller
               name="computedValue"
-              label="Computed Value"
-              placeholder="Enter Computed Value"
-              onChange={handleOnChange}
-              value={options?.computedValue}
-              required
-              error={Boolean(error)}
-              helperText={error}
+              control={control}
+              rules={{ required: "Computed Value is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  label="Computed Value"
+                  placeholder="Enter Computed Value"
+                  required
+                  error={!!errors.computedValue}
+                  helperText={errors.computedValue?.message}
+                />
+              )}
             />
           </>
         )}
-        <TextField
-          type="text"
+
+        {/* Description */}
+        <Controller
           name="materialDescription"
-          label="Description"
-          placeholder="Enter Description"
-          onChange={handleOnChange}
-          value={options?.materialDescription}
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              type="text"
+              label="Description"
+              required
+              multiline
+              rows={4}
+              placeholder="Enter Description"
+              onChange={field.onChange}
+              value={field.value}
+            />
+          )}
         />
 
+        {/* Submit Button */}
         {Object.keys(formData).length === 0 ? (
           <Button
-            onClick={onSaveMaterialClicked}
-            name="submit"
             variant="outlined"
             type="submit"
             className="button"
-            disabled={isSubmitting || error}
+            disabled={!isValid || isAddLoading || hasCalcErrors}
           >
-            {isSubmitting ? "Generating..." : "Generate"}
+            {isAddLoading ? "Generating..." : "Generate"}
           </Button>
         ) : (
           <Button
-            onClick={onUpdateMaterialClicked}
             variant="outlined"
             type="submit"
             className="button"
-            disabled={!canSave || error}
+            disabled={!isValid || isUpdateLoading || hasCalcErrors}
           >
-            Update
+            {isUpdateLoading ? "Updating..." : "Update"}
           </Button>
         )}
       </form>

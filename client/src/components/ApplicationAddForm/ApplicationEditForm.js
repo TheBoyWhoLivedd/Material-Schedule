@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+// ApplicationEditForm.js
+import React, { useState, useEffect } from "react";
 import { useUpdateApplicationMutation } from "../../features/schedules/schedulesApiSlice";
-import Autocomplete from "@mui/material/Autocomplete";
-import { Container, Paper, Box, Button, TextField, Grid } from "@mui/material";
-import { applicationItems } from "../../assets/data";
-import { Plus, Trash } from "feather-icons-react";
-import "./ApplicationAddForm.css";
+import { Container, Paper, Box } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import AddEntryComponent from "../AddEntryComponent";
+import Content from "../Content";
+import "./ApplicationAddForm.css";
 
 const ApplicationEditForm = ({
   id,
@@ -15,37 +14,24 @@ const ApplicationEditForm = ({
   openSnackbarWithMessage,
   schedule,
 }) => {
-  const initialState = {
-    item: "",
-    supplier: "",
-    amountRequested: "",
-  };
-  const [newEntry, setNewEntry] = useState(initialState);
-  const [entries, setEntries] = useState(content.items);
+  const [entries, setEntries] = useState([]);
 
-  const [updateApplication, { isSuccess: isAddSuccess, isLoading }] =
+  useEffect(() => {
+    if (content) {
+      setEntries(content.items);
+    }
+  }, [content]);
+
+  const [updateApplication, { isSuccess: isUpdateSuccess, isLoading }] =
     useUpdateApplicationMutation();
 
-  const addEntry = (entry) => {
+  const handleAddEntry = (entry) => {
     const changeId = uuidv4().substring(0, 8);
     const myNewEntry = { ...entry, changeId };
-    const listEntries = [...entries, myNewEntry];
-    console.log(listEntries);
-    setEntries(listEntries);
+    setEntries((prevEntries) => [...prevEntries, myNewEntry]);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (Object.keys(newEntry).length === 0) {
-      return;
-    } else {
-      addEntry(newEntry);
-      setNewEntry(initialState);
-    }
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+  const handleFormSubmit = async () => {
     const response = await updateApplication({
       id: id,
       appId: content._id,
@@ -56,126 +42,46 @@ const ApplicationEditForm = ({
       openSnackbarWithMessage(`Error: ${response.data.message}`);
     } else {
       handleClose();
-      openSnackbarWithMessage(`Materials Added Successfully`);
+      openSnackbarWithMessage(`Materials Updated Successfully`);
     }
   };
 
-  const handleOnChange = (e) => {
-    setNewEntry({ ...newEntry, [e.target.name]: e.target.value });
-    console.log(newEntry);
+  const handleDelete = (changeId) => {
+    setEntries((prevEntries) =>
+      prevEntries.filter((entry) => entry.changeId !== changeId)
+    );
   };
-  const handleOnItemSelect = (e, name) => {
-    setNewEntry({ ...newEntry, [name]: e.target.value });
-    // console.log(newEntry);
-  };
-  const handleDelete = (id) => {
-    const entryItems = entries.filter((entry) => entry.changeId !== id);
-    setEntries(entryItems);
-  };
+
   const handleEntryChange = (e, changeId) => {
-    const entryItems = entries.map((entry) => {
-      if (entry.changeId === changeId) {
-        return { ...entry, [e.target.name]: e.target.value };
-      }
-      return entry;
-    });
-    setEntries(entryItems);
-    console.log(entryItems);
+    const { name, value } = e.target;
+    setEntries((prevEntries) =>
+      prevEntries.map((entry) =>
+        entry.changeId === changeId ? { ...entry, [name]: value } : entry
+      )
+    );
   };
+
   const style = {
     boxShadow: "none",
     padding: "2rem",
   };
+
   return (
-    <div>
-      <Container>
-        <Paper component={Box} sx={style}>
-          {entries?.length ? (
-            <div>
-              {entries?.map((entry) => (
-                <div key={entry._id || entry.changeId}>
-                  <form>
-                    <Grid container spacing={3} mt={0.5}>
-                      <Grid item md={4}>
-                        <Autocomplete
-                          options={applicationItems.map((option) => option)}
-                          name="item"
-                          placeholder="Choose Element"
-                          onSelect={(e) => handleEntryChange(e, entry.changeId)}
-                          value={entry?.item}
-                          required
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Item"
-                              required
-                              placeholder="Item Description"
-                              disabled={entry._id !== undefined}
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item md={4}>
-                        <TextField
-                          label="Supplier"
-                          name="supplier"
-                          placeholder="Enter Supplier"
-                          variant="outlined"
-                          value={entry?.supplier}
-                          onChange={(e) => handleEntryChange(e, entry.changeId)}
-                          fullWidth
-                          disabled={entry._id !== undefined}
-                        />
-                      </Grid>
-                      <Grid item md={3}>
-                        <TextField
-                          label="Requested"
-                          name="amountRequested"
-                          placeholder="Enter Quantity Requested"
-                          variant="outlined"
-                          value={entry?.amountRequested}
-                          onChange={(e) => handleEntryChange(e, entry.changeId)}
-                          fullWidth
-                          disabled={entry._id !== undefined}
-                        />
-                      </Grid>
-
-                      {entry._id === undefined && (
-                        <Grid item md={1}>
-                          <Button
-                            sx={{
-                              variant: "primary",
-                              size: "small",
-                              pt: 1.5,
-                              pl: 0,
-                            }}
-                            onClick={() => handleDelete(entry.changeId)}
-                          >
-                            <Trash />
-                          </Button>
-                        </Grid>
-                      )}
-                    </Grid>
-                  </form>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ marginTop: "2rem" }}>Your list is empty.</p>
-          )}
-
-          <AddEntryComponent
-            newEntry={newEntry}
-            handleChange={handleOnChange}
-            handleSubmit={handleSubmit}
-            handleFormSubmit={handleFormSubmit}
-            handleOnItemSelect={handleOnItemSelect}
-            schedule={schedule}
-            isLoading={isLoading}
-          />
-        </Paper>
-      </Container>
-    </div>
+    <Container>
+      <Paper component={Box} sx={style}>
+        <Content
+          entries={entries}
+          handleDelete={handleDelete}
+          handleChange={handleEntryChange}
+        />
+        <AddEntryComponent
+          handleAddEntry={handleAddEntry}
+          handleFormSubmit={handleFormSubmit}
+          schedule={schedule}
+          isLoading={isLoading}
+        />
+      </Paper>
+    </Container>
   );
 };
 

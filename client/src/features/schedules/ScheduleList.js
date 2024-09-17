@@ -44,7 +44,7 @@ const ScheduleList = () => {
       // console.log(filteredIds)
     } else {
       filteredIds = ids.filter(
-        (scheduleId) => entities[scheduleId].username === username
+        (scheduleId) => entities[scheduleId].user.username === username
       );
     }
 

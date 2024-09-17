@@ -16,7 +16,7 @@
     {
       "name": "Walling",
       "materials": ["Bricks", "Blocks"],
-      "bonds": ["Stretcher", "Flemish", "English", "Header"]
+      "bonds": ["Stretcher", "Header"]
     },
     {
       "name": "Reinforcement",

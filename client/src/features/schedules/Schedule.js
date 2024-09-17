@@ -167,7 +167,7 @@ const Schedule = ({ scheduleId }) => {
                 }}
               >
                 <PersonOutlineIcon sx={{ color: "#475BE8" }} />{" "}
-                {schedule.username}
+                {schedule.user.username}
               </Typography>
               <Typography
                 variant="body1"

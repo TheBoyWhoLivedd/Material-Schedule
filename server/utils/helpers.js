@@ -710,7 +710,7 @@ const updateConcrete = async (schedule, relatedId, description, parameters) => {
     parameters.concreteClass,
     parameters.cum
   );
-  console.log(results);
+  console.log("relatedId", relatedId);
   const materials = schedule?.materials?.filter(
     (material) => material.relatedId === relatedId
   );
@@ -729,11 +729,13 @@ const updateConcrete = async (schedule, relatedId, description, parameters) => {
   }
 
   await schedule.save();
+  console.log("materirals in updateConcrete", materials); 
+  return materials;
 };
 
 const updateBRC = async (scheduleId, materialId, description, parameters) => {
   const results = calculateBRC(parameters.brcSize, parameters.area);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -742,13 +744,15 @@ const updateBRC = async (scheduleId, materialId, description, parameters) => {
         "materials.$.computedValue": results.brcRolls,
         "materials.$.materialDetail": `BRC(${parameters.brcSize})`,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
 
 const updateRebar = async (scheduleId, materialId, description, parameters) => {
   const results = calculateRebar(parameters.rebarSize, parameters.Kgs);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -757,8 +761,10 @@ const updateRebar = async (scheduleId, materialId, description, parameters) => {
         "materials.$.materialDetail": `Rebar(${parameters.rebarSize})`,
         "materials.$.computedValue": results.rebarPieces,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
 
 const updateWalling = async (
@@ -809,6 +815,7 @@ const updateWalling = async (
   }
 
   await schedule.save();
+  return materials;
 };
 
 const updateAntiTermite = async (
@@ -818,7 +825,7 @@ const updateAntiTermite = async (
   parameters
 ) => {
   const results = calculateAntiTermite(parameters.surfaceArea);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -826,9 +833,12 @@ const updateAntiTermite = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numAntiTermite,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
+
 const updateMurram = async (
   scheduleId,
   materialId,
@@ -836,7 +846,7 @@ const updateMurram = async (
   parameters
 ) => {
   const results = calculateMurram(parameters.cum);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -844,9 +854,12 @@ const updateMurram = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numMurram,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
+
 const updateHardcore = async (
   scheduleId,
   materialId,
@@ -854,7 +867,7 @@ const updateHardcore = async (
   parameters
 ) => {
   const results = calculateHardcore(parameters.unit, parameters.cum);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -862,8 +875,10 @@ const updateHardcore = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numHardcore,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
 
 const updateSandBlinding = async (
@@ -873,7 +888,7 @@ const updateSandBlinding = async (
   parameters
 ) => {
   const results = calculateSandBlinding(parameters.surfaceArea);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -881,9 +896,12 @@ const updateSandBlinding = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numSandBlinding,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
+
 const updateDampProofMembrane = async (
   scheduleId,
   materialId,
@@ -891,7 +909,7 @@ const updateDampProofMembrane = async (
   parameters
 ) => {
   const results = calculateDampProofMembrane(parameters.surfaceArea);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -899,9 +917,12 @@ const updateDampProofMembrane = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numDampProofMembrane,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
+
 const updateDampProofCourse = async (
   scheduleId,
   materialId,
@@ -909,7 +930,7 @@ const updateDampProofCourse = async (
   parameters
 ) => {
   const results = calculateDampProofCourse(parameters.lm);
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -917,8 +938,10 @@ const updateDampProofCourse = async (
         "materials.$.materialDescription": description,
         "materials.$.computedValue": results.numDampProofCourse,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
 
 const updateSteel = async (
@@ -934,7 +957,7 @@ const updateSteel = async (
     parameters.eval,
     parameters.unit
   );
-  await Schedule.findOneAndUpdate(
+  const updatedMaterial = await Schedule.findOneAndUpdate(
     { _id: scheduleId, "materials._id": materialId },
     {
       $set: {
@@ -943,14 +966,14 @@ const updateSteel = async (
         "materials.$.materialDetail": `${parameters.sectionSize}`,
         "materials.$.computedValue": results.steelPieces,
       },
-    }
+    },
+    { new: true }
   ).exec();
+  return updatedMaterial.materials.id(materialId);
 };
 
 const updateTiles = async (schedule, relatedId, description, parameters) => {
   const results = calculateTiles(parameters.area);
-  // console.log(results)
-
   const materials = schedule?.materials?.filter(
     (material) => material.relatedId === relatedId
   );
@@ -969,7 +992,9 @@ const updateTiles = async (schedule, relatedId, description, parameters) => {
   }
 
   await schedule.save();
+  return materials;
 };
+
 const updateScreed = async (
   schedule,
   relatedId,
@@ -997,6 +1022,7 @@ const updateScreed = async (
   }
 
   await schedule.save();
+  return materials;
 };
 
 const updatePlastering = async (
@@ -1025,7 +1051,9 @@ const updatePlastering = async (
   }
 
   await schedule.save();
+  return materials;
 };
+
 const updatePainting = async (schedule, relatedId, description, parameters) => {
   const results = calculatePainting(parameters.area);
 
@@ -1044,7 +1072,9 @@ const updatePainting = async (schedule, relatedId, description, parameters) => {
   }
 
   await schedule.save();
+  return materials;
 };
+
 const updateCeiling = async (schedule, relatedId, description, parameters) => {
   const results = calculateCeiling(parameters.area);
 
@@ -1063,6 +1093,7 @@ const updateCeiling = async (schedule, relatedId, description, parameters) => {
   }
 
   await schedule.save();
+  return materials;
 };
 
 module.exports = {

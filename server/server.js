@@ -37,7 +37,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-
 // app.all("*", (req, res) => {
 //   res.status(404);
 //   if (req.accepts("html")) {

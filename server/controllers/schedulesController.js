@@ -116,24 +116,18 @@ const updateBalanceAllowable = async (schedule, objectId) => {
 };
 
 const getAllSchedules = async (req, res) => {
-  // Get all schedules from MongoDB
-  const schedules = await Schedule.find().lean();
+  // Get all schedules from MongoDB and populate the user field
+  const schedules = await Schedule.find()
+    .populate("user", "username")
+    .lean()
+    .exec();
 
   // If no schedules
   if (!schedules?.length) {
     return res.status(400).json({ message: "No schedules found" });
   }
 
-  // Add username to each schedule before sending the response
-  // See Promise.all with map() here: https://youtu.be/4lqJBBEpjRE
-  const schedulesWithUser = await Promise.all(
-    schedules.map(async (schedule) => {
-      const user = await User.findById(schedule.user).lean().exec();
-      return { ...schedule, username: user.username };
-    })
-  );
-
-  res.json(schedulesWithUser);
+  res.json(schedules);
 };
 
 // @desc Create new schedule
@@ -251,7 +245,7 @@ const addScheduleMaterial = async (req, res) => {
   const {
     materialName,
     elementName,
-    description,
+    materialDescription: description,
     parameters,
     materialType,
     materialUnit,
@@ -557,13 +551,13 @@ const updateScheduleMaterial = async (req, res) => {
     const {
       elementName,
       materialName,
-      description,
+      materialDescription: description,
       parameters,
       materialType,
       relatedId,
       categoryName,
     } = req.body;
-    console.log(relatedId);
+    console.log("relatedId", relatedId);
     // Confirm data
     if (!materialName && !description && !parameters && !elementName) {
       return res
@@ -580,20 +574,36 @@ const updateScheduleMaterial = async (req, res) => {
       });
     }
 
-    //Run New Parameters through function
+    let updatedMaterial;
 
+    //Run New Parameters through function
     switch (elementName) {
       case "Concrete":
-        await updateConcrete(schedule, relatedId, description, parameters);
+        updatedMaterial = await updateConcrete(
+          schedule,
+          relatedId,
+          description,
+          parameters
+        );
         break;
 
       case "Reinforcement":
         switch (materialName) {
           case "BRC":
-            await updateBRC(scheduleId, materialId, description, parameters);
+            updatedMaterial = await updateBRC(
+              scheduleId,
+              materialId,
+              description,
+              parameters
+            );
             break;
           case "Rebar":
-            await updateRebar(scheduleId, materialId, description, parameters);
+            updatedMaterial = await updateRebar(
+              scheduleId,
+              materialId,
+              description,
+              parameters
+            );
             break;
           default:
             throw new Error(`Invalid material name: ${materialName}`);
@@ -601,7 +611,7 @@ const updateScheduleMaterial = async (req, res) => {
         break;
 
       case "Walling":
-        await updateWalling(
+        updatedMaterial = await updateWalling(
           schedule,
           relatedId,
           description,
@@ -611,7 +621,7 @@ const updateScheduleMaterial = async (req, res) => {
         break;
 
       case "Anti-Termite Treatment":
-        await updateAntiTermite(
+        updatedMaterial = await updateAntiTermite(
           scheduleId,
           materialId,
           description,
@@ -619,13 +629,23 @@ const updateScheduleMaterial = async (req, res) => {
         );
         break;
       case "Murram":
-        await updateMurram(scheduleId, materialId, description, parameters);
+        updatedMaterial = await updateMurram(
+          scheduleId,
+          materialId,
+          description,
+          parameters
+        );
         break;
       case "Hardcore":
-        await updateHardcore(scheduleId, materialId, description, parameters);
+        updatedMaterial = await updateHardcore(
+          scheduleId,
+          materialId,
+          description,
+          parameters
+        );
         break;
       case "Sand Blinding":
-        await updateSandBlinding(
+        updatedMaterial = await updateSandBlinding(
           scheduleId,
           materialId,
           description,
@@ -633,7 +653,7 @@ const updateScheduleMaterial = async (req, res) => {
         );
         break;
       case "Damp Proof Membrane":
-        await updateDampProofMembrane(
+        updatedMaterial = await updateDampProofMembrane(
           scheduleId,
           materialId,
           description,
@@ -641,7 +661,7 @@ const updateScheduleMaterial = async (req, res) => {
         );
         break;
       case "Damp Proof Course":
-        await updateDampProofCourse(
+        updatedMaterial = await updateDampProofCourse(
           scheduleId,
           materialId,
           description,
@@ -649,7 +669,7 @@ const updateScheduleMaterial = async (req, res) => {
         );
         break;
       case "Steel Work":
-        await updateSteel(
+        updatedMaterial = await updateSteel(
           scheduleId,
           materialId,
           materialName,
@@ -661,7 +681,7 @@ const updateScheduleMaterial = async (req, res) => {
         switch (categoryName) {
           case "Floor Finishes":
             if (materialName === "Cement" || materialName === "Sand") {
-              await updateScreed(
+              updatedMaterial = await updateScreed(
                 schedule,
                 relatedId,
                 description,
@@ -673,7 +693,12 @@ const updateScheduleMaterial = async (req, res) => {
               materialName === "Adhesive" ||
               materialName === "Grout"
             ) {
-              await updateTiles(schedule, relatedId, description, parameters);
+              updatedMaterial = await updateTiles(
+                schedule,
+                relatedId,
+                description,
+                parameters
+              );
             }
             break;
           case "Wall Finishes":
@@ -683,7 +708,7 @@ const updateScheduleMaterial = async (req, res) => {
                 materialName === "Sand" ||
                 materialName === "Lime"
               ) {
-                await updatePlastering(
+                updatedMaterial = await updatePlastering(
                   schedule,
                   relatedId,
                   description,
@@ -692,7 +717,7 @@ const updateScheduleMaterial = async (req, res) => {
               }
             } else {
               if (materialName === "Cement" || materialName === "Sand") {
-                await updateScreed(
+                updatedMaterial = await updateScreed(
                   schedule,
                   relatedId,
                   description,
@@ -704,15 +729,30 @@ const updateScheduleMaterial = async (req, res) => {
                 materialName === "Adhesive" ||
                 materialName === "Grout"
               ) {
-                await updateTiles(schedule, relatedId, description, parameters);
+                updatedMaterial = await updateTiles(
+                  schedule,
+                  relatedId,
+                  description,
+                  parameters
+                );
               }
             }
             break;
           case "Ceiling Finishes":
-            await updateCeiling(schedule, relatedId, description, parameters);
+            updatedMaterial = await updateCeiling(
+              schedule,
+              relatedId,
+              description,
+              parameters
+            );
             break;
           case "Painting Works":
-            await updatePainting(schedule, relatedId, description, parameters);
+            updatedMaterial = await updatePainting(
+              schedule,
+              relatedId,
+              description,
+              parameters
+            );
             break;
         }
         break;
@@ -720,7 +760,7 @@ const updateScheduleMaterial = async (req, res) => {
         throw new Error(`Invalid element name: ${elementName}`);
     }
 
-    const updatedMaterial = await schedule.save();
+    await schedule.save();
 
     const summary = await materialsAggregationPipeline(objectId);
     // Update the summary field of the Schedule document
@@ -728,7 +768,6 @@ const updateScheduleMaterial = async (req, res) => {
       { _id: scheduleId },
       { $set: { summary: summary } }
     ).exec();
-    // console.log(summary);
 
     res.json({
       message: "Material updated successfully",
