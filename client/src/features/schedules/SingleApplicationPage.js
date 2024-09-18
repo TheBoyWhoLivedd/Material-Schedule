@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import useTitle from "../../hooks/useTitle";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import Paper from "@mui/material/Paper";
 import { Plus, Edit, Trash } from "feather-icons-react";
 import {
@@ -304,8 +304,12 @@ const SingleApplicationPage = () => {
     [id, accessToken]
   );
 
+  const [searchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const size = parseInt(searchParams.get('size') || '6', 10)
+
   // Query to get the schedule from the API
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+  const { schedule } = useGetSchedulesQuery({ page, size }, {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
@@ -351,7 +355,7 @@ const SingleApplicationPage = () => {
             />
           </ModalComponent>
           <div style={{ marginLeft: "1rem" }}>
-            <Link to={`/dash/schedules/${id}/requested`}>
+            <Link to={`/dash/schedules/${id}/requested?page=${page}&size=${size}`}>
               <Button variant="outlined">View Summary</Button>
             </Link>
           </div>

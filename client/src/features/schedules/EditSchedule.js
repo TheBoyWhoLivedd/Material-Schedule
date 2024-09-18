@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import EditScheduleForm from "../schedules/EditScheduleForm";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useGetUsersQuery } from "../users/usersApiSlice";
@@ -12,12 +12,18 @@ const EditSchedule = () => {
   const { id } = useParams();
 
   const { username, isManager, isAdmin } = useAuth();
+  const [searchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const size = parseInt(searchParams.get('size') || '6', 10)
 
-  const { schedule } = useGetSchedulesQuery("notesList", {
-    selectFromResult: ({ data }) => ({
-      schedule: data?.entities[id],
-    }),
-  });
+  const { schedule } = useGetSchedulesQuery(
+    { page, size },
+    {
+      selectFromResult: ({ data }) => ({
+        schedule: data?.entities[id],
+      }),
+    }
+  );
 
   const { users } = useGetUsersQuery("usersList", {
     selectFromResult: ({ data }) => ({

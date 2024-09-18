@@ -5,6 +5,7 @@ const ExcelJS = require("exceljs");
 const moment = require("moment");
 const path = require("path");
 const { v4: uuid } = require("uuid");
+const jwt = require("jsonwebtoken");
 const {
   materialsAggregationPipeline,
   applicationAggregationPipeline,
@@ -116,18 +117,60 @@ const updateBalanceAllowable = async (schedule, objectId) => {
 };
 
 const getAllSchedules = async (req, res) => {
-  // Get all schedules from MongoDB and populate the user field
-  const schedules = await Schedule.find()
-    .populate("user", "username")
-    .lean()
-    .exec();
+  try {
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  // If no schedules
-  if (!schedules?.length) {
-    return res.status(400).json({ message: "No schedules found" });
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const userId = decoded.UserInfo.id;
+    const userRoles = decoded.UserInfo.roles;
+
+    // Parse pagination parameters with default values
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 6;
+
+    if (page < 1 || size < 1) {
+      return res
+        .status(400)
+        .json({ message: "Invalid page or size parameters" });
+    }
+
+    const skip = (page - 1) * size;
+
+    let query = {};
+
+    if (userRoles.includes("Employee")) {
+      query.user = userId;
+    }
+
+    const totalCount = await Schedule.countDocuments(query);
+    const totalPages = Math.ceil(totalCount / size);
+
+    const schedules = await Schedule.find(query)
+      .populate("user", "username")
+      .lean()
+      .skip(skip)
+      .limit(size)
+      .exec();
+
+    if (!schedules?.length) {
+      return res.status(400).json({ message: "No schedules found" });
+    }
+
+    res.json({
+      schedules,
+      totalCount,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error("Error in getAllSchedules:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  res.json(schedules);
 };
 
 // @desc Create new schedule

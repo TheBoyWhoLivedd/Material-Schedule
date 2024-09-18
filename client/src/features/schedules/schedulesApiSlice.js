@@ -11,20 +11,31 @@ const initialState = schedulesAdapter.getInitialState();
 export const schedulesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getSchedules: builder.query({
-      query: () => ({
+      // Accepts an object with page and size
+      query: ({ page = 1, size = 6 }) => ({
         url: "/schedules",
-        validateStatus: (response, result) => {
-          return response.status === 200 && !result.isError;
-        },
+        params: { page, size },
       }),
       transformResponse: (responseData) => {
-        // responseData.sort((a, b) => a.createdAt - b.createdAt);
+        const { schedules, totalCount, totalPages, currentPage } = responseData;
 
-        const loadedSchedules = responseData.map((schedule) => {
-          schedule.id = schedule._id;
-          return schedule;
-        });
-        return schedulesAdapter.setAll(initialState, loadedSchedules); //This normalises our state
+        // Normalize the schedules data
+        const loadedSchedules = schedules.map((schedule) => ({
+          ...schedule,
+          id: schedule._id,
+        }));
+
+        const normalized = schedulesAdapter.setAll(
+          initialState,
+          loadedSchedules
+        );
+
+        return {
+          ...normalized,
+          totalCount,
+          totalPages,
+          currentPage,
+        };
       },
       providesTags: (result, error, arg) => {
         if (result?.ids) {
@@ -32,8 +43,11 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
             { type: "Schedule", id: "LIST" },
             ...result.ids.map((id) => ({ type: "Schedule", id })),
           ];
-        } else return [{ type: "Schedule", id: "LIST" }];
+        } else {
+          return [{ type: "Schedule", id: "LIST" }];
+        }
       },
+      pollingInterval: 150000, 
     }),
     addNewSchedule: builder.mutation({
       query: (initialSchedule) => ({

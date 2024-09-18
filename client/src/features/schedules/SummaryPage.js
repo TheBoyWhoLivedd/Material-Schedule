@@ -1,6 +1,6 @@
 import useTitle from "../../hooks/useTitle";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import {
   Accordion,
   AccordionSummary,
@@ -19,9 +19,11 @@ const SummaryPage = () => {
 
   const { id } = useParams();
 
-  console.log(id);
+  const [searchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const size = parseInt(searchParams.get('size') || '6', 10)
 
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+  const { schedule } = useGetSchedulesQuery({ page, size }, {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),

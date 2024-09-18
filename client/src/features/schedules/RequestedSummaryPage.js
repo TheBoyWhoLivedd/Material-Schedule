@@ -6,7 +6,7 @@ import useTitle from "../../hooks/useTitle";
 import PulseLoader from "react-spinners/PulseLoader";
 import { useGetSummaryQuery, useGetSchedulesQuery } from "./schedulesApiSlice";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -23,8 +23,11 @@ const RequestedSummaryPage = () => {
   useTitle("Deemed VAT: Summary Page");
 
   const { id } = useParams();
+  const [searchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const size = parseInt(searchParams.get('size') || '6', 10)
 
-  const { schedule } = useGetSchedulesQuery("schedulesList", {
+  const { schedule } = useGetSchedulesQuery({ page, size }, {
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
