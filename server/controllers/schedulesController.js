@@ -132,6 +132,9 @@ const getAllSchedules = async (req, res) => {
     // Parse pagination parameters with default values
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 6;
+    const search = req.query.search || "";
+
+    console.log("Search:", search);
 
     if (page < 1 || size < 1) {
       return res
@@ -146,6 +149,18 @@ const getAllSchedules = async (req, res) => {
     if (userRoles.includes("Employee")) {
       query.user = userId;
     }
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { contractor: { $regex: search, $options: "i" } },
+        { funder: { $regex: search, $options: "i" } },
+        { program: { $regex: search, $options: "i" } },
+      ];
+
+      if (!isNaN(Number(search))) {
+        query.$or.push({ tin: Number(search) });
+      }
+    }
 
     const totalCount = await Schedule.countDocuments(query);
     const totalPages = Math.ceil(totalCount / size);
@@ -157,8 +172,15 @@ const getAllSchedules = async (req, res) => {
       .limit(size)
       .exec();
 
+    // It's better to return 200 with empty results rather than 400 when no schedules are found
+    // Adjusting this for better REST practices
     if (!schedules?.length) {
-      return res.status(400).json({ message: "No schedules found" });
+      return res.status(200).json({
+        schedules: [],
+        totalCount: 0,
+        totalPages: 0,
+        currentPage: page,
+      });
     }
 
     res.json({

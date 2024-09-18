@@ -1,4 +1,5 @@
 // Schedule.jsx
+
 import React, { memo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -19,16 +20,44 @@ import {
   EditOutlined as EditOutlinedIcon,
 } from "@mui/icons-material";
 
+// Helper function to escape special regex characters in the search string
+const escapeRegExp = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// Helper function to highlight search terms in text
+const highlightText = (text, search) => {
+  if (!search) return text;
+  
+  // Create a case-insensitive regex for the search term
+  const regex = new RegExp(`(${escapeRegExp(search)})`, "gi");
+  
+  // Split the text based on the regex
+  const parts = text.split(regex);
+  
+  return parts.map((part, index) =>
+    regex.test(part) ? (
+      <span key={index} style={{ backgroundColor: "yellow" }}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+};
+
 const ScheduleCard = ({ schedule, isSmallScreen }) => {
   const theme = useTheme();
+  const [searchParams] = useSearchParams();
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const size = parseInt(searchParams.get("size") || "6", 10);
+  const search = searchParams.get("search") || "";
+
+  // Format the creation date
   const created = new Date(schedule.createdAt).toLocaleString("en-US", {
     day: "numeric",
     month: "long",
   });
-  const [searchParams] = useSearchParams()
-  const page = parseInt(searchParams.get('page') || '1', 10)
-  const size = parseInt(searchParams.get('size') || '6', 10)
-
 
   return (
     <Card
@@ -47,6 +76,7 @@ const ScheduleCard = ({ schedule, isSmallScreen }) => {
       }}
     >
       <CardContent sx={{ flexGrow: 1 }}>
+        {/* Highlighted Title */}
         <Typography
           gutterBottom
           variant="h5"
@@ -56,12 +86,14 @@ const ScheduleCard = ({ schedule, isSmallScreen }) => {
             fontWeight: "bold",
           }}
         >
-          {schedule.title}
+          {highlightText(schedule.title, search)}
         </Typography>
+
+        {/* Highlighted Fields */}
         {[
           { icon: AttachMoneyIcon, text: schedule.funder },
           { icon: WorkOutlineIcon, text: schedule.contractor },
-          { icon: FingerprintOutlinedIcon, text: schedule.tin },
+          { icon: FingerprintOutlinedIcon, text: String(schedule.tin) }, // Ensure tin is a string
           { icon: PersonOutlineIcon, text: schedule.user.username },
         ].map(({ icon: Icon, text }, index) => (
           <Typography
@@ -75,23 +107,27 @@ const ScheduleCard = ({ schedule, isSmallScreen }) => {
             }}
           >
             <Icon sx={{ color: "#475BE8", mr: 1 }} />
-            {text}
+            {highlightText(text, search)}
           </Typography>
         ))}
+
+        {/* Highlighted Created Date (optional) */}
         <Typography
           variant="body2"
           sx={{
             fontSize: isSmallScreen ? "0.7rem" : "0.9rem",
           }}
         >
-          Created: {created}
+          Created: {highlightText(created, search)}
         </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: "space-between", padding: "16px" }}>
         <div>
           <Button
             component={Link}
-            to={`/dash/schedules/${schedule.id}?page=${page}&size=${size}`}
+            to={`/dash/schedules/${schedule.id}?page=${page}&size=${size}&search=${encodeURIComponent(
+              search
+            )}`}
             size="small"
             variant="outlined"
             sx={{ mr: 1 }}
@@ -100,7 +136,9 @@ const ScheduleCard = ({ schedule, isSmallScreen }) => {
           </Button>
           <Button
             component={Link}
-            to={`/dash/schedules/${schedule.id}/application?page=${page}&size=${size}`}
+            to={`/dash/schedules/${schedule.id}/application?page=${page}&size=${size}&search=${encodeURIComponent(
+              search
+            )}`}
             size="small"
             variant="outlined"
           >

@@ -1,6 +1,6 @@
 // ScheduleList.jsx
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useGetSchedulesQuery } from "./schedulesApiSlice";
 import useTitle from "../../hooks/useTitle";
 import Schedule from "./Schedule";
@@ -16,8 +16,12 @@ import {
   FormControl,
   InputLabel,
   Box,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
+import { debounce } from "lodash"; // Import lodash debounce
+import { GridSearchIcon } from "@mui/x-data-grid";
 
 const ScheduleList = () => {
   useTitle("Deemed VAT: Schedule List");
@@ -25,18 +29,43 @@ const ScheduleList = () => {
   // Manage URL search parameters
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Extract page and size from search params or default values
+  // Extract page, size, and search from search params or default values
   const page = parseInt(searchParams.get("page")) || 1;
   const size = parseInt(searchParams.get("size")) || 6;
+  const initialSearch = searchParams.get("search") || "";
 
-  // Fetch schedules with current page and size
+  // Local state for search input
+  const [searchInput, setSearchInput] = useState(initialSearch);
+
+  // Debounce search input using lodash.debounce
+  const debouncedSetSearch = useCallback(
+    debounce((value) => {
+      // Update search params: set page to 1, update search, preserve size
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("page", 1);
+        newParams.set("search", value);
+        newParams.set("size", size);
+        return newParams;
+      });
+    }, 500),
+    [setSearchParams, size]
+  );
+
+  // Handle search input changes
+  const handleSearchInputChange = (event) => {
+    setSearchInput(event.target.value);
+    debouncedSetSearch(event.target.value);
+  };
+
+  // Fetch schedules with current page, size, and search
   const {
     data: schedules,
     isLoading,
     isSuccess,
     isError,
     error,
-  } = useGetSchedulesQuery({ page, size });
+  } = useGetSchedulesQuery({ page, size, search: initialSearch });
 
   let content;
 
@@ -69,40 +98,115 @@ const ScheduleList = () => {
 
     const ScheduleContent = ids.length ? (
       ids.map((scheduleId) => (
-          <Schedule schedule={entities[scheduleId]} key={scheduleId} />
+        <Schedule schedule={entities[scheduleId]} key={scheduleId} />
       ))
     ) : (
       <Typography variant="h6">No schedules available.</Typography>
     );
 
     const handlePageChange = (event, value) => {
-      setSearchParams({ page: value, size });
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("page", value);
+        newParams.set("size", size);
+        // Preserve the current search query
+        if (searchInput) {
+          newParams.set("search", searchInput);
+        } else {
+          newParams.delete("search");
+        }
+        return newParams;
+      });
     };
 
     const handleSizeChange = (event) => {
       const newSize = event.target.value;
-      setSearchParams({ page: 1, size: newSize });
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("size", newSize);
+        newParams.set("page", 1); // Reset to first page when size changes
+        // Preserve the current search query
+        if (searchInput) {
+          newParams.set("search", searchInput);
+        } else {
+          newParams.delete("search");
+        }
+        return newParams;
+      });
     };
 
     content = (
       <>
         <Typography
           variant="h4"
-          sx={{ color: (theme) => theme.palette.text.primary, mb: 2 }}
+          sx={{
+            color: (theme) => theme.palette.text.primary,
+            mb: 3,
+            fontWeight: 700,
+            letterSpacing: '-0.01em',
+            textAlign: { xs: 'center', sm: 'left' },
+          }}
         >
           Project List
         </Typography>
 
+        {/* Search Bar */}
+        <Box
+          sx={{
+            mb: 4,
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: (theme) => theme.palette.background.paper,
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            transition: 'box-shadow 0.3s ease-in-out',
+            '&:hover': {
+              boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+            },
+          }}
+        >
+          <TextField
+            label="Search schedules"
+            variant="outlined"
+            fullWidth
+            value={searchInput}
+            onChange={handleSearchInputChange}
+            placeholder="Enter keywords..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <GridSearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: 'transparent',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'transparent',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: 'transparent',
+                },
+              },
+            }}
+          />
+        </Box>
+
+        {/* Schedule Grid */}
         <Grid container spacing={2} sx={{ mb: 4 }}>
           {ScheduleContent}
         </Grid>
 
+        {/* Pagination and Page Size Controls */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'center',
-            alignItems: { xs: 'stretch', sm: 'center' },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "center",
+            alignItems: { xs: "stretch", sm: "center" },
             gap: 2,
           }}
         >
@@ -111,7 +215,7 @@ const ScheduleList = () => {
             page={currentPage}
             onChange={handlePageChange}
             color="primary"
-            sx={{ alignSelf: { xs: 'center', sm: 'flex-start' } }}
+            sx={{ alignSelf: { xs: "center", sm: "flex-start" } }}
           />
 
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>

@@ -11,10 +11,9 @@ const initialState = schedulesAdapter.getInitialState();
 export const schedulesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getSchedules: builder.query({
-      // Accepts an object with page and size
-      query: ({ page = 1, size = 6 }) => ({
+      query: ({ page = 1, size = 6, search = "" }) => ({
         url: "/schedules",
-        params: { page, size },
+        params: { page, size, search },
       }),
       transformResponse: (responseData) => {
         const { schedules, totalCount, totalPages, currentPage } = responseData;
@@ -47,7 +46,7 @@ export const schedulesApiSlice = apiSlice.injectEndpoints({
           return [{ type: "Schedule", id: "LIST" }];
         }
       },
-      pollingInterval: 150000, 
+      pollingInterval: 150000,
     }),
     addNewSchedule: builder.mutation({
       query: (initialSchedule) => ({

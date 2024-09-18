@@ -15,9 +15,10 @@ const EditSchedule = () => {
   const [searchParams] = useSearchParams()
   const page = parseInt(searchParams.get('page') || '1', 10)
   const size = parseInt(searchParams.get('size') || '6', 10)
+  const search = searchParams.get('search') || ''
 
   const { schedule } = useGetSchedulesQuery(
-    { page, size },
+    { page, size, search },
     {
       selectFromResult: ({ data }) => ({
         schedule: data?.entities[id],

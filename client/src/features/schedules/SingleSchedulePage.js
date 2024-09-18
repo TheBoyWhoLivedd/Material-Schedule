@@ -50,8 +50,10 @@ const SingleSchedulePage = () => {
   const [searchParams] = useSearchParams()
   const page = parseInt(searchParams.get('page') || '1', 10)
   const size = parseInt(searchParams.get('size') || '6', 10)
+  const search = searchParams.get('search') || ''
 
-  const { schedule } = useGetSchedulesQuery({ page, size }, {
+  const { schedule } = useGetSchedulesQuery({ page, size, search }, {
+
     selectFromResult: ({ data }) => ({
       schedule: data?.entities[id],
     }),
@@ -164,7 +166,7 @@ const SingleSchedulePage = () => {
         </ModalComponent>
 
         <div style={{ marginLeft: "1rem" }}>
-          <Link to={`/dash/schedules/${id}/summary?page=${page}&size=${size}`}>
+          <Link to={`/dash/schedules/${id}/summary?page=${page}&size=${size}&search=${search}`}>
             <Button variant="outlined">View Summary</Button>
           </Link>
         </div>
